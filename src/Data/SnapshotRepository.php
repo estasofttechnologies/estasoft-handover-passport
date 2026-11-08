@@ -40,6 +40,20 @@ class SnapshotRepository extends Repository {
 	}
 
 	/**
+	 * Only the acknowledgements can change. Content, hash, name and time never do (HND-3).
+	 *
+	 * @param int                  $id  Snapshot ID.
+	 * @param array<string, mixed> $row Columns to change.
+	 * @throws \LogicException When a column other than the acknowledgements is named.
+	 */
+	public function update( int $id, array $row ): bool {
+		if ( array() !== array_diff( array_keys( $row ), array( 'acknowledgements' ) ) ) {
+			throw new \LogicException( 'A snapshot cannot be changed.' );
+		}
+		return parent::update( $id, $row );
+	}
+
+	/**
 	 * Snapshots, newest first, without the bulky content.
 	 *
 	 * @return list<array<string, mixed>>

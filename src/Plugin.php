@@ -25,9 +25,13 @@ use Estasoft\HandoverPassport\Data\LinkRepository;
 use Estasoft\HandoverPassport\Data\PeopleRepository;
 use Estasoft\HandoverPassport\Data\ReminderRepository;
 use Estasoft\HandoverPassport\Data\RunbookRepository;
+use Estasoft\HandoverPassport\Data\SnapshotRepository;
 use Estasoft\HandoverPassport\Data\ScanRepository;
 use Estasoft\HandoverPassport\Data\TestRepository;
 use Estasoft\HandoverPassport\Findings\FindingService;
+use Estasoft\HandoverPassport\Handover\HandoverChecklist;
+use Estasoft\HandoverPassport\Handover\SnapshotService;
+use Estasoft\HandoverPassport\Handover\StatusService;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Install\Upgrader;
 use Estasoft\HandoverPassport\Passport\Passport;
@@ -264,6 +268,27 @@ final class Plugin {
 			'scan',
 			fn(): ScanService => new ScanService( new Collector(), new ScanRepository(), $this->changeLog(), $this->records(), $this->settings() )
 		);
+	}
+
+	/**
+	 * The handover checklist.
+	 */
+	public function handover(): HandoverChecklist {
+		return $this->shared( 'handover', fn(): HandoverChecklist => new HandoverChecklist( $this ) );
+	}
+
+	/**
+	 * Snapshots of the Passport.
+	 */
+	public function snapshots(): SnapshotService {
+		return $this->shared( 'snapshots', fn(): SnapshotService => new SnapshotService( $this, new SnapshotRepository() ) );
+	}
+
+	/**
+	 * Status of the Passport.
+	 */
+	public function handoverStatus(): StatusService {
+		return $this->shared( 'handover_status', fn(): StatusService => new StatusService( $this->passport(), $this->changeLog() ) );
 	}
 
 	/**

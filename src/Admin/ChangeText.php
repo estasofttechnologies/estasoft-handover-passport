@@ -119,6 +119,21 @@ final class ChangeText {
 				return sprintf( __( 'Runbook deleted: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_restored':
 				return sprintf( __( 'Runbook restored: %s', 'estasoft-handover-passport' ), $label );
+			case 'snapshot_created':
+				/* translators: %s: snapshot name. */
+				return sprintf( __( 'Snapshot made: %s', 'estasoft-handover-passport' ), $label );
+			case 'snapshot_deleted':
+				/* translators: %s: snapshot name. */
+				return sprintf( __( 'Snapshot deleted: %s', 'estasoft-handover-passport' ), $label );
+			case 'snapshot_acknowledged':
+				/* translators: 1: snapshot name, 2: name of the person who received it. */
+				return sprintf( __( 'Snapshot "%1$s" acknowledged by %2$s', 'estasoft-handover-passport' ), $label, (string) ( $after['received_by'] ?? '' ) );
+			case 'status_changed':
+				/* translators: 1: old status, 2: new status. */
+				return sprintf( __( 'Passport status changed from %1$s to %2$s', 'estasoft-handover-passport' ), (string) ( $before['status'] ?? '' ), (string) ( $after['status'] ?? $label ) ) . ( '' !== (string) $row['note'] ? ' (' . (string) $row['note'] . ')' : '' );
+			case 'checklist_marked':
+				/* translators: %s: checklist item. */
+				return sprintf( __( 'Handover checklist updated: %s', 'estasoft-handover-passport' ), $label ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
 			case 'settings_changed':
 				return __( 'Settings changed', 'estasoft-handover-passport' ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
 			case 'maintenance_note':
@@ -156,6 +171,10 @@ final class ChangeText {
 			'maintenance_note'          => __( 'Maintenance note', 'estasoft-handover-passport' ),
 			'finding_accepted'          => __( 'Finding accepted', 'estasoft-handover-passport' ),
 			'rule_disabled'             => __( 'Rule switched off', 'estasoft-handover-passport' ),
+			'snapshot_created'          => __( 'Snapshot made', 'estasoft-handover-passport' ),
+			'snapshot_acknowledged'     => __( 'Snapshot acknowledged', 'estasoft-handover-passport' ),
+			'snapshot_deleted'          => __( 'Snapshot deleted', 'estasoft-handover-passport' ),
+			'status_changed'            => __( 'Status changed', 'estasoft-handover-passport' ),
 		);
 	}
 }
