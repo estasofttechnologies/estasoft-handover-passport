@@ -43,7 +43,7 @@ wp estasoft-passport reminders run --dry-run
 
 Commands that change the Passport need `--user` with someone who may edit it, so the change log names that person. Reading needs no user, and without one nothing Sensitive is shown.
 
-REST routes live under `estasoft-passport/v1` and always check a capability.
+The REST API lives under `estasoft-passport/v1`. Every route checks a capability, and Sensitive records and fields stay hidden from people without the Sensitive capability. See [docs/REST-API.md](docs/REST-API.md).
 
 ## Principles
 

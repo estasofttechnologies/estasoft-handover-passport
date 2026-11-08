@@ -9,13 +9,9 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Cli;
 
-use Estasoft\HandoverPassport\Domain\Freshness;
-use Estasoft\HandoverPassport\Domain\Kinds;
 use Estasoft\HandoverPassport\Findings\Level;
+use Estasoft\HandoverPassport\Passport\StatusSummary;
 use Estasoft\HandoverPassport\Plugin;
-use Estasoft\HandoverPassport\Reminders\UpcomingDates;
-use Estasoft\HandoverPassport\Support\Clock;
-use Estasoft\HandoverPassport\Support\Dates;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,7 +30,8 @@ final class StatusCommand {
 	/**
 	 * Print how the Passport stands: open findings, readiness, how current the records are and the next dates.
 	 *
-	 * Only counts and dates are printed, never the name of a record, so the output is safe to keep in a build log.
+	 * Only counts and dates are printed, never the name of a record, so the output is safe to keep in a build log. Sensitive
+ * records are not counted unless --user names someone who may see them.
 	 * With --fail-on the command exits with status 1 when findings at that level or above are open.
 	 *
 	 * ## OPTIONS
@@ -71,7 +68,8 @@ final class StatusCommand {
 			\WP_CLI::error( 'Use --fail-on=needs-fixing or --fail-on=worth-fixing.' );
 		}
 		$format = isset( $assoc_args['format'] ) ? (string) $assoc_args['format'] : 'table';
-		$status = $this->collect();
+		$status = ( new StatusSummary( $this->plugin ) )->counts( Access::seesSensitive() );
+		unset( $status['readiness']['rules'], $status['records']['by_kind'] );
 
 		if ( 'json' === $format ) {
 			\WP_CLI::line( (string) wp_json_encode( $status, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
@@ -86,56 +84,6 @@ final class StatusCommand {
 		if ( '' !== $fail_on && $failing > 0 ) {
 			\WP_CLI::halt( 1 );
 		}
-	}
-
-	/**
-	 * Gather the numbers.
-	 *
-	 * @return array<string, mixed>
-	 */
-	private function collect(): array {
-		$findings  = $this->plugin->findings();
-		$readiness = $findings->readiness();
-
-		$fresh = array(
-			Freshness::VERIFIED => 0,
-			Freshness::DUE      => 0,
-			Freshness::STALE    => 0,
-		);
-		$total = 0;
-		foreach ( $this->plugin->records()->everything() as $record ) {
-			if ( ! in_array( (string) $record['kind'], Kinds::registerKinds(), true ) ) {
-				continue;
-			}
-			++$total;
-			if ( isset( $fresh[ (string) $record['freshness'] ] ) ) {
-				++$fresh[ (string) $record['freshness'] ];
-			}
-		}
-
-		$today = Clock::today();
-		$dates = ( new UpcomingDates( $this->plugin->records() ) )->between( $today, Dates::addDays( $today, 30 ) );
-		$scan  = $this->plugin->scanService()->latest();
-
-		return array(
-			'findings'             => $findings->counts(),
-			'readiness'            => array(
-				'ready' => (int) $readiness['ready'],
-				'total' => (int) $readiness['total'],
-			),
-			'records'              => array(
-				'total'    => $total,
-				'verified' => $fresh[ Freshness::VERIFIED ],
-				'due'      => $fresh[ Freshness::DUE ],
-				'stale'    => $fresh[ Freshness::STALE ],
-			),
-			'dates_next_30_days'   => count( $dates ),
-			'next_date'            => array() === $dates ? '' : (string) $dates[0]['date'],
-			'last_scan'            => null === $scan ? null : array(
-				'result'      => (string) $scan['status'],
-				'finished_at' => (string) ( $scan['finished_at'] ?? '' ),
-			),
-		);
 	}
 
 	/**

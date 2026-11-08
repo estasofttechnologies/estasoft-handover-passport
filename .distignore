@@ -18,3 +18,4 @@ node_modules
 phpcs.xml.dist
 phpunit.xml.dist
 tests
+docs

@@ -31,14 +31,19 @@ class ChangeRepository extends Repository {
 	/**
 	 * Entries with optional filters, newest first.
 	 *
-	 * @param array{kind?: string, since?: string, subject_type?: string, subject_id?: int, batch_id?: string, kinds?: list<string>} $filters Filters.
-	 * @param int                                                                                                                      $limit   Rows to return, 0 for all.
-	 * @param int                                                                                                                      $offset  Rows to skip.
+	 * The filters are kind, kinds, since, subject_type, subject_id, batch_id, search (text in the label or note) and
+	 * visible_only, which leaves out every entry that would be masked for someone without the Sensitive capability; with
+	 * it, hidden_items lists the numbers of the records that are Sensitive now.
+	 *
+	 * @param array<string, mixed> $filters Filters.
+	 * @param int                  $limit   Rows to return, 0 for all.
+	 * @param int                  $offset  Rows to skip.
+	 * @param string               $order   DESC for newest first, ASC for oldest first.
 	 * @return list<array<string, mixed>>
 	 */
-	public function search( array $filters = array(), int $limit = 50, int $offset = 0 ): array {
+	public function search( array $filters = array(), int $limit = 50, int $offset = 0, string $order = 'DESC' ): array {
 		[ $extra, $params ] = $this->filterSql( $filters );
-		return $this->query( array(), 'changed_at', 'DESC', $limit, $offset, $extra, $params );
+		return $this->query( array(), 'changed_at', $order, $limit, $offset, $extra, $params );
 	}
 
 	/**
@@ -94,6 +99,22 @@ class ChangeRepository extends Repository {
 		if ( ! empty( $filters['batch_id'] ) ) {
 			$parts[]  = 'batch_id = %s';
 			$params[] = (string) $filters['batch_id'];
+		}
+		if ( isset( $filters['search'] ) && '' !== (string) $filters['search'] ) {
+			$like     = '%' . $this->db()->esc_like( (string) $filters['search'] ) . '%';
+			$parts[]  = '(subject_label LIKE %s OR note LIKE %s)';
+			$params[] = $like;
+			$params[] = $like;
+		}
+		if ( ! empty( $filters['visible_only'] ) ) {
+			$parts[] = 'sensitive = 0';
+			$hidden  = array_values( array_unique( array_map( 'intval', (array) ( $filters['hidden_items'] ?? array() ) ) ) );
+			if ( array() !== $hidden ) {
+				$parts[] = "NOT (subject_type = 'item' AND subject_id IN (" . implode( ',', array_fill( 0, count( $hidden ), '%d' ) ) . '))';
+				foreach ( $hidden as $id ) {
+					$params[] = $id;
+				}
+			}
 		}
 		return array( implode( ' AND ', $parts ), $params );
 	}

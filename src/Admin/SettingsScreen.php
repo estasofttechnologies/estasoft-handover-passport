@@ -179,7 +179,11 @@ final class SettingsScreen extends Screen {
 		check_admin_referer( self::MAIL_ACTION );
 		$result = $this->plugin->reminders()->sendTest( Request::post( 'test_mail_to' ) );
 		$notice = array( 'sent' => 'mail_sent', 'invalid' => 'mail_invalid', 'wait' => 'mail_wait' )[ $result['reason'] ] ?? 'mail_failed';
-		wp_safe_redirect( add_query_arg( 'estasoft_hp_notice', $notice, add_query_arg( array( 'page' => self::SLUG, 'tab' => 'reminders' ), admin_url( 'admin.php' ) ) ) );
+		$args   = array( 'page' => self::SLUG, 'tab' => 'reminders', 'estasoft_hp_notice' => $notice );
+		if ( 'mail_wait' === $notice ) {
+			$args['estasoft_hp_wait'] = (int) ( $result['wait'] ?? 60 );
+		}
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
 		exit;
 	}
 

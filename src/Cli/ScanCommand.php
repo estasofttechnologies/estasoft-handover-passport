@@ -51,7 +51,12 @@ final class ScanCommand {
 	public function __invoke( $args, $assoc_args ): void {
 		$format  = isset( $assoc_args['format'] ) ? (string) $assoc_args['format'] : 'table';
 		$service = $this->plugin->scanService();
-		$result  = $service->run( 'cli' );
+		$result  = $service->runOnDemand( 'cli' );
+
+		if ( 'wait' === $result['status'] ) {
+			$seconds = (int) ( $result['wait'] ?? 60 );
+			\WP_CLI::error( sprintf( 'A scan was started a moment ago. Try again in %d second%s.', $seconds, 1 === $seconds ? '' : 's' ) );
+		}
 
 		if ( 'busy' === $result['status'] ) {
 			\WP_CLI::error( 'A scan is already running. Try again in a minute.' );

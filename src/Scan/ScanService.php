@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Scan;
 
 use Estasoft\HandoverPassport\Changes\ChangeLog;
+use Estasoft\HandoverPassport\Checks\CheckLimiter;
 use Estasoft\HandoverPassport\Data\ScanRepository;
 use Estasoft\HandoverPassport\Services\RecordService;
 use Estasoft\HandoverPassport\Settings\Settings;
@@ -43,9 +44,23 @@ class ScanService {
 	) {}
 
 	/**
+	 * Run a scan that a person asked for: from the button, WP-CLI or the REST API. These share one turn a minute, so
+	 * pressing again does nothing new (SEC-9). Scheduled scans are not limited.
+	 *
+	 * @param string $trigger "manual", "cli" or "rest".
+	 * @return array{status: string, scan_id: int, changes: int, found: int, gaps: list<string>, baseline: bool, wait?: int}
+	 */
+	public function runOnDemand( string $trigger ): array {
+		if ( ! CheckLimiter::take( 'scan', 'site' ) ) {
+			return array( 'status' => 'wait', 'scan_id' => 0, 'changes' => 0, 'found' => 0, 'gaps' => array(), 'baseline' => false, 'wait' => CheckLimiter::secondsLeft( 'scan', 'site' ) );
+		}
+		return $this->run( $trigger );
+	}
+
+	/**
 	 * Run a scan.
 	 *
-	 * @param string $trigger "scheduled", "manual", "cli" or "install".
+	 * @param string $trigger "scheduled", "manual", "cli", "rest", "event" or "install".
 	 * @return array{status: string, scan_id: int, changes: int, found: int, gaps: list<string>, baseline: bool}
 	 */
 	public function run( string $trigger = 'manual' ): array {

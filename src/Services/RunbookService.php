@@ -194,33 +194,36 @@ final class RunbookService {
 	/**
 	 * Stamp a runbook as reviewed today.
 	 *
-	 * @param int $id Runbook ID.
+	 * @param int    $id      Runbook ID.
+	 * @param string $channel Origin for the log.
 	 */
-	public function markReviewed( int $id ): void {
-		$this->stamp( $id, 'last_reviewed', 'runbook_reviewed' );
+	public function markReviewed( int $id, string $channel = 'wordpress' ): void {
+		$this->stamp( $id, 'last_reviewed', 'runbook_reviewed', $channel );
 	}
 
 	/**
 	 * Stamp a runbook as rehearsed today.
 	 *
-	 * @param int $id Runbook ID.
+	 * @param int    $id      Runbook ID.
+	 * @param string $channel Origin for the log.
 	 */
-	public function markRehearsed( int $id ): void {
-		$this->stamp( $id, 'last_rehearsed', 'runbook_rehearsed' );
+	public function markRehearsed( int $id, string $channel = 'wordpress' ): void {
+		$this->stamp( $id, 'last_rehearsed', 'runbook_rehearsed', $channel );
 	}
 
 	/**
 	 * Delete a runbook; it can be restored.
 	 *
-	 * @param int $id Runbook ID.
+	 * @param int    $id      Runbook ID.
+	 * @param string $channel Origin for the log.
 	 */
-	public function delete( int $id ): void {
+	public function delete( int $id, string $channel = 'wordpress' ): void {
 		$row = $this->runbooks->find( $id );
 		if ( null === $row || null !== $row['deleted_at'] ) {
 			return;
 		}
 		$this->runbooks->softDelete( $id );
-		$this->log->add( 'runbook_deleted', 'runbook', $id, (string) $row['title'] );
+		$this->log->add( 'runbook_deleted', 'runbook', $id, (string) $row['title'], source: $channel );
 		do_action( 'estasoft_hp_record_saved', $id, 'runbook', array(), array() );
 	}
 
@@ -251,15 +254,16 @@ final class RunbookService {
 	 *
 	 * @param int    $id     Runbook ID.
 	 * @param string $column last_reviewed or last_rehearsed.
-	 * @param string $kind   Change kind.
+	 * @param string $kind    Change kind.
+	 * @param string $channel Origin for the log.
 	 */
-	private function stamp( int $id, string $column, string $kind ): void {
+	private function stamp( int $id, string $column, string $kind, string $channel = 'wordpress' ): void {
 		$row = $this->runbooks->find( $id );
 		if ( null === $row || null !== $row['deleted_at'] ) {
 			return;
 		}
 		$this->runbooks->update( $id, array( $column => Clock::sql(), 'updated_at' => Clock::sql() ) );
-		$this->log->add( $kind, 'runbook', $id, (string) $row['title'] );
+		$this->log->add( $kind, 'runbook', $id, (string) $row['title'], source: $channel );
 		do_action( 'estasoft_hp_record_saved', $id, 'runbook', array(), array() );
 	}
 

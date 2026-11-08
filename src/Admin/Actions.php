@@ -42,6 +42,11 @@ final class Actions {
 	 *
 	 * @param Plugin $plugin Container.
 	 */
+	/**
+	 * Seconds left of a one-a-minute limit that the last action ran into, or 0.
+	 */
+	private int $wait = 0;
+
 	public function __construct( private Plugin $plugin ) {}
 
 	/**
@@ -83,7 +88,11 @@ final class Actions {
 			$this->reject( $target, $kind, $id, $return, $this->errorKey( $target, $kind, strtok( $e->field(), '.' ) ?: '' ), $e->getMessage() );
 		}
 
-		wp_safe_redirect( add_query_arg( 'estasoft_hp_notice', $notice, $return ) );
+		$args = array( 'estasoft_hp_notice' => $notice );
+		if ( $this->wait > 0 ) {
+			$args['estasoft_hp_wait'] = $this->wait;
+		}
+		wp_safe_redirect( add_query_arg( $args, $return ) );
 		exit;
 	}
 
@@ -161,6 +170,7 @@ final class Actions {
 				return 'urls_none';
 			}
 			if ( 0 === $out['checked'] + $out['refused'] ) {
+				$this->wait = $out['wait'];
 				return 'check_wait'; // Every address was checked within the last minute.
 			}
 			return $out['failed'] > 0 || $out['refused'] > 0 ? 'urls_failed' : 'urls_done';
@@ -172,6 +182,7 @@ final class Actions {
 		if ( 'check' === $op && Kinds::URL === $kind ) {
 			$one = $checks->url( $id );
 			if ( 'wait' === $one['status'] ) {
+				$this->wait = (int) ( $one['wait'] ?? 0 );
 				return 'check_wait';
 			}
 			if ( 'refused' === $one['status'] ) {
@@ -184,7 +195,8 @@ final class Actions {
 		}
 		$domain = strtolower( (string) ( $record['fields']['domain'] ?? '' ) );
 		if ( 'check' === $op ) {
-			$one = $checks->dns( $domain, 'screen' );
+			$one        = $checks->dns( $domain, 'screen' );
+			$this->wait = 'wait' === $one['status'] ? (int) ( $one['wait'] ?? 0 ) : 0;
 			return array(
 				'ok'      => 'dns_done',
 				'wait'    => 'check_wait',
@@ -201,7 +213,8 @@ final class Actions {
 		if ( '' === $host ) {
 			return 'ssl_refused';
 		}
-		$one = $checks->ssl( $host );
+		$one        = $checks->ssl( $host );
+		$this->wait = 'wait' === $one['status'] ? (int) ( $one['wait'] ?? 0 ) : 0;
 		return array(
 			'ok'      => 'ssl_done',
 			'wait'    => 'check_wait',

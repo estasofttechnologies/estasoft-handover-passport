@@ -160,15 +160,16 @@ class PeopleService {
 	/**
 	 * Delete a person: kept 30 days with Undo (PRT-9).
 	 *
-	 * @param int $id Person ID.
+	 * @param int    $id      Person ID.
+	 * @param string $channel Origin for the log.
 	 */
-	public function delete( int $id ): void {
+	public function delete( int $id, string $channel = 'wordpress' ): void {
 		$row = $this->people->find( $id );
 		if ( null === $row ) {
 			return;
 		}
 		$this->people->softDelete( $id );
-		$this->log->add( 'person_deleted', 'person', $id, (string) $row['name'] );
+		$this->log->add( 'person_deleted', 'person', $id, (string) $row['name'], source: $channel );
 		do_action( 'estasoft_hp_record_saved', $id, 'person', array(), array() );
 	}
 
@@ -190,15 +191,16 @@ class PeopleService {
 	/**
 	 * Verify a person's record.
 	 *
-	 * @param int $id Person ID.
+	 * @param int    $id      Person ID.
+	 * @param string $channel Origin for the log.
 	 */
-	public function verify( int $id ): void {
+	public function verify( int $id, string $channel = 'wordpress' ): void {
 		$row = $this->people->find( $id );
 		if ( null === $row || null !== $row['deleted_at'] ) {
 			return;
 		}
 		$this->people->update( $id, array( 'verified_at' => Clock::sql(), 'verified_by' => get_current_user_id() ) );
-		$this->log->add( 'record_verified', 'person', $id, (string) $row['name'] );
+		$this->log->add( 'record_verified', 'person', $id, (string) $row['name'], source: $channel );
 	}
 
 	/**

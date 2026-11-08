@@ -108,6 +108,16 @@ class ItemRepository extends Repository {
 	}
 
 	/**
+	 * The numbers of every record marked Sensitive, deleted ones included.
+	 *
+	 * @return list<int>
+	 */
+	public function allSensitiveIds(): array {
+		$sql = "SELECT id FROM {$this->table()} WHERE sensitive = 1";
+		return array_map( 'intval', (array) $this->db()->get_col( $sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed table name, no input.
+	}
+
+	/**
 	 * Records deleted but not yet purged (for Undo).
 	 *
 	 * @return list<array<string, mixed>>

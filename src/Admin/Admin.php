@@ -251,9 +251,13 @@ final class Admin {
 		}
 		check_admin_referer( self::SCAN_ACTION );
 
-		$result = $this->plugin->scanService()->run( 'manual' );
-		$notice = 'done' === $result['status'] ? 'scan_done' : ( 'busy' === $result['status'] ? 'scan_busy' : 'scan_failed' );
-		wp_safe_redirect( add_query_arg( 'estasoft_hp_notice', $notice, admin_url( 'admin.php?page=' . self::MENU_SLUG ) ) );
+		$result = $this->plugin->scanService()->runOnDemand( 'manual' );
+		$notice = array( 'done' => 'scan_done', 'busy' => 'scan_busy', 'wait' => 'scan_wait' )[ $result['status'] ] ?? 'scan_failed';
+		$args   = array( 'estasoft_hp_notice' => $notice );
+		if ( 'wait' === $result['status'] ) {
+			$args['estasoft_hp_wait'] = (int) ( $result['wait'] ?? 60 );
+		}
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php?page=' . self::MENU_SLUG ) ) );
 		exit;
 	}
 

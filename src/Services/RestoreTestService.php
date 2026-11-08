@@ -164,15 +164,16 @@ final class RestoreTestService {
 	/**
 	 * Remove a test that was logged by mistake. The removal is written to the change log.
 	 *
-	 * @param int $id Test ID.
+	 * @param int    $id      Test ID.
+	 * @param string $channel Origin for the log.
 	 */
-	public function delete( int $id ): void {
+	public function delete( int $id, string $channel = 'wordpress' ): void {
 		$row = $this->tests->find( $id );
 		if ( null === $row ) {
 			return;
 		}
 		$this->tests->delete( $id );
-		$this->log->add( 'restore_test_deleted', 'test', $id, Dates::displayDate( (string) $row['test_date'] ) . ': ' . ( self::results()[ (string) $row['result'] ] ?? '' ) );
+		$this->log->add( 'restore_test_deleted', 'test', $id, Dates::displayDate( (string) $row['test_date'] ) . ': ' . ( self::results()[ (string) $row['result'] ] ?? '' ), source: $channel );
 		do_action( 'estasoft_hp_record_saved', $id, 'test', array(), array() );
 	}
 

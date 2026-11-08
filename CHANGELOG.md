@@ -31,7 +31,12 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Site Health: a test for how recently the Passport was reviewed, a test for whether scans are running, and a debug information section with counts and dates only.
 - `wp estasoft-passport status` with counts and dates only and `--fail-on=needs-fixing|worth-fixing` for build scripts; `findings list|snooze|accept|reopen` and `record list|verify|renew`. Commands that change the Passport need `--user`, so History names the person; changes show "cli" as their origin.
 
+- REST API under `estasoft-passport/v1`: the summary, records, people, runbooks, restore tests, findings, change log, DNS/certificate/address checks and scans. Collections page with `page` and `per_page` (at most 100) and return totals in headers; every route publishes a schema; errors carry `estasoft_hp_` codes that never repeat what was sent; Sensitive records and fields are left out for people without the capability. See `docs/REST-API.md`.
+- A shared summary of counts and dates used by the API and `wp estasoft-passport status`.
+
 ### Changed
+- Scanning is limited to once a minute from the Scan now button, WP-CLI and the REST API alike, and the notices for scans, checks and test emails say how many seconds are left.
+- `wp estasoft-passport status` leaves Sensitive records out of its counts unless `--user` holds the Sensitive capability.
 - The change log hides the names and values of Sensitive records from people without the capability, including entries written before the record was marked Sensitive.
 - The test email, when pressed again within a minute, says how many seconds are left.
 - Findings about a Sensitive record no longer name it for people without the Sensitive capability.

@@ -122,6 +122,7 @@ class ChangeLog {
 				$rows[ $index ]['before_data']   = array();
 				$rows[ $index ]['after_data']    = array();
 				$rows[ $index ]['note']          = '';
+				$rows[ $index ]['masked']        = true;
 			}
 		}
 		return $rows;

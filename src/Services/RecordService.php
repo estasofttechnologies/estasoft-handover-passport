@@ -124,10 +124,11 @@ class RecordService {
 	/**
 	 * Delete a record: hidden for 30 days with Undo (PRT-9). A Detected record is never deleted.
 	 *
-	 * @param int $id Record ID.
+	 * @param int    $id      Record ID.
+	 * @param string $channel Origin for the log.
 	 * @throws ValidationError When the record is Detected or missing.
 	 */
-	public function delete( int $id ): void {
+	public function delete( int $id, string $channel = 'wordpress' ): void {
 		$row = $this->items->find( $id );
 		if ( null === $row ) {
 			return;
@@ -136,7 +137,7 @@ class RecordService {
 			throw new ValidationError( __( 'Record', 'estasoft-handover-passport' ), __( 'A detected item cannot be deleted. Hide it with a reason instead.', 'estasoft-handover-passport' ) );
 		}
 		$this->items->softDelete( $id );
-		$this->log->add( 'record_deleted', 'item', $id, (string) $row['title'], sensitive: (bool) $row['sensitive'] );
+		$this->log->add( 'record_deleted', 'item', $id, (string) $row['title'], source: $channel, sensitive: (bool) $row['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], $this->forHook( $this->hydrate( $row ) ), array() );
 	}
 

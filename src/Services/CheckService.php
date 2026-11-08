@@ -76,7 +76,7 @@ final class CheckService {
 	 *
 	 * @param string $domain  Domain name.
 	 * @param string $channel Where the request came from, for the change log.
-	 * @return array{status: string, snapshot?: array<string, mixed>, changes?: array<string, mixed>}
+	 * @return array{status: string, snapshot?: array<string, mixed>, changes?: array<string, mixed>, wait?: int}
 	 */
 	public function dns( string $domain, string $channel = 'wordpress' ): array {
 		$domain = strtolower( rtrim( trim( $domain ), '.' ) );
@@ -84,7 +84,7 @@ final class CheckService {
 			return array( 'status' => 'invalid' );
 		}
 		if ( ! CheckLimiter::take( 'dns', $domain ) ) {
-			return array( 'status' => 'wait' );
+			return array( 'status' => 'wait', 'wait' => CheckLimiter::secondsLeft( 'dns', $domain ) );
 		}
 		$snapshot = ( $this->dns ?? new DnsChecker() )->snapshot( $domain );
 		if ( DnsChecker::isEmptyFailure( $snapshot ) ) {
@@ -113,7 +113,7 @@ final class CheckService {
 	 * Check the certificate of this site's own host.
 	 *
 	 * @param string $host Site host name.
-	 * @return array{status: string, certificate?: array<string, mixed>}
+	 * @return array{status: string, certificate?: array<string, mixed>, wait?: int}
 	 */
 	public function ssl( string $host ): array {
 		$host = strtolower( trim( $host ) );
@@ -121,7 +121,7 @@ final class CheckService {
 			return array( 'status' => 'refused' );
 		}
 		if ( ! CheckLimiter::take( 'ssl', $host ) ) {
-			return array( 'status' => 'wait' );
+			return array( 'status' => 'wait', 'wait' => CheckLimiter::secondsLeft( 'ssl', $host ) );
 		}
 		$result = ( $this->ssl ?? new SslChecker( $this->guard() ) )->check( $host );
 		if ( '' !== (string) $result['error'] ) {
@@ -144,7 +144,7 @@ final class CheckService {
 	 * Check one critical address.
 	 *
 	 * @param int $id Record ID of a Critical URL.
-	 * @return array{status: string, result?: array<string, mixed>}
+	 * @return array{status: string, result?: array<string, mixed>, wait?: int}
 	 */
 	public function url( int $id ): array {
 		$row = $this->plugin->records()->items()->find( $id );
@@ -152,7 +152,7 @@ final class CheckService {
 			return array( 'status' => 'missing' );
 		}
 		if ( ! CheckLimiter::take( 'url', (string) $id ) ) {
-			return array( 'status' => 'wait' );
+			return array( 'status' => 'wait', 'wait' => CheckLimiter::secondsLeft( 'url', (string) $id ) );
 		}
 		$data   = is_array( $row['data'] ) ? $row['data'] : array();
 		$expect = (int) ( $data['expected_status'] ?? 200 );
@@ -166,14 +166,15 @@ final class CheckService {
 	/**
 	 * Check every critical address.
 	 *
-	 * @return array{checked: int, failed: int, refused: int, waited: int}
+	 * @return array{checked: int, failed: int, refused: int, waited: int, wait: int}
 	 */
 	public function allUrls(): array {
-		$out = array( 'checked' => 0, 'failed' => 0, 'refused' => 0, 'waited' => 0 );
+		$out = array( 'checked' => 0, 'failed' => 0, 'refused' => 0, 'waited' => 0, 'wait' => 0 );
 		foreach ( $this->plugin->records()->items()->query( array( 'kind' => Kinds::URL, 'deleted_at' => null ), 'id', 'ASC' ) as $row ) {
 			$one = $this->url( (int) $row['id'] );
 			if ( 'wait' === $one['status'] ) {
 				++$out['waited'];
+				$out['wait'] = max( $out['wait'], (int) ( $one['wait'] ?? 0 ) );
 			} elseif ( 'refused' === $one['status'] ) {
 				++$out['refused'];
 			} elseif ( 'ok' === $one['status'] ) {
