@@ -211,6 +211,11 @@ final class SettingsScreen extends Screen {
 		Form::row( 'backup_confirm', array( 'type' => 'int', 'label' => __( 'A backup should be confirmed every (days)', 'estasoft-handover-passport' ) ), $settings->get( 'backup_confirm', 30 ) );
 		Form::row( 'access_review_days', array( 'type' => 'int', 'label' => __( 'Access entries should be reviewed every (days)', 'estasoft-handover-passport' ) ), $settings->get( 'access_review_days', 90 ) );
 		echo '</fieldset>';
+
+		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Where notices appear', 'estasoft-handover-passport' ) . '</legend>';
+		echo '<p class="description">' . esc_html__( 'Findings and dates show on the Passport screens. Passport never puts a banner on every admin page.', 'estasoft-handover-passport' ) . '</p>';
+		Form::checkbox( 'dashboard_widget', __( 'Also show a short summary on the WordPress Dashboard', 'estasoft-handover-passport' ), (bool) $settings->get( 'dashboard_widget', false ), __( 'The next five dates and the number of findings that need fixing, for people who may view the Passport. Off by default.', 'estasoft-handover-passport' ) );
+		echo '</fieldset>';
 	}
 
 	/**
@@ -421,6 +426,7 @@ final class SettingsScreen extends Screen {
 					'scan_limit'         => $int( 'scan_limit', 5, 120, 20 ),
 					'backup_confirm'     => $int( 'backup_confirm', 1, 365, 30 ),
 					'access_review_days' => $int( 'access_review_days', 1, 3650, 90 ),
+					'dashboard_widget'   => '1' === Request::post( 'dashboard_widget' ),
 				)
 			);
 			$changed[] = __( 'review intervals and scan', 'estasoft-handover-passport' );

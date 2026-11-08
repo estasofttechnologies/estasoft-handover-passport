@@ -25,6 +25,7 @@ final class Comparer {
 	 * @param array<string, mixed> $older Older content.
 	 * @param array<string, mixed> $newer Newer content.
 	 * @return array{added: array<int, array<string, string>>, removed: array<int, array<string, string>>, changed: array<int, array<string, mixed>>, unchanged: int, notes_changed: bool}
+	 *                                   Each entry also holds the key of its chapter in "chapter".
 	 */
 	public static function diff( array $older, array $newer ): array {
 		$before = self::index( $older );
@@ -37,7 +38,7 @@ final class Comparer {
 
 		foreach ( $after as $key => $item ) {
 			if ( ! isset( $before[ $key ] ) ) {
-				$added[] = array( 'section' => $item['section'], 'ref' => $item['ref'], 'title' => $item['masked'] ? '' : $item['title'] );
+				$added[] = array( 'section' => $item['section'], 'chapter' => $item['chapter'], 'ref' => $item['ref'], 'title' => $item['masked'] ? '' : $item['title'] );
 				continue;
 			}
 			$fields = self::changedFields( $before[ $key ], $item );
@@ -45,11 +46,11 @@ final class Comparer {
 				++$same;
 				continue;
 			}
-			$changed[] = array( 'section' => $item['section'], 'ref' => $item['ref'], 'title' => $item['masked'] ? '' : $item['title'], 'fields' => $fields );
+			$changed[] = array( 'section' => $item['section'], 'chapter' => $item['chapter'], 'ref' => $item['ref'], 'title' => $item['masked'] ? '' : $item['title'], 'fields' => $fields );
 		}
 		foreach ( $before as $key => $item ) {
 			if ( ! isset( $after[ $key ] ) ) {
-				$removed[] = array( 'section' => $item['section'], 'ref' => $item['ref'], 'title' => $item['masked'] ? '' : $item['title'] );
+				$removed[] = array( 'section' => $item['section'], 'chapter' => $item['chapter'], 'ref' => $item['ref'], 'title' => $item['masked'] ? '' : $item['title'] );
 			}
 		}
 		return array(
@@ -103,6 +104,7 @@ final class Comparer {
 					$key         = (string) $section['key'] . '|' . (string) $group['key'] . '|' . (string) $item['ref'];
 					$out[ $key ] = array(
 						'section' => (string) $section['title'],
+						'chapter' => (string) $section['key'],
 						'ref'     => (string) $item['ref'],
 						'title'   => (string) $item['title'],
 						'masked'  => ! empty( $item['sensitive'] ),

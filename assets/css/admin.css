@@ -518,3 +518,30 @@
 	padding: 4px;
 	background: #fff;
 }
+
+/* The leaver checklist and other pages meant for paper. */
+.estasoft-hp-checklist {
+	list-style: none;
+	margin: 0 0 1em;
+	padding: 0;
+}
+
+.estasoft-hp-checklist li {
+	margin: 0 0 0.6em;
+}
+
+@media print {
+	#adminmenumain,
+	#wpadminbar,
+	#wpfooter,
+	.notice,
+	.estasoft-hp-noprint {
+		display: none !important;
+	}
+
+	#wpcontent,
+	#wpbody-content {
+		margin-left: 0 !important;
+		padding-left: 0 !important;
+	}
+}

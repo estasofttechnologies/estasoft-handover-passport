@@ -20,6 +20,15 @@
 		}
 	} );
 
+	// Print buttons: the page prints without the admin menu around it.
+	document.addEventListener( 'click', function ( event ) {
+		var target = event.target;
+		if ( target && target.closest && target.closest( '[data-estasoft-print]' ) ) {
+			event.preventDefault();
+			window.print();
+		}
+	} );
+
 	// Logo picker on the Setup screen: opens the Media Library and keeps the ID of the chosen image.
 	document.addEventListener( 'click', function ( event ) {
 		var target = event.target;

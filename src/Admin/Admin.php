@@ -69,6 +69,7 @@ final class Admin {
 		( new SafetyScreen( $this->plugin ) )->register();
 		( new HandoverScreen( $this->plugin ) )->register();
 		( new SetupScreen( $this->plugin ) )->register();
+		( new DashboardWidget( $this->plugin ) )->register();
 	}
 
 	/**

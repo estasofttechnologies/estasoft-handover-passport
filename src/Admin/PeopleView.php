@@ -43,6 +43,8 @@ final class PeopleView {
 			$this->form( $base, $id );
 		} elseif ( 'delete' === $view ) {
 			$this->confirmDelete( $base, $id );
+		} elseif ( 'offboard' === $view ) {
+			( new OffboardView( $this->plugin ) )->render( $base, $id );
 		} else {
 			$this->listing( $base );
 			$this->roles( $base );
@@ -99,6 +101,9 @@ final class PeopleView {
 				$this->register->hidden( 'verify', 'person', (int) $person['id'], $base );
 				echo '<button type="submit" class="button-link">' . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form> ';
 				echo '<a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a> ';
+				if ( empty( $person['left_on'] ) ) {
+					echo '<a href="' . esc_url( OffboardView::url( (int) $person['id'] ) ) . '">' . esc_html__( 'Offboard', 'estasoft-handover-passport' ) . '</a> ';
+				}
 				echo '<a class="estasoft-hp-danger" href="' . esc_url( add_query_arg( array( 'view' => 'delete', 'id' => $person['id'] ), $base ) ) . '">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</a>';
 			}
 			echo '</td></tr>';
@@ -122,7 +127,7 @@ final class PeopleView {
 		}
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 
-		echo '<div class="estasoft-hp-register"><h2>' . esc_html__( 'Roles', 'estasoft-handover-passport' ) . '</h2>';
+		echo '<div class="estasoft-hp-register" id="estasoft-hp-roles"><h2>' . esc_html__( 'Roles', 'estasoft-handover-passport' ) . '</h2>';
 		echo '<p class="description">' . esc_html__( 'Each role can have several people. Emergency contacts are called in the order shown.', 'estasoft-handover-passport' ) . '</p>';
 		echo '<table class="widefat striped estasoft-hp-table"><tbody>';
 		foreach ( PeopleService::roles() as $key => $label ) {

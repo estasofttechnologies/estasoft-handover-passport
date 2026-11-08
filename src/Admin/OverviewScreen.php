@@ -12,10 +12,12 @@ namespace Estasoft\HandoverPassport\Admin;
 use Estasoft\HandoverPassport\Domain\Freshness;
 use Estasoft\HandoverPassport\Domain\Kinds;
 use Estasoft\HandoverPassport\Findings\Level;
+use Estasoft\HandoverPassport\Handover\SinceHandover;
 use Estasoft\HandoverPassport\Plugin;
 use Estasoft\HandoverPassport\Reminders\UpcomingDates;
 use Estasoft\HandoverPassport\Scan\ScanService;
 use Estasoft\HandoverPassport\Security\Capabilities;
+use Estasoft\HandoverPassport\Setup\SetupService;
 use Estasoft\HandoverPassport\Support\Clock;
 use Estasoft\HandoverPassport\Support\Dates;
 
@@ -74,6 +76,7 @@ final class OverviewScreen {
 
 		$this->findings();
 		$this->readiness();
+		$this->sinceHandover();
 		$this->dates();
 		$this->reminderStatus();
 		$this->freshness();
@@ -84,12 +87,52 @@ final class OverviewScreen {
 	}
 
 	/**
+	 * How much changed since the last handover that somebody acknowledged (HND-8). Nothing is printed before one exists.
+	 */
+	private function sinceHandover(): void {
+		$since = ( new SinceHandover( $this->plugin ) )->get();
+		if ( null === $since ) {
+			return;
+		}
+		$on = '' === $since['acknowledged_on'] ? '' : Dates::displayDate( $since['acknowledged_on'] );
+		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Since the handover', 'estasoft-handover-passport' ) . '</h2>';
+		if ( 0 === $since['total'] && ! $since['notes_changed'] ) {
+			echo '<p>' . esc_html(
+				sprintf(
+					/* translators: %s: name of the snapshot. */
+					__( 'No record has changed since the snapshot "%s" was acknowledged.', 'estasoft-handover-passport' ),
+					$since['name']
+				)
+			) . '</p>';
+		} else {
+			echo '<p>' . esc_html(
+				sprintf(
+					/* translators: 1: number of records, 2: name of the snapshot, 3: date it was acknowledged. */
+					_n( '%1$d record differs from the snapshot "%2$s", acknowledged on %3$s.', '%1$d records differ from the snapshot "%2$s", acknowledged on %3$s.', $since['total'], 'estasoft-handover-passport' ),
+					$since['total'],
+					$since['name'],
+					'' === $on ? __( 'an unrecorded date', 'estasoft-handover-passport' ) : $on
+				)
+			) . ' ' . esc_html(
+				sprintf(
+					/* translators: 1: records added, 2: records removed, 3: records changed. */
+					__( 'Added: %1$d. Removed: %2$d. Changed: %3$d.', 'estasoft-handover-passport' ),
+					$since['added'],
+					$since['removed'],
+					$since['changed']
+				)
+			) . ( $since['notes_changed'] ? ' ' . esc_html__( 'The notes for the successor have changed too.', 'estasoft-handover-passport' ) : '' ) . '</p>';
+		}
+		echo '<p class="estasoft-hp-muted">' . esc_html__( 'Records marked Sensitive are not counted here.', 'estasoft-handover-passport' ) . ' <a href="' . esc_url( add_query_arg( array( 'page' => HandoverScreen::SLUG, 'tab' => 'compare', 'a' => $since['id'], 'b' => 'live' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'See the differences', 'estasoft-handover-passport' ) . '</a></p></div>';
+	}
+
+	/**
 	 * Steps of the setup guide that are not done, as things to do (ONB-3).
 	 */
 	private function setupCard(): void {
 		$left = array();
 		foreach ( $this->plugin->setup()->steps() as $key => $info ) {
-			if ( \Estasoft\HandoverPassport\Setup\SetupService::DONE !== $info['state'] ) {
+			if ( SetupService::DONE !== $info['state'] ) {
 				$left[ $key ] = $info['state'];
 			}
 		}
@@ -101,7 +144,7 @@ final class OverviewScreen {
 		echo '<div class="estasoft-hp-card estasoft-hp-setup-card"><h2>' . esc_html__( 'Finish setting up', 'estasoft-handover-passport' ) . '</h2><ul>';
 		foreach ( $left as $key => $state ) {
 			$title = $copy[ $key ]['title'];
-			$words = \Estasoft\HandoverPassport\Setup\SetupService::SKIPPED === $state ? __( 'Skipped', 'estasoft-handover-passport' ) : __( 'To do', 'estasoft-handover-passport' );
+			$words = SetupService::SKIPPED === $state ? __( 'Skipped', 'estasoft-handover-passport' ) : __( 'To do', 'estasoft-handover-passport' );
 			echo '<li>' . ( $can_edit ? '<a href="' . esc_url( SetupScreen::url( 'estasoft-hp-step-' . $key ) ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title ) ) . ' ' . View::badge( 'setup-' . $state, $words ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 		}
 		echo '</ul></div>';

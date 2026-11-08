@@ -56,6 +56,13 @@ class ChangeRepository extends Repository {
 	}
 
 	/**
+	 * The highest entry number. It only grows, so a different number means something was logged since.
+	 */
+	public function latestId(): int {
+		return (int) $this->db()->get_var( "SELECT COALESCE(MAX(id), 0) FROM {$this->table()}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Fixed table name, no variables.
+	}
+
+	/**
 	 * Number of entries for the same filters.
 	 *
 	 * @param array<string, mixed> $filters Filters as in search().

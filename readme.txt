@@ -29,7 +29,9 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 * Lets you rehearse a runbook as a drill: each step gets a Done button that keeps the time and the person, followed by an after-restore checklist built from your critical addresses. A drill of a restore runbook can be kept as a restore test.
 * Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server".
 * Emails reminders before licence, domain, hosting and service dates, and can send a short weekly summary. Each reminder goes once per date and lead time.
+* Gives each person a leaver checklist: every system they can reach, their WordPress account, the assets they hold and the roles they fill, ready to print when someone stops working on the site.
 * Pauses reminders on a copy of the site, so a staging site does not send every reminder a second time.
+* Shows how many records changed since the last handover someone acknowledged, so a new maintainer sees drift without opening the comparison. An optional summary on the WordPress Dashboard is off until you switch it on.
 * Works with WP-CLI (`wp estasoft-passport status --fail-on=needs-fixing`, `findings`, `record`, `scan`, `reminders run --dry-run`, `snapshot`, `export`, `restore-test add`) and a REST API with capability checks on every route (Sensitive records and fields stay hidden from people who may not see them).
 
 **Built for trust**

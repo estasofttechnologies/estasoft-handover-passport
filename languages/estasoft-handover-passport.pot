@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-08T14:49:42+00:00\n"
+"POT-Creation-Date: 2026-11-08T15:14:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: estasoft-handover-passport\n"
@@ -697,69 +697,70 @@ msgstr ""
 msgid "Remind me"
 msgstr ""
 
-#: src/Admin/Admin.php:81
 #: src/Admin/Admin.php:82
-#: src/Admin/OverviewScreen.php:52
+#: src/Admin/Admin.php:83
+#: src/Admin/DashboardWidget.php:51
+#: src/Admin/OverviewScreen.php:54
 #: src/Admin/SiteHealth.php:223
 msgid "Passport"
 msgstr ""
 
-#: src/Admin/Admin.php:91
 #: src/Admin/Admin.php:92
+#: src/Admin/Admin.php:93
 msgid "Overview"
 msgstr ""
 
 #. translators: %s: short error code.
-#: src/Admin/Admin.php:152
+#: src/Admin/Admin.php:153
 #, php-format
 msgid "Passport could not finish an update of its data. Your records were not changed. Code: %s"
 msgstr ""
 
-#: src/Admin/Admin.php:162
+#: src/Admin/Admin.php:163
 msgid "WordPress cron is switched off and the last scan is old. Ask your host to run WordPress cron from the server, or run \"wp estasoft-passport scan\" on a schedule."
 msgstr ""
 
-#: src/Admin/Admin.php:172
+#: src/Admin/Admin.php:173
 msgid "This site is marked as a copy. Reminders, emailed copies and scheduled checks are off here, so they are not sent a second time."
 msgstr ""
 
-#: src/Admin/Admin.php:179
+#: src/Admin/Admin.php:180
 msgid "Is this a copy of the site?"
 msgstr ""
 
 #. translators: 1: address the Passport was set up on, 2: address of this site now.
-#: src/Admin/Admin.php:183
+#: src/Admin/Admin.php:184
 #, php-format
 msgid "Passport was set up at %1$s and this site is now at %2$s. Reminders, emailed copies and scheduled checks are paused until you say which it is."
 msgstr ""
 
-#: src/Admin/Admin.php:191
+#: src/Admin/Admin.php:192
 msgid "This site moved"
 msgstr ""
 
-#: src/Admin/Admin.php:192
+#: src/Admin/Admin.php:193
 msgid "This is a copy"
 msgstr ""
 
-#: src/Admin/Admin.php:193
+#: src/Admin/Admin.php:194
 msgid "Moved keeps everything and takes the new address. Copy keeps reminders off on this site."
 msgstr ""
 
-#: src/Admin/Admin.php:195
+#: src/Admin/Admin.php:196
 msgid "Ask someone who can change Passport settings to answer."
 msgstr ""
 
-#: src/Admin/Admin.php:205
+#: src/Admin/Admin.php:206
 #: src/Admin/SettingsScreen.php:178
-#: src/Admin/SettingsScreen.php:343
+#: src/Admin/SettingsScreen.php:348
 msgid "You do not have permission to change settings."
 msgstr ""
 
-#: src/Admin/Admin.php:231
+#: src/Admin/Admin.php:232
 msgid "Dismiss"
 msgstr ""
 
-#: src/Admin/Admin.php:239
+#: src/Admin/Admin.php:240
 #: src/Admin/FindingsScreen.php:334
 #: src/Admin/FindingsScreen.php:366
 #: src/Admin/FindingsScreen.php:392
@@ -767,16 +768,16 @@ msgstr ""
 msgid "You do not have permission to do that."
 msgstr ""
 
-#: src/Admin/Admin.php:258
+#: src/Admin/Admin.php:259
 msgid "You do not have permission to run a scan."
 msgstr ""
 
-#: src/Admin/Admin.php:281
+#: src/Admin/Admin.php:282
 #: src/Admin/SiteHealth.php:229
 msgid "Open Passport"
 msgstr ""
 
-#: src/Admin/Admin.php:296
+#: src/Admin/Admin.php:297
 msgid "Documentation"
 msgstr ""
 
@@ -788,8 +789,8 @@ msgstr ""
 #: src/Admin/ChangeCsv.php:35
 #: src/Admin/DrillView.php:252
 #: src/Admin/HistoryScreen.php:206
-#: src/Admin/OverviewScreen.php:245
-#: src/Admin/OverviewScreen.php:380
+#: src/Admin/OverviewScreen.php:288
+#: src/Admin/OverviewScreen.php:423
 #: src/Admin/RestoreTestView.php:84
 #: src/Privacy/PersonalData.php:147
 msgid "What"
@@ -797,7 +798,7 @@ msgstr ""
 
 #: src/Admin/ChangeCsv.php:35
 #: src/Admin/PeopleScreen.php:127
-#: src/Admin/PeopleView.php:79
+#: src/Admin/PeopleView.php:81
 #: src/Domain/Kinds.php:201
 #: src/Domain/Kinds.php:274
 #: src/Domain/Kinds.php:333
@@ -814,7 +815,7 @@ msgstr ""
 #: src/Admin/ChecklistView.php:96
 #: src/Admin/ExportView.php:171
 #: src/Admin/HistoryScreen.php:206
-#: src/Admin/OverviewScreen.php:380
+#: src/Admin/OverviewScreen.php:423
 #: src/Admin/RestoreTestView.php:84
 #: src/Admin/RunbookView.php:618
 #: src/Export/Sections.php:387
@@ -1149,7 +1150,7 @@ msgid "PHP version"
 msgstr ""
 
 #: src/Admin/ChangeText.php:190
-#: src/Admin/OverviewScreen.php:354
+#: src/Admin/OverviewScreen.php:397
 #: src/Admin/StackView.php:110
 msgid "Site address"
 msgstr ""
@@ -1252,7 +1253,7 @@ msgid "Item"
 msgstr ""
 
 #: src/Admin/ChecklistView.php:96
-#: src/Admin/PeopleView.php:79
+#: src/Admin/PeopleView.php:81
 #: src/Admin/StackView.php:195
 #: src/Admin/StackView.php:255
 #: src/Domain/Kinds.php:465
@@ -1263,7 +1264,7 @@ msgstr ""
 #: src/Admin/ChecklistView.php:96
 #: src/Admin/ExportView.php:171
 #: src/Admin/HistoryScreen.php:206
-#: src/Admin/OverviewScreen.php:380
+#: src/Admin/OverviewScreen.php:423
 #: src/Export/Sections.php:461
 msgid "When"
 msgstr ""
@@ -1272,7 +1273,7 @@ msgstr ""
 #: src/Admin/DrillView.php:162
 #: src/Admin/ExportView.php:114
 #: src/Admin/FindingsScreen.php:128
-#: src/Admin/PeopleView.php:82
+#: src/Admin/PeopleView.php:84
 #: src/Admin/RegisterView.php:127
 #: src/Admin/RestoreTestView.php:87
 #: src/Admin/RunbookView.php:276
@@ -1300,8 +1301,8 @@ msgstr ""
 
 #: src/Admin/ChecklistView.php:149
 #: src/Admin/ExportView.php:123
-#: src/Admin/PeopleView.php:102
-#: src/Admin/PeopleView.php:243
+#: src/Admin/PeopleView.php:107
+#: src/Admin/PeopleView.php:248
 #: src/Admin/RegisterView.php:164
 #: src/Admin/RegisterView.php:406
 #: src/Admin/RunbookView.php:298
@@ -1441,6 +1442,26 @@ msgstr ""
 #: src/Admin/CompareView.php:132
 #: src/Changes/ChangeLog.php:121
 msgid "A Sensitive record"
+msgstr ""
+
+#. translators: %d: number of findings.
+#: src/Admin/DashboardWidget.php:70
+#, php-format
+msgid "%d finding needs fixing"
+msgid_plural "%d findings need fixing"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/DashboardWidget.php:75
+msgid "No finding needs fixing."
+msgstr ""
+
+#: src/Admin/DashboardWidget.php:92
+msgid "No renewal or expiry date is entered for the next year."
+msgstr ""
+
+#: src/Admin/DashboardWidget.php:100
+msgid "Open the Passport"
 msgstr ""
 
 #: src/Admin/DomainView.php:57
@@ -1650,8 +1671,8 @@ msgstr ""
 #: src/Admin/ExportView.php:137
 #: src/Admin/ExportView.php:268
 #: src/Admin/PeopleScreen.php:199
-#: src/Admin/PeopleView.php:79
-#: src/Admin/PeopleView.php:200
+#: src/Admin/PeopleView.php:81
+#: src/Admin/PeopleView.php:205
 #: src/Admin/SnapshotView.php:190
 #: src/Admin/SnapshotView.php:271
 #: src/Admin/SnapshotView.php:297
@@ -1671,7 +1692,7 @@ msgstr ""
 #: src/Export/Sections.php:648
 #: src/Handover/SnapshotService.php:108
 #: src/Handover/SnapshotService.php:114
-#: src/Handover/SnapshotService.php:225
+#: src/Handover/SnapshotService.php:227
 #: src/Privacy/PersonalData.php:326
 #: src/Privacy/PersonalData.php:449
 #: src/Services/PeopleService.php:95
@@ -1769,7 +1790,7 @@ msgid "%1$d of %2$d done"
 msgstr ""
 
 #: src/Admin/DrillView.php:127
-#: src/Admin/OverviewScreen.php:122
+#: src/Admin/OverviewScreen.php:165
 msgid "Finished"
 msgstr ""
 
@@ -2091,8 +2112,8 @@ msgstr ""
 #: src/Admin/ExportView.php:171
 #: src/Admin/SnapshotView.php:302
 #: src/Export/ExportService.php:109
-#: src/Handover/SnapshotService.php:220
-#: src/Handover/SnapshotService.php:264
+#: src/Handover/SnapshotService.php:222
+#: src/Handover/SnapshotService.php:266
 #: src/Privacy/PersonalData.php:412
 msgid "Snapshot"
 msgstr ""
@@ -2135,7 +2156,7 @@ msgid "You do not have permission to change packs."
 msgstr ""
 
 #: src/Admin/FindingsScreen.php:53
-#: src/Admin/OverviewScreen.php:158
+#: src/Admin/OverviewScreen.php:201
 #: src/Admin/SettingsScreen.php:64
 #: src/Export/Profiles.php:51
 msgid "Findings"
@@ -2204,7 +2225,7 @@ msgid "Accepted: %s"
 msgstr ""
 
 #: src/Admin/FindingsScreen.php:153
-#: src/Admin/OverviewScreen.php:189
+#: src/Admin/OverviewScreen.php:232
 msgid "Go and fix"
 msgstr ""
 
@@ -2218,7 +2239,7 @@ msgstr ""
 
 #. translators: %d: number of days.
 #: src/Admin/FindingsScreen.php:181
-#: src/Admin/OverviewScreen.php:249
+#: src/Admin/OverviewScreen.php:292
 #, php-format
 msgid "%d day"
 msgid_plural "%d days"
@@ -2371,7 +2392,7 @@ msgid "Snapshots"
 msgstr ""
 
 #: src/Admin/HandoverScreen.php:52
-#: src/Admin/SettingsScreen.php:299
+#: src/Admin/SettingsScreen.php:304
 msgid "Export"
 msgstr ""
 
@@ -2450,13 +2471,13 @@ msgstr ""
 
 #: src/Admin/HistoryScreen.php:261
 #: src/Admin/HistoryScreen.php:284
-#: src/Admin/OverviewScreen.php:245
+#: src/Admin/OverviewScreen.php:288
 #: src/Admin/RestoreTestView.php:84
 #: src/Admin/SnapshotView.php:298
 #: src/Domain/Kinds.php:481
 #: src/Export/Render/PrintPage.php:144
 #: src/Export/Sections.php:381
-#: src/Handover/SnapshotService.php:230
+#: src/Handover/SnapshotService.php:232
 #: src/Privacy/PersonalData.php:416
 msgid "Date"
 msgstr ""
@@ -2545,7 +2566,7 @@ msgid "Inventory"
 msgstr ""
 
 #: src/Admin/InventoryScreen.php:42
-#: src/Admin/OverviewScreen.php:346
+#: src/Admin/OverviewScreen.php:389
 #: src/Admin/SettingsScreen.php:99
 #: src/Export/Profiles.php:35
 msgid "Stack"
@@ -2612,177 +2633,413 @@ msgstr ""
 msgid "You do not have permission to change the Passport."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:41
+#: src/Admin/OffboardView.php:53
+#: src/Admin/PeopleView.php:169
+msgid "You do not have permission to edit people."
+msgstr ""
+
+#: src/Admin/OffboardView.php:57
+#: src/Admin/PeopleView.php:173
+#: src/Admin/PeopleView.php:237
+msgid "That person was not found."
+msgstr ""
+
+#: src/Admin/OffboardView.php:57
+#: src/Admin/OffboardView.php:70
+#: src/Admin/PeopleView.php:173
+#: src/Admin/RegisterView.php:219
+msgid "Back to the list"
+msgstr ""
+
+#. translators: %s: name of the person.
+#: src/Admin/OffboardView.php:65
+#, php-format
+msgid "Leaver checklist: %s"
+msgstr ""
+
+#: src/Admin/OffboardView.php:69
+msgid "Use this list when the person stops working on the site. Passport changes nothing by itself, and the ticks on this page are not saved."
+msgstr ""
+
+#: src/Admin/OffboardView.php:70
+msgid "Print this list"
+msgstr ""
+
+#: src/Admin/OffboardView.php:111
+msgid "1. Systems where they have access"
+msgstr ""
+
+#: src/Admin/OffboardView.php:123
+msgid "A system marked Sensitive. Ask someone who may see it to take this person off."
+msgstr ""
+
+#. translators: %s: the system, its address and the access level.
+#: src/Admin/OffboardView.php:135
+#, php-format
+msgid "Remove their access: %s"
+msgstr ""
+
+#. translators: %s: where the credentials are kept.
+#: src/Admin/OffboardView.php:141
+#, php-format
+msgid "(credentials are kept in: %s)"
+msgstr ""
+
+#: src/Admin/OffboardView.php:145
+msgid "Open the entry"
+msgstr ""
+
+#: src/Admin/OffboardView.php:149
+msgid "The access register does not name this person. If they have access that is not listed there, add it first, then remove it."
+msgstr ""
+
+#: src/Admin/OffboardView.php:160
+msgid "2. Their WordPress account"
+msgstr ""
+
+#: src/Admin/OffboardView.php:162
+msgid "Ask a site administrator to check whether this person has a WordPress account and to remove or demote it."
+msgstr ""
+
+#: src/Admin/OffboardView.php:168
+msgid "No WordPress account has the email address in this person's entry. They may use another address: check the Users screen."
+msgstr ""
+
+#: src/Admin/OffboardView.php:168
+msgid "Open Users"
+msgstr ""
+
+#. translators: 1: user name, 2: roles, 3: number of posts.
+#: src/Admin/OffboardView.php:180
+#, php-format
+msgid "Remove or demote the account \"%1$s\" (role: %2$s). It has %3$d published posts to hand to someone else."
+msgstr ""
+
+#: src/Admin/OffboardView.php:182
+msgid "none"
+msgstr ""
+
+#: src/Admin/OffboardView.php:186
+msgid "Open the account"
+msgstr ""
+
+#: src/Admin/OffboardView.php:188
+msgid "End their active sessions and revoke any application passwords."
+msgstr ""
+
+#: src/Admin/OffboardView.php:198
+msgid "3. Assets they hold, pay for or administer"
+msgstr ""
+
+#: src/Admin/OffboardView.php:200
+msgid "account holder"
+msgstr ""
+
+#: src/Admin/OffboardView.php:201
+msgid "payer"
+msgstr ""
+
+#: src/Admin/OffboardView.php:202
+msgid "administrator"
+msgstr ""
+
+#: src/Admin/OffboardView.php:210
+msgid "A record marked Sensitive. Ask someone who may see it to move it to another person."
+msgstr ""
+
+#. translators: 1: record title, 2: kind of record, 3: how the person is tied to it.
+#: src/Admin/OffboardView.php:218
+#, php-format
+msgid "Name someone else for %1$s (%2$s), where this person is the %3$s"
+msgstr ""
+
+#: src/Admin/OffboardView.php:224
+msgid "Open the record"
+msgstr ""
+
+#: src/Admin/OffboardView.php:229
+msgid "No record names this person as holder, payer or administrator."
+msgstr ""
+
+#: src/Admin/OffboardView.php:240
+msgid "4. Roles they hold"
+msgstr ""
+
+#: src/Admin/OffboardView.php:244
+msgid "The person holds no role in the directory."
+msgstr ""
+
+#. translators: %s: name of a role, for example "Emergency contact".
+#: src/Admin/OffboardView.php:252
+#, php-format
+msgid "Name someone else as: %s"
+msgstr ""
+
+#: src/Admin/OffboardView.php:256
+msgid "Open the roles"
+msgstr ""
+
+#: src/Admin/OffboardView.php:269
+msgid "5. In the Passport"
+msgstr ""
+
+#: src/Admin/OffboardView.php:274
+msgid "Fill in \"Left on\" in their entry, so the Passport lists them as Former."
+msgstr ""
+
+#. translators: %s: date.
+#: src/Admin/OffboardView.php:277
+#, php-format
+msgid "\"Left on\" is already set to %s."
+msgstr ""
+
+#: src/Admin/OffboardView.php:281
+msgid "Open their entry"
+msgstr ""
+
+#: src/Admin/OffboardView.php:283
+msgid "When the entry is no longer needed for the record, erase their personal details from WordPress Tools, Erase Personal Data. The roles and the records they were named on stay."
+msgstr ""
+
+#: src/Admin/OffboardView.php:283
+msgid "Open the eraser"
+msgstr ""
+
+#: src/Admin/OffboardView.php:291
+msgid "6. Things this list cannot know"
+msgstr ""
+
+#: src/Admin/OffboardView.php:294
+msgid "Shared logins they knew: change the password and update where it is kept."
+msgstr ""
+
+#: src/Admin/OffboardView.php:295
+msgid "Email accounts, forwarding rules and mailing lists that use a site address."
+msgstr ""
+
+#: src/Admin/OffboardView.php:296
+msgid "Keys and tokens they created: SSH keys, deploy keys, API keys and webhooks."
+msgstr ""
+
+#: src/Admin/OffboardView.php:297
+msgid "Two-step sign-in devices or recovery addresses that belong to them."
+msgstr ""
+
+#: src/Admin/OffboardView.php:298
+msgid "Tools in their own name: analytics, search console, tag manager, payment and advertising accounts."
+msgstr ""
+
+#: src/Admin/OverviewScreen.php:43
 msgid "You do not have permission to view Passport."
 msgstr ""
 
 #. translators: %s: client name.
-#: src/Admin/OverviewScreen.php:59
+#: src/Admin/OverviewScreen.php:61
 #, php-format
 msgid "Prepared for %s"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:70
+#: src/Admin/OverviewScreen.php:72
 msgid "No scan has finished yet. Press Scan now to record this site."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:101
+#: src/Admin/OverviewScreen.php:98
+msgid "Since the handover"
+msgstr ""
+
+#. translators: %s: name of the snapshot.
+#: src/Admin/OverviewScreen.php:103
+#, php-format
+msgid "No record has changed since the snapshot \"%s\" was acknowledged."
+msgstr ""
+
+#. translators: 1: number of records, 2: name of the snapshot, 3: date it was acknowledged.
+#: src/Admin/OverviewScreen.php:111
+#, php-format
+msgid "%1$d record differs from the snapshot \"%2$s\", acknowledged on %3$s."
+msgid_plural "%1$d records differ from the snapshot \"%2$s\", acknowledged on %3$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/OverviewScreen.php:114
+msgid "an unrecorded date"
+msgstr ""
+
+#. translators: 1: records added, 2: records removed, 3: records changed.
+#: src/Admin/OverviewScreen.php:119
+#, php-format
+msgid "Added: %1$d. Removed: %2$d. Changed: %3$d."
+msgstr ""
+
+#: src/Admin/OverviewScreen.php:124
+msgid "The notes for the successor have changed too."
+msgstr ""
+
+#: src/Admin/OverviewScreen.php:126
+msgid "Records marked Sensitive are not counted here."
+msgstr ""
+
+#: src/Admin/OverviewScreen.php:126
+msgid "See the differences"
+msgstr ""
+
+#: src/Admin/OverviewScreen.php:144
 msgid "Finish setting up"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:104
+#: src/Admin/OverviewScreen.php:147
 #: src/Admin/SetupScreen.php:110
 msgid "Skipped"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:104
+#: src/Admin/OverviewScreen.php:147
 #: src/Admin/SetupScreen.php:111
 #: src/Domain/Kinds.php:126
 msgid "To do"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:116
+#: src/Admin/OverviewScreen.php:159
 #: src/Admin/SiteHealth.php:166
 #: src/Export/Sections.php:177
 msgid "Last scan"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:118
+#: src/Admin/OverviewScreen.php:161
 msgid "This site has not been scanned yet."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:123
+#: src/Admin/OverviewScreen.php:166
 msgid "Running"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:124
+#: src/Admin/OverviewScreen.php:167
 msgid "Did not finish"
 msgstr ""
 
 #. translators: %s: list of scan sections.
-#: src/Admin/OverviewScreen.php:132
+#: src/Admin/OverviewScreen.php:175
 #, php-format
 msgid "Not available on this server: %s"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:142
+#: src/Admin/OverviewScreen.php:185
 #: src/Admin/SetupScreen.php:139
 msgid "Scan now"
 msgstr ""
 
 #. translators: %s: date and time.
-#: src/Admin/OverviewScreen.php:169
+#: src/Admin/OverviewScreen.php:212
 #, php-format
 msgid "Rules last checked %s."
 msgstr ""
 
 #. translators: %d: number of rules.
-#: src/Admin/OverviewScreen.php:178
+#: src/Admin/OverviewScreen.php:221
 #, php-format
 msgid "%d rule could not be checked because the data it needs is missing. It is not counted as passed."
 msgid_plural "%d rules could not be checked because the data they need is missing. They are not counted as passed."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/OverviewScreen.php:184
+#: src/Admin/OverviewScreen.php:227
 msgid "No open findings on the data the rules could read."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:187
+#: src/Admin/OverviewScreen.php:230
 msgid "Most urgent"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:191
+#: src/Admin/OverviewScreen.php:234
 msgid "All findings"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:199
+#: src/Admin/OverviewScreen.php:242
 #: src/Export/Sections.php:175
 msgid "Ready for a handover"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:201
+#: src/Admin/OverviewScreen.php:244
 msgid "Nothing can be checked yet. Scan the site and add records first."
 msgstr ""
 
 #. translators: 1: number of checks that are clear, 2: number of checks.
-#: src/Admin/OverviewScreen.php:207
+#: src/Admin/OverviewScreen.php:250
 #, php-format
 msgid "%1$d of %2$d handover checks are clear."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:214
+#: src/Admin/OverviewScreen.php:257
 msgid "Every handover check the rules can run is clear."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:240
+#: src/Admin/OverviewScreen.php:283
 msgid "Next 90 days"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:242
+#: src/Admin/OverviewScreen.php:285
 msgid "No renewal or expiry date is entered for the next 90 days."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:245
+#: src/Admin/OverviewScreen.php:288
 msgid "In"
 msgstr ""
 
 #. translators: %d: number of days.
-#: src/Admin/OverviewScreen.php:249
+#: src/Admin/OverviewScreen.php:292
 msgid "Today"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:263
+#: src/Admin/OverviewScreen.php:306
 msgid "Reminders are switched off in Settings, so no date is emailed."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:265
+#: src/Admin/OverviewScreen.php:308
 msgid "Reminders are paused on this address until the question at the top of the page is answered."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:268
+#: src/Admin/OverviewScreen.php:311
 msgid "The last reminder email or test email could not be sent. Reminders depend on working site email. Send a test email in Settings, Reminders, to check."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:273
+#: src/Admin/OverviewScreen.php:316
 #: src/Admin/RegisterView.php:280
 #: src/Admin/SettingsScreen.php:65
-#: src/Admin/SettingsScreen.php:242
+#: src/Admin/SettingsScreen.php:247
 msgid "Reminders"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:278
+#: src/Admin/OverviewScreen.php:321
 msgid "Open reminder settings"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:293
+#: src/Admin/OverviewScreen.php:336
 msgid "How current the records are"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:295
+#: src/Admin/OverviewScreen.php:338
 msgid "No records have been entered yet."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:302
+#: src/Admin/OverviewScreen.php:345
 msgid "Verified means someone confirmed the record is still right within its review period. Press Verify on a record after checking it."
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:312
+#: src/Admin/OverviewScreen.php:355
 #: src/Admin/SafetyScreen.php:45
 msgid "Safety nets"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:315
+#: src/Admin/OverviewScreen.php:358
 #: src/Export/Sections.php:522
 msgid "Last restore test that passed"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:315
+#: src/Admin/OverviewScreen.php:358
 #: src/Admin/RestoreTestView.php:60
 msgid "None logged"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:316
+#: src/Admin/OverviewScreen.php:359
 #: src/Admin/RunbookView.php:103
 #: src/Admin/RunbookView.php:248
 #: src/Admin/SafetyScreen.php:55
@@ -2792,72 +3049,72 @@ msgid "Runbooks"
 msgstr ""
 
 #. translators: 1: number published, 2: number of runbooks.
-#: src/Admin/OverviewScreen.php:318
+#: src/Admin/OverviewScreen.php:361
 #, php-format
 msgid "%1$d published of %2$d"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:324
+#: src/Admin/OverviewScreen.php:367
 msgid "Open Safety nets"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:349
+#: src/Admin/OverviewScreen.php:392
 #: src/Admin/StackView.php:106
 msgid "WordPress"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:350
+#: src/Admin/OverviewScreen.php:393
 #: src/Admin/StackView.php:125
 msgid "PHP"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:351
+#: src/Admin/OverviewScreen.php:394
 #: src/Admin/StackView.php:135
 #: src/Services/RestoreTestService.php:45
 msgid "Database"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:352
+#: src/Admin/OverviewScreen.php:395
 #: src/Admin/StackView.php:136
 msgid "Web server"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:353
+#: src/Admin/OverviewScreen.php:396
 #: src/Domain/Kinds.php:287
 #: src/Domain/Kinds.php:297
 msgid "Environment"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:355
+#: src/Admin/OverviewScreen.php:398
 #: src/Admin/StackView.php:116
 msgid "HTTPS"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:356
+#: src/Admin/OverviewScreen.php:399
 msgid "Active theme"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:357
+#: src/Admin/OverviewScreen.php:400
 #: src/Admin/StackView.php:51
 #: src/Export/Sections.php:273
 msgid "Plugins"
 msgstr ""
 
 #. translators: 1: number active, 2: number installed.
-#: src/Admin/OverviewScreen.php:359
+#: src/Admin/OverviewScreen.php:402
 #, php-format
 msgid "%1$d active of %2$d installed"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:363
+#: src/Admin/OverviewScreen.php:406
 msgid "Plugin updates waiting"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:375
+#: src/Admin/OverviewScreen.php:418
 msgid "Recent changes"
 msgstr ""
 
-#: src/Admin/OverviewScreen.php:377
+#: src/Admin/OverviewScreen.php:420
 msgid "Nothing has changed since the first scan."
 msgstr ""
 
@@ -2944,11 +3201,11 @@ msgid "Not set"
 msgstr ""
 
 #: src/Admin/PeopleScreen.php:146
-#: src/Admin/PeopleView.php:101
+#: src/Admin/PeopleView.php:103
 #: src/Admin/RegisterView.php:162
 #: src/Admin/RunbookView.php:292
 #: src/Admin/RunbookView.php:362
-#: src/Admin/SettingsScreen.php:298
+#: src/Admin/SettingsScreen.php:303
 msgid "Edit"
 msgstr ""
 
@@ -2990,8 +3247,8 @@ msgid "Found by the last scan. Compare this list with the access entries above a
 msgstr ""
 
 #: src/Admin/PeopleScreen.php:199
-#: src/Admin/PeopleView.php:79
-#: src/Admin/PeopleView.php:202
+#: src/Admin/PeopleView.php:81
+#: src/Admin/PeopleView.php:207
 #: src/Domain/Kinds.php:586
 #: src/Export/Sections.php:205
 #: src/Export/Sections.php:653
@@ -3014,24 +3271,24 @@ msgstr ""
 msgid "A user named \"admin\" exists. This is a common target for guessing attacks; consider renaming it."
 msgstr ""
 
-#: src/Admin/PeopleView.php:62
+#: src/Admin/PeopleView.php:64
 msgid "People and organisations"
 msgstr ""
 
-#: src/Admin/PeopleView.php:64
-#: src/Admin/PeopleView.php:175
+#: src/Admin/PeopleView.php:66
+#: src/Admin/PeopleView.php:180
 msgid "Add a person"
 msgstr ""
 
-#: src/Admin/PeopleView.php:68
+#: src/Admin/PeopleView.php:70
 msgid "List the client, the agency team, the host and the vendors, so a new person knows who to call."
 msgstr ""
 
-#: src/Admin/PeopleView.php:70
+#: src/Admin/PeopleView.php:72
 msgid "Add the first person"
 msgstr ""
 
-#: src/Admin/PeopleView.php:79
+#: src/Admin/PeopleView.php:81
 #: src/Admin/SnapshotView.php:152
 #: src/Export/Sections.php:202
 #: src/Export/Sections.php:649
@@ -3041,29 +3298,29 @@ msgstr ""
 msgid "Organisation"
 msgstr ""
 
-#: src/Admin/PeopleView.php:79
-#: src/Admin/PeopleView.php:125
-#: src/Admin/PeopleView.php:191
+#: src/Admin/PeopleView.php:81
+#: src/Admin/PeopleView.php:130
+#: src/Admin/PeopleView.php:196
 #: src/Export/Sections.php:204
 #: src/Export/Sections.php:650
 #: src/Privacy/PersonalData.php:337
 msgid "Roles"
 msgstr ""
 
-#: src/Admin/PeopleView.php:79
-#: src/Admin/PeopleView.php:210
+#: src/Admin/PeopleView.php:81
+#: src/Admin/PeopleView.php:215
 #: src/Admin/RegisterView.php:122
 #: src/Admin/RegisterView.php:300
 msgid "Review"
 msgstr ""
 
 #. translators: %s: date.
-#: src/Admin/PeopleView.php:92
+#: src/Admin/PeopleView.php:94
 #, php-format
 msgid "Left %s"
 msgstr ""
 
-#: src/Admin/PeopleView.php:95
+#: src/Admin/PeopleView.php:97
 #: src/Admin/StackView.php:170
 #: src/Admin/StackView.php:217
 #: src/Admin/StackView.php:274
@@ -3073,64 +3330,54 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
-#: src/Admin/PeopleView.php:100
+#: src/Admin/PeopleView.php:102
 #: src/Admin/RegisterView.php:437
 #: src/Admin/SnapshotView.php:134
 msgid "Verify"
 msgstr ""
 
-#: src/Admin/PeopleView.php:126
+#: src/Admin/PeopleView.php:105
+msgid "Offboard"
+msgstr ""
+
+#: src/Admin/PeopleView.php:131
 msgid "Each role can have several people. Emergency contacts are called in the order shown."
 msgstr ""
 
-#: src/Admin/PeopleView.php:132
+#: src/Admin/PeopleView.php:137
 msgid "Nobody yet"
 msgstr ""
 
-#: src/Admin/PeopleView.php:138
+#: src/Admin/PeopleView.php:143
 msgid "Move up"
 msgstr ""
 
-#: src/Admin/PeopleView.php:138
+#: src/Admin/PeopleView.php:143
 msgid "Move down"
 msgstr ""
 
-#: src/Admin/PeopleView.php:164
-msgid "You do not have permission to edit people."
-msgstr ""
-
-#: src/Admin/PeopleView.php:168
-#: src/Admin/PeopleView.php:232
-msgid "That person was not found."
-msgstr ""
-
-#: src/Admin/PeopleView.php:168
-#: src/Admin/RegisterView.php:219
-msgid "Back to the list"
-msgstr ""
-
-#: src/Admin/PeopleView.php:177
+#: src/Admin/PeopleView.php:182
 msgid "The person was not saved. Fix the fields below and try again."
 msgstr ""
 
-#: src/Admin/PeopleView.php:182
+#: src/Admin/PeopleView.php:187
 #: src/Admin/RegisterView.php:268
 msgid "Details"
 msgstr ""
 
-#: src/Admin/PeopleView.php:198
+#: src/Admin/PeopleView.php:203
 msgid "May appear in the Client pack and the Emergency sheet"
 msgstr ""
 
-#: src/Admin/PeopleView.php:201
-#: src/Admin/SettingsScreen.php:258
+#: src/Admin/PeopleView.php:206
+#: src/Admin/SettingsScreen.php:263
 #: src/Admin/SnapshotView.php:153
 #: src/Domain/Kinds.php:233
 #: src/Privacy/PersonalData.php:415
 msgid "Role"
 msgstr ""
 
-#: src/Admin/PeopleView.php:203
+#: src/Admin/PeopleView.php:208
 #: src/Export/Sections.php:206
 #: src/Export/Sections.php:651
 #: src/Handover/SnapshotService.php:45
@@ -3139,43 +3386,43 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: src/Admin/PeopleView.php:213
+#: src/Admin/PeopleView.php:218
 #: src/Admin/RegisterView.php:303
 #: src/Admin/RunbookView.php:544
 msgid "Review every (days)"
 msgstr ""
 
-#: src/Admin/PeopleView.php:213
+#: src/Admin/PeopleView.php:218
 #: src/Admin/RegisterView.php:303
 msgid "Leave empty to use the interval from Settings."
 msgstr ""
 
-#: src/Admin/PeopleView.php:217
+#: src/Admin/PeopleView.php:222
 #: src/Admin/RegisterView.php:309
 msgid "Save"
 msgstr ""
 
-#: src/Admin/PeopleView.php:217
+#: src/Admin/PeopleView.php:222
 #: src/Admin/RegisterView.php:309
 #: src/Admin/SensitiveConfirm.php:111
 msgid "Cancel"
 msgstr ""
 
-#: src/Admin/PeopleView.php:228
+#: src/Admin/PeopleView.php:233
 msgid "You do not have permission to delete people."
 msgstr ""
 
-#: src/Admin/PeopleView.php:235
+#: src/Admin/PeopleView.php:240
 msgid "Delete this person?"
 msgstr ""
 
 #. translators: %s: person's name.
-#: src/Admin/PeopleView.php:238
+#: src/Admin/PeopleView.php:243
 #, php-format
 msgid "\"%s\" is hidden for 30 days. You can undo this until then. Records that list this person keep working."
 msgstr ""
 
-#: src/Admin/PeopleView.php:243
+#: src/Admin/PeopleView.php:248
 msgid "Keep them"
 msgstr ""
 
@@ -4028,7 +4275,7 @@ msgid "Left out unless you tick them. You will be asked to confirm before they a
 msgstr ""
 
 #: src/Admin/SettingsScreen.php:48
-#: src/Admin/SettingsScreen.php:432
+#: src/Admin/SettingsScreen.php:438
 msgid "Settings"
 msgstr ""
 
@@ -4189,151 +4436,167 @@ msgstr ""
 msgid "Access entries should be reviewed every (days)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:222
+#: src/Admin/SettingsScreen.php:215
+msgid "Where notices appear"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:216
+msgid "Findings and dates show on the Passport screens. Passport never puts a banner on every admin page."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:217
+msgid "Also show a short summary on the WordPress Dashboard"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:217
+msgid "The next five dates and the number of findings that need fixing, for people who may view the Passport. Off by default."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:227
 msgid "These numbers decide when a finding opens. Changing them re-checks the rules straight away. Individual rules can be switched off from the Findings screen."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:223
+#: src/Admin/SettingsScreen.php:228
 msgid "When a finding opens"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:229
+#: src/Admin/SettingsScreen.php:234
 msgid "Recovery targets"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:230
+#: src/Admin/SettingsScreen.php:235
 msgid "Leave blank if nobody has agreed a target. Restore tests are compared with these numbers when they are set."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:231
+#: src/Admin/SettingsScreen.php:236
 msgid "Most data that may be lost (hours)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:232
+#: src/Admin/SettingsScreen.php:237
 msgid "Longest the site may be down (hours)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:243
+#: src/Admin/SettingsScreen.php:248
 msgid "Send reminder e-mails"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:243
+#: src/Admin/SettingsScreen.php:248
 msgid "One e-mail per date at each lead time below. Nothing is sent once the date is renewed or the record is removed."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:244
+#: src/Admin/SettingsScreen.php:249
 msgid "Lead times (days before the date, comma separated)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:245
+#: src/Admin/SettingsScreen.php:250
 msgid "Who receives them (one address per line)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:245
+#: src/Admin/SettingsScreen.php:250
 msgid "The account holder and payer on each record are added automatically when they have an address. With nobody listed and no holder or payer address, reminders go to the site administration email."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:246
+#: src/Admin/SettingsScreen.php:251
 msgid "Also send a weekly summary on Mondays at 08:00"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:246
+#: src/Admin/SettingsScreen.php:251
 msgid "A short list of what needs attention. Off by default."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:257
+#: src/Admin/SettingsScreen.php:262
 msgid "Administrators always have all five capabilities. Tick what other roles may do. No new role is created."
 msgstr ""
 
 #. translators: 1: role name, 2: capability name.
-#: src/Admin/SettingsScreen.php:274
+#: src/Admin/SettingsScreen.php:279
 #, php-format
 msgid "%1$s: %2$s"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:296
+#: src/Admin/SettingsScreen.php:301
 msgid "View"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:297
+#: src/Admin/SettingsScreen.php:302
 msgid "View Sensitive"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:300
+#: src/Admin/SettingsScreen.php:305
 msgid "Configure"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:312
+#: src/Admin/SettingsScreen.php:317
 msgid "Personal data held"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:316
+#: src/Admin/SettingsScreen.php:321
 msgid "Nothing is sent to ESTASOFT TECHNOLOGIES or to any other outside party. Scans read local data only."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:317
+#: src/Admin/SettingsScreen.php:322
 msgid "Every record stays in this site's own database. Data leaves it only in a file someone downloads, or in a reminder or digest email you have switched on."
 msgstr ""
 
 #. translators: 1: link to Export Personal Data, 2: link to Erase Personal Data.
-#: src/Admin/SettingsScreen.php:321
+#: src/Admin/SettingsScreen.php:326
 #, php-format
 msgid "To answer a request from a person, use %1$s or %2$s. Passport takes part in both: the export lists what is held about an email address, and the erase replaces the person with \"Former contact\" and keeps their place in the roles."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:322
+#: src/Admin/SettingsScreen.php:327
 msgid "Export Personal Data"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:323
+#: src/Admin/SettingsScreen.php:328
 msgid "Erase Personal Data"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:328
+#: src/Admin/SettingsScreen.php:333
 msgid "How long things are kept"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:329
+#: src/Admin/SettingsScreen.php:334
 msgid "Change log (months)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:330
+#: src/Admin/SettingsScreen.php:335
 msgid "Deleted records are kept for (days)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:330
+#: src/Admin/SettingsScreen.php:335
 msgid "After this they are removed for good."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:333
+#: src/Admin/SettingsScreen.php:338
 msgid "When the plugin is deleted"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:334
+#: src/Admin/SettingsScreen.php:339
 msgid "Delete everything when the plugin is deleted"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:334
+#: src/Admin/SettingsScreen.php:339
 msgid "Off by default. When off, deleting the plugin keeps the records, so a client record is never lost by accident."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:362
+#: src/Admin/SettingsScreen.php:367
 msgid "finding thresholds"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:380
+#: src/Admin/SettingsScreen.php:385
 msgid "reminders"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:394
+#: src/Admin/SettingsScreen.php:399
 msgid "who can do what"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:405
+#: src/Admin/SettingsScreen.php:410
 msgid "privacy and data"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:426
+#: src/Admin/SettingsScreen.php:432
 msgid "review intervals and scan"
 msgstr ""
 
@@ -4750,7 +5013,7 @@ msgstr ""
 
 #: src/Admin/SnapshotView.php:155
 #: src/Admin/SnapshotView.php:299
-#: src/Handover/SnapshotService.php:234
+#: src/Handover/SnapshotService.php:236
 #: src/Privacy/PersonalData.php:417
 msgid "How it was received"
 msgstr ""
@@ -4792,7 +5055,7 @@ msgid "Make snapshot"
 msgstr ""
 
 #: src/Admin/SnapshotView.php:300
-#: src/Handover/SnapshotService.php:247
+#: src/Handover/SnapshotService.php:249
 msgid "Acknowledgement"
 msgstr ""
 
@@ -5374,8 +5637,8 @@ msgstr ""
 
 #: src/Admin/View.php:157
 #: src/Export/ExportService.php:109
-#: src/Handover/SnapshotService.php:220
-#: src/Handover/SnapshotService.php:264
+#: src/Handover/SnapshotService.php:222
+#: src/Handover/SnapshotService.php:266
 msgid "That snapshot does not exist."
 msgstr ""
 
@@ -5499,7 +5762,7 @@ msgid "Use a whole number."
 msgstr ""
 
 #: src/Domain/Fields.php:67
-#: src/Handover/SnapshotService.php:234
+#: src/Handover/SnapshotService.php:236
 #: src/Handover/StatusService.php:42
 #: src/Setup/SetupService.php:180
 #: src/Setup/SetupService.php:183
@@ -7711,15 +7974,15 @@ msgstr ""
 msgid "Keep the note under 2000 characters."
 msgstr ""
 
-#: src/Handover/SnapshotService.php:183
+#: src/Handover/SnapshotService.php:185
 msgid "The pack this snapshot was made with no longer exists, so it cannot be compared with the live Passport."
 msgstr ""
 
-#: src/Handover/SnapshotService.php:225
+#: src/Handover/SnapshotService.php:227
 msgid "Say who received the handover."
 msgstr ""
 
-#: src/Handover/SnapshotService.php:230
+#: src/Handover/SnapshotService.php:232
 msgid "Use a real date that is not in the future."
 msgstr ""
 

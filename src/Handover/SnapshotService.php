@@ -165,13 +165,15 @@ final class SnapshotService {
 	/**
 	 * Compare a snapshot with another snapshot or with the live Passport (HND-6).
 	 *
-	 * @param int           $a       Snapshot ID.
-	 * @param int|string    $b       Snapshot ID, or "live".
-	 * @param ExportOptions $options Rights of the person.
+	 * @param int           $a            Snapshot ID.
+	 * @param int|string    $b            Snapshot ID, or "live".
+	 * @param ExportOptions $options      Rights of the person.
+	 * @param bool          $hide_sensitive Count only records that are not Sensitive, whatever the person's rights. The
+	 *                                    live Passport is then built in memory with every right and cut before anything is returned.
 	 * @return array<string, mixed>|null Null when a snapshot does not exist.
 	 * @throws ExportRefused When the live Passport cannot be built for this person.
 	 */
-	public function compare( int $a, $b, ExportOptions $options ): ?array {
+	public function compare( int $a, $b, ExportOptions $options, bool $hide_sensitive = false ): ?array {
 		$old = $this->content( $a );
 		if ( null === $old ) {
 			return null;
@@ -188,7 +190,7 @@ final class SnapshotService {
 					$ticked[] = (int) $m[1];
 				}
 			}
-			$live_options = new ExportOptions( $options->may_see_sensitive, $ticked, $options->user_id );
+			$live_options = new ExportOptions( $options->may_see_sensitive || $hide_sensitive, $ticked, $options->user_id );
 			$new          = ( new ContentBuilder( $this->plugin->secretGuard(), defined( 'ESTASOFT_HP_VERSION' ) ? (string) ESTASOFT_HP_VERSION : '' ) )->build( $profile, ( new ExportDataLoader( $this->plugin ) )->load(), $live_options );
 		} else {
 			$new = $this->content( (int) $b );
@@ -196,7 +198,7 @@ final class SnapshotService {
 				return null;
 			}
 		}
-		if ( ! $options->may_see_sensitive ) {
+		if ( ! $options->may_see_sensitive || $hide_sensitive ) {
 			$cut_old = Comparer::withoutSensitive( $old );
 			$cut_new = Comparer::withoutSensitive( $new );
 			$old     = $cut_old['content'];
