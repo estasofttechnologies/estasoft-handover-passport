@@ -27,6 +27,7 @@ use Estasoft\HandoverPassport\Scan\ScanService;
 use Estasoft\HandoverPassport\Security\SecretGuard;
 use Estasoft\HandoverPassport\Services\PeopleService;
 use Estasoft\HandoverPassport\Services\RecordService;
+use Estasoft\HandoverPassport\Services\Retention;
 use Estasoft\HandoverPassport\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
@@ -82,6 +83,7 @@ final class Plugin {
 
 		add_action( Schedule::SCAN, array( $this, 'runScheduledScan' ) );
 		add_action( Schedule::EVENT_SCAN, array( $this, 'runEventScan' ) );
+		add_action( Schedule::RETENTION, array( $this, 'runRetention' ) );
 
 		if ( is_admin() ) {
 			( new Admin( $this ) )->register();
@@ -106,6 +108,13 @@ final class Plugin {
 	 */
 	public function runEventScan(): void {
 		$this->scanService()->run( 'event' );
+	}
+
+	/**
+	 * Cron callback for the daily clean-up.
+	 */
+	public function runRetention(): void {
+		( new Retention( $this->settings(), new ItemRepository(), new PeopleRepository(), new LinkRepository(), new ChangeRepository() ) )->run();
 	}
 
 	/**

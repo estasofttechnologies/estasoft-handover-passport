@@ -146,6 +146,19 @@ class Settings {
 	}
 
 	/**
+	 * Replace one top-level setting outright, without merging (used for lists and grants).
+	 *
+	 * @param string $key   Top-level key.
+	 * @param mixed  $value New value.
+	 */
+	public function set( string $key, $value ): void {
+		$all         = $this->all();
+		$all[ $key ] = $value;
+		update_option( self::OPTION, $all, false );
+		$this->cache = $all;
+	}
+
+	/**
 	 * Forget the cached copy.
 	 */
 	public function flush(): void {

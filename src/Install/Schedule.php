@@ -65,6 +65,19 @@ final class Schedule {
 	}
 
 	/**
+	 * Move the daily scan to a new time of day, site time (Settings).
+	 *
+	 * @param string $time HH:MM.
+	 */
+	public static function rescheduleScan( string $time ): void {
+		if ( 1 !== preg_match( '/^([01]\d|2[0-3]):[0-5]\d$/', $time ) ) {
+			return;
+		}
+		wp_clear_scheduled_hook( self::SCAN );
+		wp_schedule_event( self::firstRun( $time ), 'daily', self::SCAN );
+	}
+
+	/**
 	 * Ask for one scan soon, once, after an event that changes the stack (SCN-6).
 	 *
 	 * @param int $delay Seconds from now.
