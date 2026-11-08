@@ -228,6 +228,21 @@ wp_delete_attachment( $text_att, true );
 $left = array_filter( glob( TempFiles::dir() . '/*' ) ?: array(), static fn( $p ) => ! in_array( basename( $p ), array( 'index.php', 'web.config' ), true ) );
 $check( 'no working file is left behind', array() === $left, implode( ',', $left ) );
 
+// The daily clean-up trims the log by the retention setting and removes stale files from the private folder.
+$wpdb->insert( "{$wpdb->prefix}estasoft_hp_exports", array( 'exported_at' => gmdate( 'Y-m-d H:i:s', time() - 400 * DAY_IN_SECONDS ), 'user_id' => 987654, 'profile' => 'exptest-old', 'format' => 'md', 'size' => 1, 'hash' => str_repeat( 'a', 64 ) ) );
+$wpdb->insert( "{$wpdb->prefix}estasoft_hp_exports", array( 'exported_at' => gmdate( 'Y-m-d H:i:s' ), 'user_id' => 987654, 'profile' => 'exptest-new', 'format' => 'md', 'size' => 1, 'hash' => str_repeat( 'b', 64 ) ) );
+$stale = TempFiles::create( '.tmp' );
+file_put_contents( $stale, 'x' );
+touch( $stale, time() - 3 * DAY_IN_SECONDS );
+$stale_dir = TempFiles::createDir();
+file_put_contents( $stale_dir . '/inner.txt', 'x' );
+touch( $stale_dir, time() - 3 * DAY_IN_SECONDS );
+$plugin->runRetention();
+$remaining = array_column( $wpdb->get_results( "SELECT profile FROM {$wpdb->prefix}estasoft_hp_exports WHERE profile LIKE 'exptest-%'", ARRAY_A ), 'profile' ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
+$check( 'clean-up removes log rows older than the retention window and keeps newer ones', ! in_array( 'exptest-old', $remaining, true ) && in_array( 'exptest-new', $remaining, true ), implode( ',', $remaining ) );
+$check( 'clean-up removes a stale file and a stale folder from the private folder', ! file_exists( $stale ) && ! is_dir( $stale_dir ) );
+$wpdb->query( "DELETE FROM {$wpdb->prefix}estasoft_hp_exports WHERE profile LIKE 'exptest-%'" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
+
 $cleanup();
 echo "\n{$checks} checks, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );

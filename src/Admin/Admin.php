@@ -67,6 +67,7 @@ final class Admin {
 		( new FindingsScreen( $this->plugin ) )->register();
 		( new SettingsScreen( $this->plugin ) )->register();
 		( new SafetyScreen( $this->plugin ) )->register();
+		( new HandoverScreen( $this->plugin ) )->register();
 	}
 
 	/**
@@ -97,6 +98,7 @@ final class Admin {
 			new InventoryScreen( $this->plugin ),
 			new SafetyScreen( $this->plugin ),
 			new PeopleScreen( $this->plugin ),
+			new HandoverScreen( $this->plugin ),
 			new HistoryScreen( $this->plugin ),
 			new FindingsScreen( $this->plugin ),
 			new SettingsScreen( $this->plugin ),

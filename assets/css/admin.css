@@ -381,3 +381,65 @@
 .estasoft-hp .estasoft-hp-summary-counts a {
 	text-decoration: none;
 }
+
+/* Handover screen. */
+.estasoft-hp .estasoft-hp-badge--check-done,
+.estasoft-hp .estasoft-hp-badge--ok,
+.estasoft-hp .estasoft-hp-badge--status-active {
+	background: #edfaef;
+	border-color: #00a32a;
+	color: #0a5a1c;
+}
+.estasoft-hp .estasoft-hp-badge--check-not_done,
+.estasoft-hp .estasoft-hp-badge--status-draft,
+.estasoft-hp .estasoft-hp-badge--unknown {
+	background: #fcf9e8;
+	border-color: #dba617;
+	color: #6e5700;
+}
+.estasoft-hp .estasoft-hp-badge--bad {
+	background: #fcf0f1;
+	border-color: #d63638;
+	color: #8a2424;
+}
+.estasoft-hp .estasoft-hp-badge--check-na,
+.estasoft-hp .estasoft-hp-badge--status-handed_over {
+	background: #f0f6fc;
+	border-color: #72aee6;
+	color: #1d2327;
+}
+.estasoft-hp .estasoft-hp-snapshot__actions {
+	margin-top: 12px;
+}
+.estasoft-hp .estasoft-hp-snapshot__actions details {
+	margin: 10px 0;
+}
+.estasoft-hp .estasoft-hp-snapshot__actions summary {
+	cursor: pointer;
+}
+.estasoft-hp .estasoft-hp-snapshot dd {
+	overflow-wrap: anywhere;
+}
+.estasoft-hp .estasoft-hp-confirm {
+	max-width: 760px;
+	padding: 4px 16px 12px;
+}
+.estasoft-hp fieldset {
+	margin: 12px 0;
+	padding: 0;
+	border: 0;
+}
+.estasoft-hp fieldset legend {
+	padding: 0;
+	font-weight: 600;
+}
+.estasoft-hp .estasoft-hp-sensitive {
+	max-width: 760px;
+	padding: 8px 12px;
+	border: 1px solid #dba617;
+	background: #fcf9e8;
+}
+.estasoft-hp .estasoft-hp-pre {
+	white-space: pre-wrap;
+	font-family: inherit;
+}

@@ -150,7 +150,7 @@ $records->delete( (int) $sensitive['id'] );
 global $wpdb;
 $table = Tables::all()['items'];
 $wpdb->update( $table, array( 'deleted_at' => gmdate( 'Y-m-d H:i:s', time() - 3 * DAY_IN_SECONDS ) ), array( 'id' => (int) $sensitive['id'] ) );
-( new Estasoft\HandoverPassport\Services\Retention( $plugin->settings(), $records->items(), $plugin->people()->repo(), $records->links(), $plugin->changeLog()->repo(), new Estasoft\HandoverPassport\Data\FindingRepository(), new Estasoft\HandoverPassport\Data\ReminderRepository() ) )->run();
+( new Estasoft\HandoverPassport\Services\Retention( $plugin->settings(), $records->items(), $plugin->people()->repo(), $records->links(), $plugin->changeLog()->repo(), new Estasoft\HandoverPassport\Data\FindingRepository(), new Estasoft\HandoverPassport\Data\ReminderRepository(), new Estasoft\HandoverPassport\Data\ExportRepository() ) )->run();
 $check( 'retention purges a record deleted before the window', null === $records->items()->find( (int) $sensitive['id'] ) );
 $check( 'retention keeps live records', null !== $records->get( (int) $lic['id'], true ) );
 $plugin->settings()->update( array( 'retention' => array( 'deleted_days' => 30 ) ) );

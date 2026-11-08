@@ -30,10 +30,12 @@ use Estasoft\HandoverPassport\Data\SnapshotRepository;
 use Estasoft\HandoverPassport\Data\ScanRepository;
 use Estasoft\HandoverPassport\Data\TestRepository;
 use Estasoft\HandoverPassport\Export\ExportService;
+use Estasoft\HandoverPassport\Export\PackCopies;
 use Estasoft\HandoverPassport\Findings\FindingService;
 use Estasoft\HandoverPassport\Handover\HandoverChecklist;
 use Estasoft\HandoverPassport\Handover\SnapshotService;
 use Estasoft\HandoverPassport\Handover\StatusService;
+use Estasoft\HandoverPassport\Handover\SuccessorNotes;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Install\Upgrader;
 use Estasoft\HandoverPassport\Passport\Passport;
@@ -284,6 +286,20 @@ final class Plugin {
 	 */
 	public function snapshots(): SnapshotService {
 		return $this->shared( 'snapshots', fn(): SnapshotService => new SnapshotService( $this, new SnapshotRepository() ) );
+	}
+
+	/**
+	 * The notes to the successor.
+	 */
+	public function successorNotes(): SuccessorNotes {
+		return $this->shared( 'successor_notes', fn(): SuccessorNotes => new SuccessorNotes( $this ) );
+	}
+
+	/**
+	 * Copies of export profiles.
+	 */
+	public function packCopies(): PackCopies {
+		return $this->shared( 'pack_copies', fn(): PackCopies => new PackCopies( $this ) );
 	}
 
 	/**

@@ -42,12 +42,13 @@ final class View {
 	 * Show the result of the last action once, announced to screen readers (ADM-4).
 	 */
 	public static function flash(): void {
+		self::flashSaid();
 		$key = Request::key( 'estasoft_hp_notice' ); // The value only picks a fixed message.
 		$map = self::messages();
 		if ( '' === $key || ! isset( $map[ $key ] ) ) {
 			return;
 		}
-		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'scan_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid', 'renew_invalid', 'mail_failed', 'mail_invalid', 'mail_wait' ), true ) ? 'notice-error' : 'notice-success';
+		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'scan_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid', 'renew_invalid', 'mail_failed', 'mail_invalid', 'mail_wait', 'checklist_invalid', 'snapshot_invalid', 'snapshot_mismatch', 'snapshot_confirm', 'snapshot_gone', 'ack_invalid', 'confirm_expired', 'export_refused', 'pack_copy_invalid', 'notes_invalid' ), true ) ? 'notice-error' : 'notice-success';
 		$text = $map[ $key ];
 		if ( '_wait' === substr( $key, -5 ) ) {
 			$seconds = min( 60, max( 1, Request::int( 'estasoft_hp_wait' ) ) );
@@ -55,6 +56,30 @@ final class View {
 			$text .= ' ' . sprintf( _n( '%d second left.', '%d seconds left.', $seconds, 'estasoft-handover-passport' ), $seconds );
 		}
 		echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible" role="status"><p>' . esc_html( $text ) . '</p></div>';
+	}
+
+	/**
+	 * Keep a message, written by this plugin, for the next screen the person opens. Used where the words depend on what
+	 * happened, such as why a PDF could not be made. It is shown once and only to the person it was kept for.
+	 *
+	 * @param string $text  Message.
+	 * @param bool   $error True for an error.
+	 */
+	public static function say( string $text, bool $error = true ): void {
+		set_transient( 'estasoft_hp_said_' . get_current_user_id(), array( 'text' => $text, 'error' => $error ), 300 );
+	}
+
+	/**
+	 * Show the message kept by say(), once.
+	 */
+	private static function flashSaid(): void {
+		$key  = 'estasoft_hp_said_' . get_current_user_id();
+		$said = get_transient( $key );
+		if ( ! is_array( $said ) || '' === (string) ( $said['text'] ?? '' ) ) {
+			return;
+		}
+		delete_transient( $key );
+		echo '<div class="notice ' . ( ! empty( $said['error'] ) ? 'notice-error' : 'notice-success' ) . ' is-dismissible" role="status"><p>' . esc_html( (string) $said['text'] ) . '</p></div>';
 	}
 
 	/**
@@ -115,6 +140,28 @@ final class View {
 			'runbook_created'  => __( 'Draft created. Check every step against how this site is built.', 'estasoft-handover-passport' ),
 			'runbook_invalid'  => __( 'The runbook was not saved. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
 			'rehearsed'        => __( 'Marked as rehearsed today.', 'estasoft-handover-passport' ),
+			'checklist_added'   => __( 'Item added to the checklist.', 'estasoft-handover-passport' ),
+			'checklist_updated' => __( 'Checklist updated.', 'estasoft-handover-passport' ),
+			'checklist_deleted' => __( 'Item removed from the checklist.', 'estasoft-handover-passport' ),
+			'checklist_invalid' => __( 'The checklist was not changed. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
+			'snapshot_made'     => __( 'Snapshot made. It cannot be changed any more.', 'estasoft-handover-passport' ),
+			'snapshot_invalid'  => __( 'The snapshot was not made. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
+			'snapshot_match'    => __( 'The fingerprint matches: the stored content is the same as when the snapshot was made.', 'estasoft-handover-passport' ),
+			'snapshot_mismatch' => __( 'The fingerprint does not match: the stored content is not what was saved. Treat this snapshot as unreliable.', 'estasoft-handover-passport' ),
+			'snapshot_acked'    => __( 'Acknowledgement recorded. The Passport is now marked as handed over.', 'estasoft-handover-passport' ),
+			'ack_invalid'       => __( 'The acknowledgement was not saved. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
+			'snapshot_deleted'  => __( 'Snapshot deleted. Its name, fingerprint and date are kept in the history.', 'estasoft-handover-passport' ),
+			'snapshot_confirm'  => __( 'Tick the box to confirm that you want to delete the snapshot for good.', 'estasoft-handover-passport' ),
+			'snapshot_gone'     => __( 'That snapshot does not exist.', 'estasoft-handover-passport' ),
+			'confirm_expired'   => __( 'That request has expired. Start again.', 'estasoft-handover-passport' ),
+			'confirm_cancelled' => __( 'Cancelled. Nothing was made.', 'estasoft-handover-passport' ),
+			'export_refused'    => __( 'You may not make that pack.', 'estasoft-handover-passport' ),
+			'pack_copy_made'    => __( 'Your own pack is saved.', 'estasoft-handover-passport' ),
+			'pack_copy_deleted' => __( 'Your own pack is deleted. Snapshots made from it are unchanged.', 'estasoft-handover-passport' ),
+			'pack_copy_invalid' => __( 'The pack was not saved. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
+			'notes_saved'       => __( 'Notes saved.', 'estasoft-handover-passport' ),
+			'notes_invalid'     => __( 'The notes were not saved. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
+			'status_active'     => __( 'The Passport is marked Active again.', 'estasoft-handover-passport' ),
 		);
 	}
 
