@@ -919,6 +919,10 @@ body.estasoft-hp-screen {
 	margin-top: 16px;
 }
 
+.estasoft-hp .g > .card {
+	margin-top: 0;
+}
+
 .estasoft-hp .tb input[type="search"] {
 	width: 240px;
 	max-width: 100%;
@@ -1567,37 +1571,6 @@ body.estasoft-hp-screen {
 	border-radius: 8px;
 }
 
-.estasoft-hp .estasoft-hp-step--done {
-	border-inline-start-color: var(--ok);
-}
-
-.estasoft-hp .estasoft-hp-step--skipped {
-	border-inline-start-color: var(--wn);
-}
-
-.estasoft-hp .estasoft-hp-step--todo {
-	border-inline-start-color: var(--tx);
-}
-
-.estasoft-hp .estasoft-hp-step h2 {
-	margin: 12px 0 8px;
-	font-size: 16px;
-	line-height: 22px;
-	font-weight: 600;
-}
-
-.estasoft-hp .estasoft-hp-step-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	align-items: center;
-}
-
-.estasoft-hp .estasoft-hp-step-actions .estasoft-hp-inline-form {
-	display: inline;
-	margin: 0;
-}
-
 /* The leaver checklist and other pages meant for paper. */
 .estasoft-hp-checklist {
 	margin: 0 0 1em;
@@ -1718,6 +1691,7 @@ body.estasoft-hp-screen {
 	}
 
 	.estasoft-hp .tbl.cards td.t1 {
+		display: block;
 		text-align: start;
 	}
 
@@ -1893,4 +1867,149 @@ body.estasoft-hp-screen {
 .estasoft-hp .estasoft-hp-defs dd {
 	margin: 0;
 	color: var(--tx2);
+}
+
+/* Setup guide: step strip, step cards and the closing list. */
+.estasoft-hp .wiz {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: center;
+	color: var(--tx2);
+}
+
+.estasoft-hp .wiz .s {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	color: inherit;
+	text-decoration: none;
+	border: 1px solid var(--bd2);
+	border-radius: 999px;
+}
+
+.estasoft-hp .wiz .s:hover {
+	border-color: var(--bdc);
+}
+
+.estasoft-hp .wiz .s.done {
+	color: var(--tx);
+}
+
+.estasoft-hp .wiz .s.skipped {
+	border-style: dashed;
+}
+
+.estasoft-hp .wiz .s.on {
+	color: #f8f9fa;
+	font-weight: 600;
+	background: #212529;
+	border-color: #212529;
+}
+
+.estasoft-hp .lede {
+	max-width: 680px;
+	margin-bottom: 12px;
+}
+
+.estasoft-hp .maker {
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.estasoft-hp .maker img {
+	display: block;
+	border-radius: 10px;
+}
+
+.estasoft-hp .found-head {
+	margin: 16px 0 8px;
+}
+
+.estasoft-hp .found-note {
+	margin-top: 8px;
+}
+
+.estasoft-hp .estasoft-hp-step .estasoft-hp-form {
+	margin-top: 16px;
+	padding: 0;
+	background: none;
+	border: 0;
+	box-shadow: none;
+}
+
+.estasoft-hp .estasoft-hp-field > .estasoft-hp-label {
+	grid-column: 1;
+	grid-row: 1 / span 4;
+	padding-top: 6px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-logo > button {
+	justify-self: start;
+}
+
+.estasoft-hp select {
+	appearance: auto;
+}
+
+.estasoft-hp .ft .estasoft-hp-inline-form {
+	display: inline;
+	margin: 0;
+}
+
+.estasoft-hp .intro {
+	padding: 16px 16px 12px;
+}
+
+.estasoft-hp .intro .lede {
+	margin: 0;
+}
+
+.estasoft-hp .stp {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	border-top: 1px solid var(--bd);
+}
+
+.estasoft-hp .stp > li {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--bd);
+}
+
+.estasoft-hp .stp > li:last-child {
+	border-bottom: 0;
+}
+
+.estasoft-hp .stp .no {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	font-weight: 600;
+	background: var(--sf);
+	border: 1px solid var(--bdc);
+	border-radius: 50%;
+}
+
+.estasoft-hp .stp .no.done {
+	color: #fff;
+	background: #212529;
+	border-color: #212529;
+}
+
+.estasoft-hp .stp .go {
+	flex: 1;
+	min-width: 0;
+}
+
+.rtl .estasoft-hp svg.flip {
+	transform: scaleX(-1);
 }

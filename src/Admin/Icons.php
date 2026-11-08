@@ -35,6 +35,7 @@ final class Icons {
 		'shield'   => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
 		'users'    => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
 		'arrow'    => '<path d="M5 12h14M12 5l7 7-7 7"/>',
+		'back'     => '<path d="M19 12H5M12 19l-7-7 7-7"/>',
 		'plus'     => '<path d="M12 5v14M5 12h14"/>',
 		'globe'    => '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/>',
 		'chevron'  => '<path d="m6 9 6 6 6-6"/>',
@@ -53,6 +54,7 @@ final class Icons {
 		if ( ! isset( self::SHAPES[ $name ] ) ) {
 			return '';
 		}
-		return '<svg width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . self::SHAPES[ $name ] . '</svg>';
+		$class = in_array( $name, array( 'arrow', 'back' ), true ) ? ' class="flip"' : '';
+		return '<svg' . $class . ' width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . self::SHAPES[ $name ] . '</svg>';
 	}
 }

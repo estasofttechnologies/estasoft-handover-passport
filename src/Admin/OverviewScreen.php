@@ -53,6 +53,7 @@ final class OverviewScreen {
 
 		if ( array() === $facts ) {
 			View::open( __( 'Overview', 'estasoft-handover-passport' ), null, __( 'Nothing has been recorded yet.', 'estasoft-handover-passport' ) );
+			$this->resumeBar();
 			$this->setupCard();
 			$this->firstRun( $latest );
 			View::close();
@@ -60,6 +61,7 @@ final class OverviewScreen {
 		}
 
 		View::open( __( 'Overview', 'estasoft-handover-passport' ), null, $this->summary( $passport, $latest ), $this->headerActions( $passport ) );
+		$this->resumeBar();
 		$this->setupCard();
 		$this->scanNote( $latest );
 		$this->reminderStatus();
@@ -141,6 +143,33 @@ final class OverviewScreen {
 			echo '<a class="cap" href="' . esc_url( SetupScreen::url() ) . '">' . esc_html__( 'Open the setup guide', 'estasoft-handover-passport' ) . '</a>';
 		}
 		echo '</div></div></section>';
+	}
+
+	/**
+	 * A bar that says where the setup guide stopped and offers to carry on. It shows only to people who may use the guide
+	 * and only while a step is not done.
+	 */
+	private function resumeBar(): void {
+		if ( ! Capabilities::can( Capabilities::EDIT ) ) {
+			return;
+		}
+		$setup = $this->plugin->setup();
+		$left  = $setup->remaining();
+		if ( array() === $left ) {
+			return;
+		}
+		$first = (string) reset( $left );
+		$at    = (int) array_search( $first, SetupService::STEPS, true ) + 1;
+		$words = esc_html(
+			sprintf(
+				/* translators: 1: step number, 2: number of steps, 3: step title. */
+				__( 'You stopped at step %1$d of %2$d, %3$s.', 'estasoft-handover-passport' ),
+				$at,
+				count( SetupService::STEPS ),
+				SetupScreen::copy()[ $first ]['title']
+			)
+		);
+		echo '<div class="msg in" role="status">' . Icons::svg( 'info', 20 ) . '<div><b>' . esc_html__( 'Continue where you left off', 'estasoft-handover-passport' ) . '</b><span class="t2">' . $words . '</span></div><a class="btn sm" href="' . esc_url( SetupScreen::stepUrl( $first ) ) . '">' . esc_html__( 'Continue setup', 'estasoft-handover-passport' ) . Icons::svg( 'arrow', 16 ) . '</a></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup and $words is escaped.
 	}
 
 	/**
@@ -285,7 +314,7 @@ final class OverviewScreen {
 		foreach ( $left as $key => $state ) {
 			$title = $copy[ $key ]['title'];
 			$words = SetupService::SKIPPED === $state ? __( 'Skipped', 'estasoft-handover-passport' ) : __( 'To do', 'estasoft-handover-passport' );
-			echo '<li><div class="gr">' . ( $can_edit ? '<a href="' . esc_url( SetupScreen::url( 'estasoft-hp-step-' . $key ) ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title ) ) . '</div>' . View::badge( 'setup-' . $state, $words ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			echo '<li><div class="gr">' . ( $can_edit ? '<a href="' . esc_url( SetupScreen::stepUrl( $key ) ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title ) ) . '</div>' . View::badge( 'setup-' . $state, $words ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 		}
 		echo '</ul>';
 		View::cardEnd();

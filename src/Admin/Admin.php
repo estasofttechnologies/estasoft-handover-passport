@@ -170,6 +170,14 @@ final class Admin {
 		);
 		$this->screen_hooks[] = $hook;
 		Help::attach( $hook, $setup->slug() );
+		// A page with no menu item has no title for WordPress to find, and newer PHP versions warn about that.
+		add_action(
+			'load-' . $hook,
+			static function () use ( $setup ): void {
+				global $title;
+				$title = $setup->title(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Core finds no title for a page that has no menu item.
+			}
+		);
 	}
 
 	/**
