@@ -1,25 +1,1045 @@
-/* Estasoft Handover Passport: admin styles. Loaded on Passport screens only. */
-.estasoft-hp .estasoft-hp-lede {
-	margin: 0.5em 0 1.25em;
-	font-size: 14px;
+/*
+ * Estasoft Handover Passport: admin styles. Loaded on Passport screens only.
+ *
+ * The look is the "Light Steel" scheme from the Passport design: steel greys, black for the one main action,
+ * status always shown as an icon plus a word, 14 px text on a 4 px grid, logical properties so right to left works.
+ */
+
+/* ------------------------------------------------------------------ page frame */
+body.estasoft-hp-screen {
+	background: #e9ecef;
 }
 
-.estasoft-hp .estasoft-hp-card {
-	max-width: 960px;
-	margin: 0 0 16px;
-	padding: 4px 20px 16px;
-	background: #fff;
-	border: 1px solid #c3c4c7;
+.estasoft-hp-screen #wpcontent {
+	padding-inline-start: 0;
+}
+
+.estasoft-hp-screen #wpbody-content {
+	padding-bottom: 0;
+}
+
+.estasoft-hp-screen #wpfooter {
+	padding-inline: 24px;
+}
+
+/* The Help tab sits in the right end of the Passport bar. */
+.estasoft-hp-screen #screen-meta-links {
+	position: absolute;
+	inset-block-start: 8px;
+	inset-inline-end: 24px;
+	z-index: 3;
+	margin: 0;
+}
+
+.estasoft-hp-screen #screen-meta-links .screen-meta-toggle {
+	margin: 0;
+}
+
+.estasoft-hp-screen #screen-meta {
+	margin: 0;
+}
+
+/* ------------------------------------------------------------------ tokens and base */
+.estasoft-hp,
+.estasoft-hp * {
+	box-sizing: border-box;
+}
+
+.estasoft-hp {
+	--bg: #e9ecef;
+	--sf: #f8f9fa;
+	--sf2: #e9ecef;
+	--bd: #dee2e6;
+	--bd2: #ced4da;
+	--bdc: #6c757d;
+	--tx: #212529;
+	--tx2: #495057;
+	--tx3: #343a40;
+	--ok: #2b7a3f;
+	--okt: #1e5a2d;
+	--okb: #e6f2e8;
+	--okbd: #b9d9bf;
+	--wn: #9a5b00;
+	--wnt: #6b3d00;
+	--wnb: #fbf1dc;
+	--wnbd: #e8ce9a;
+	--er: #b02a2a;
+	--ert: #8a1f1f;
+	--erb: #f9e5e5;
+	--erbd: #e5b3b3;
+
+	margin: 0;
+	color: var(--tx);
+	background: var(--bg);
+	font: 14px/20px "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+	-webkit-text-size-adjust: 100%;
+}
+
+.estasoft-hp[dir="rtl"],
+.rtl .estasoft-hp {
+	font-family: "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif;
+	line-height: 24px;
+}
+
+.estasoft-hp h1,
+.estasoft-hp h2,
+.estasoft-hp h3,
+.estasoft-hp h4,
+.estasoft-hp p,
+.estasoft-hp ul,
+.estasoft-hp ol {
+	margin: 0;
+	padding: 0;
+	color: inherit;
+}
+
+.estasoft-hp a {
+	color: var(--tx);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.estasoft-hp a:hover,
+.estasoft-hp a:focus {
+	color: var(--tx);
+}
+
+.estasoft-hp svg {
+	flex: none;
+	vertical-align: -3px;
+}
+
+.estasoft-hp code,
+.estasoft-hp .mono {
+	font: 13px/18px ui-monospace, "Cascadia Mono", "Segoe UI Mono", SFMono-Regular, Menlo, Consolas, monospace;
+	overflow-wrap: anywhere;
+	background: transparent;
+	padding: 0;
+}
+
+.estasoft-hp .t2,
+.estasoft-hp .estasoft-hp-muted,
+.estasoft-hp .description {
+	color: var(--tx2);
+}
+
+.estasoft-hp .description {
+	font-size: 12px;
+	line-height: 16px;
+	font-style: normal;
+}
+
+.estasoft-hp .cap {
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.estasoft-hp .nw {
+	white-space: nowrap;
+}
+
+.estasoft-hp :focus-visible {
+	outline: 2px solid var(--tx);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* ------------------------------------------------------------------ Passport bar */
+.estasoft-hp.wrap {
+	margin: 0;
+	max-width: none;
+}
+
+.estasoft-hp .ab {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	min-height: 48px;
+	padding-inline: 24px 112px; /* Room for the Help tab at the end of the bar. */
+	background: var(--sf);
+	border-bottom: 1px solid var(--bd2);
+}
+
+.estasoft-hp .ab .brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	white-space: nowrap;
+}
+
+.estasoft-hp .ab .brand img {
+	display: block;
+	width: 24px;
+	height: 24px;
+	border-radius: 5px;
+}
+
+.estasoft-hp .ab .tabs {
+	display: flex;
+	flex: 1;
+	gap: 2px;
+	min-width: 0;
+	overflow-x: auto;
+}
+
+.estasoft-hp .ab .tab {
+	display: flex;
+	align-items: center;
+	min-height: 48px;
+	padding: 0 10px;
+	color: var(--tx2);
+	text-decoration: none;
+	white-space: nowrap;
+	border-bottom: 2px solid transparent;
+}
+
+.estasoft-hp .ab .tab:hover {
+	color: var(--tx);
+	background: var(--sf2);
+}
+
+.estasoft-hp .ab .tab.on {
+	color: var(--tx);
+	font-weight: 600;
+	border-bottom-color: var(--tx);
+}
+
+.estasoft-hp .ab .site {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--tx2);
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ page and header */
+.estasoft-hp .pg {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 24px 24px 40px;
+}
+
+.estasoft-hp hr.wp-header-end {
+	display: none;
+}
+
+.estasoft-hp .ph {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.estasoft-hp .ph .tx {
+	flex: 1 1 320px;
+	min-width: 0;
+}
+
+.estasoft-hp .ph h1 {
+	display: block;
+	margin: 0;
+	padding: 0;
+	font-size: 24px;
+	line-height: 32px;
+	font-weight: 600;
+}
+
+.estasoft-hp .ph p {
+	margin-top: 2px;
+	color: var(--tx2);
+}
+
+.estasoft-hp .ph .act {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.estasoft-hp .sub-tabs {
+	display: flex;
+	gap: 4px;
+	overflow-x: auto;
+	border-bottom: 1px solid var(--bd2);
+}
+
+.estasoft-hp .sub-tabs a {
+	min-height: 36px;
+	margin-bottom: -1px;
+	padding: 8px 12px;
+	color: var(--tx2);
+	text-decoration: none;
+	white-space: nowrap;
+	border-bottom: 2px solid transparent;
+}
+
+.estasoft-hp .sub-tabs a:hover {
+	color: var(--tx);
+}
+
+.estasoft-hp .sub-tabs a.on {
+	color: var(--tx);
+	font-weight: 600;
+	border-bottom-color: var(--tx);
+}
+
+/* ------------------------------------------------------------------ cards, grids, figures */
+.estasoft-hp .card {
+	/* WordPress draws its own .card with a width limit and padding; this one is the Passport card. */
+	min-width: 0;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	background: var(--sf);
+	border: 1px solid var(--bd2);
+	border-radius: 8px;
+	box-shadow: 0 1px 2px rgba(33, 37, 41, 0.08);
+}
+
+.estasoft-hp .card > .hd {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--bd);
+}
+
+.estasoft-hp .card > .hd h2 {
+	flex: 1 1 auto;
+	font-size: 16px;
+	line-height: 22px;
+	font-weight: 600;
+}
+
+.estasoft-hp .card > .bdy {
+	padding: 16px;
+}
+
+.estasoft-hp .card.flat > .bdy {
+	padding: 0;
+}
+
+.estasoft-hp .card > .ft {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	background: var(--sf2);
+	border-top: 1px solid var(--bd);
+	border-radius: 0 0 8px 8px;
+}
+
+.estasoft-hp .g {
+	display: grid;
+	gap: 16px;
+}
+
+.estasoft-hp .g2 {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.estasoft-hp .g3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.estasoft-hp .g4 {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.estasoft-hp .g21 {
+	grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.estasoft-hp .g12 {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+}
+
+.estasoft-hp .row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.estasoft-hp .col {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.estasoft-hp .sp1 {
+	flex: 1;
+}
+
+.estasoft-hp .kpi {
+	padding: 12px 16px;
+}
+
+.estasoft-hp .kpi .n {
+	font-size: 28px;
+	line-height: 36px;
+	font-weight: 600;
+}
+
+.estasoft-hp .kpi .k {
+	color: var(--tx2);
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.estasoft-hp .kpi .s {
+	margin-top: 4px;
+	font-size: 12px;
+}
+
+.estasoft-hp .bar {
+	height: 8px;
+	overflow: hidden;
+	background: var(--bd);
 	border-radius: 4px;
 }
 
-.estasoft-hp .estasoft-hp-card h2 {
-	margin: 16px 0 10px;
-	font-size: 15px;
+.estasoft-hp .bar i {
+	display: block;
+	height: 100%;
+	background: var(--tx3);
 }
 
-.estasoft-hp .estasoft-hp-muted {
-	color: #50575e;
+.estasoft-hp .bar.ok i {
+	background: var(--ok);
+}
+
+.estasoft-hp .bar.wn i {
+	background: var(--wn);
+}
+
+.estasoft-hp .bar.er i {
+	background: var(--er);
+}
+
+.estasoft-hp .lst {
+	margin: 0;
+	list-style: none;
+}
+
+.estasoft-hp .lst li {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin: 0;
+	padding: 10px 16px;
+	border-bottom: 1px solid var(--bd);
+}
+
+.estasoft-hp .lst li:last-child {
+	border-bottom: 0;
+}
+
+.estasoft-hp .lst .gr {
+	flex: 1;
+	min-width: 0;
+}
+
+.estasoft-hp .lst .gr b {
+	font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ buttons */
+.estasoft-hp .btn,
+.estasoft-hp .button,
+.estasoft-hp .button-secondary,
+.estasoft-hp .page-title-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 32px;
+	margin: 0;
+	padding: 0 12px;
+	color: var(--tx);
+	background: var(--sf);
+	border: 1px solid var(--bdc);
+	border-radius: 4px;
+	box-shadow: none;
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	vertical-align: middle;
+}
+
+.estasoft-hp .btn:hover,
+.estasoft-hp .button:hover,
+.estasoft-hp .button-secondary:hover,
+.estasoft-hp .page-title-action:hover {
+	color: var(--tx);
+	background: var(--sf2);
+	border-color: var(--tx);
+}
+
+.estasoft-hp .btn.pri,
+.estasoft-hp .button-primary {
+	color: #f8f9fa;
+	background: #212529;
+	border-color: #212529;
+}
+
+.estasoft-hp .btn.pri:hover,
+.estasoft-hp .btn.pri:focus,
+.estasoft-hp .button-primary:hover,
+.estasoft-hp .button-primary:focus {
+	color: #fff;
+	background: #343a40;
+	border-color: #343a40;
+}
+
+.estasoft-hp .btn.dng {
+	color: var(--ert);
+	border-color: var(--er);
+}
+
+.estasoft-hp .btn.sm,
+.estasoft-hp .button-small {
+	min-height: 24px;
+	padding: 0 8px;
+	font-size: 12px;
+}
+
+.estasoft-hp .btn.lg {
+	min-height: 40px;
+	padding: 0 16px;
+}
+
+.estasoft-hp .btn[disabled],
+.estasoft-hp .button[disabled],
+.estasoft-hp .button.disabled {
+	color: var(--bdc);
+	background: var(--sf2);
+	border-color: var(--bd2);
+	cursor: default;
+}
+
+/* A text button that looks like a link keeps a target of at least 24 pixels. */
+.estasoft-hp .button-link,
+.estasoft-hp .btn.lnk {
+	display: inline;
+	min-height: 24px;
+	margin: 0;
+	padding: 4px 0;
+	color: var(--tx);
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	font: inherit;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+}
+
+.estasoft-hp .button-link.estasoft-hp-danger,
+.estasoft-hp a.estasoft-hp-danger {
+	color: var(--ert);
+}
+
+/* ------------------------------------------------------------------ fields */
+.estasoft-hp input[type="text"],
+.estasoft-hp input[type="email"],
+.estasoft-hp input[type="url"],
+.estasoft-hp input[type="number"],
+.estasoft-hp input[type="date"],
+.estasoft-hp input[type="password"],
+.estasoft-hp input[type="search"],
+.estasoft-hp input[type="tel"],
+.estasoft-hp select,
+.estasoft-hp textarea {
+	min-height: 32px;
+	padding: 0 8px;
+	color: var(--tx);
+	background: #fff;
+	border: 1px solid var(--bdc);
+	border-radius: 4px;
+	box-shadow: none;
+	font: inherit;
+}
+
+.estasoft-hp textarea {
+	min-height: 72px;
+	padding: 6px 8px;
+}
+
+.estasoft-hp select {
+	padding-inline: 6px;
+	max-width: 100%;
+}
+
+.estasoft-hp input::placeholder,
+.estasoft-hp textarea::placeholder {
+	color: var(--bdc);
+	opacity: 1;
+}
+
+.estasoft-hp input[disabled],
+.estasoft-hp input[readonly],
+.estasoft-hp select[disabled],
+.estasoft-hp textarea[disabled] {
+	color: var(--tx2);
+	background: var(--sf2);
+}
+
+.estasoft-hp input[type="checkbox"],
+.estasoft-hp input[type="radio"] {
+	border-color: var(--bdc);
+	box-shadow: none;
+}
+
+.estasoft-hp input[type="checkbox"]:checked::before {
+	filter: brightness(0);
+}
+
+.estasoft-hp input[type="radio"]:checked::before {
+	background: var(--tx);
+}
+
+.estasoft-hp .seg {
+	display: inline-flex;
+	overflow: hidden;
+	border: 1px solid var(--bdc);
+	border-radius: 4px;
+}
+
+.estasoft-hp .seg a {
+	display: flex;
+	align-items: center;
+	min-height: 30px;
+	padding: 0 12px;
+	text-decoration: none;
+	white-space: nowrap;
+	border-inline-start: 1px solid var(--bd2);
+}
+
+.estasoft-hp .seg a:first-child {
+	border-inline-start: 0;
+}
+
+.estasoft-hp .seg a.on {
+	color: #f8f9fa;
+	background: #212529;
+	font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ badges, tags, messages */
+.estasoft-hp .bd {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 1px 8px;
+	color: var(--tx3);
+	background: var(--sf2);
+	border: 1px solid var(--bd2);
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 16px;
+	white-space: nowrap;
+}
+
+.estasoft-hp .bd.ok {
+	color: var(--okt);
+	background: var(--okb);
+	border-color: var(--okbd);
+}
+
+.estasoft-hp .bd.ok svg {
+	color: var(--ok);
+}
+
+.estasoft-hp .bd.wn {
+	color: var(--wnt);
+	background: var(--wnb);
+	border-color: var(--wnbd);
+}
+
+.estasoft-hp .bd.wn svg {
+	color: var(--wn);
+}
+
+.estasoft-hp .bd.er {
+	color: var(--ert);
+	background: var(--erb);
+	border-color: var(--erbd);
+}
+
+.estasoft-hp .bd.er svg {
+	color: var(--er);
+}
+
+.estasoft-hp .tag,
+.estasoft-hp .estasoft-hp-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-inline-start: 6px;
+	padding: 0 6px;
+	color: var(--tx2);
+	background: var(--sf);
+	border: 1px solid var(--bd2);
+	border-radius: 2px;
+	font-size: 12px;
+	line-height: 18px;
+	white-space: nowrap;
+}
+
+.estasoft-hp .tag.sens,
+.estasoft-hp .estasoft-hp-tag {
+	color: var(--tx3);
+	border-color: var(--bdc);
+}
+
+/* Notices become the design's message bars. */
+.estasoft-hp .notice,
+.estasoft-hp .msg {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0;
+	padding: 12px 16px;
+	color: var(--tx);
+	background: var(--sf);
+	border: 1px solid var(--bd2);
+	border-radius: 4px;
+	box-shadow: none;
+}
+
+.estasoft-hp .notice::before {
+	content: "";
+	flex: none;
+	width: 16px;
+	height: 16px;
+	margin-block-start: 2px;
+	background: currentcolor;
+	-webkit-mask: var(--estasoft-hp-icon) center / contain no-repeat;
+	mask: var(--estasoft-hp-icon) center / contain no-repeat;
+	--estasoft-hp-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4M12 8h.01'/%3E%3C/svg%3E");
+}
+
+.estasoft-hp .notice p,
+.estasoft-hp .msg p {
+	flex: 1;
+	margin: 0;
+	padding: 0;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.estasoft-hp .notice.notice-success,
+.estasoft-hp .msg.ok {
+	color: var(--okt);
+	background: var(--okb);
+	border-color: var(--okbd);
+}
+
+.estasoft-hp .notice.notice-success::before {
+	color: var(--ok);
+	--estasoft-hp-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
+}
+
+.estasoft-hp .notice.notice-warning,
+.estasoft-hp .msg.wn {
+	color: var(--wnt);
+	background: var(--wnb);
+	border-color: var(--wnbd);
+}
+
+.estasoft-hp .notice.notice-warning::before {
+	color: var(--wn);
+	--estasoft-hp-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'/%3E%3Cpath d='M12 9v4M12 17h.01'/%3E%3C/svg%3E");
+}
+
+.estasoft-hp .notice.notice-error,
+.estasoft-hp .msg.er {
+	color: var(--ert);
+	background: var(--erb);
+	border-color: var(--erbd);
+}
+
+.estasoft-hp .notice.notice-error::before {
+	color: var(--er);
+	--estasoft-hp-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m15 9-6 6M9 9l6 6'/%3E%3C/svg%3E");
+}
+
+.estasoft-hp .notice.notice-info {
+	background: var(--sf2);
+}
+
+.estasoft-hp .notice .notice-dismiss {
+	inset-block-start: 4px;
+	inset-inline-end: 4px;
+}
+
+.estasoft-hp .notice a {
+	color: inherit;
+}
+
+/* ------------------------------------------------------------------ tables */
+.estasoft-hp .scr {
+	position: relative;
+	overflow-x: auto;
+}
+
+.estasoft-hp .tbl,
+.estasoft-hp .widefat {
+	width: 100%;
+	margin: 0;
+	background: var(--sf);
+	border: 1px solid var(--bd2);
+	border-radius: 8px;
+	border-collapse: separate;
+	border-spacing: 0;
+	box-shadow: 0 1px 2px rgba(33, 37, 41, 0.08);
+	table-layout: auto;
+}
+
+.estasoft-hp .card .tbl,
+.estasoft-hp .card .widefat {
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.estasoft-hp .tbl th,
+.estasoft-hp .widefat thead th,
+.estasoft-hp .widefat thead td,
+.estasoft-hp .widefat tfoot th {
+	padding: 8px 12px;
+	color: var(--tx2);
+	background: var(--sf2);
+	border-bottom: 1px solid var(--bd2);
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 600;
+	text-align: start;
+	white-space: nowrap;
+}
+
+.estasoft-hp .widefat thead th:first-child {
+	border-start-start-radius: 7px;
+}
+
+.estasoft-hp .widefat thead th:last-child {
+	border-start-end-radius: 7px;
+}
+
+.estasoft-hp .tbl td,
+.estasoft-hp .widefat td,
+.estasoft-hp .widefat tbody th {
+	padding: 10px 12px;
+	color: var(--tx);
+	background: transparent;
+	border-bottom: 1px solid var(--bd);
+	vertical-align: top;
+}
+
+.estasoft-hp .widefat.striped > tbody > :nth-child(odd) {
+	background: transparent;
+}
+
+.estasoft-hp .tbl tr:last-child td,
+.estasoft-hp .widefat tbody tr:last-child td,
+.estasoft-hp .widefat tbody tr:last-child th {
+	border-bottom: 0;
+}
+
+.estasoft-hp .tbl td .sub,
+.estasoft-hp .widefat td .sub {
+	display: block;
+	color: var(--tx2);
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.estasoft-hp .tbl .num {
+	text-align: end;
+	white-space: nowrap;
+}
+
+.estasoft-hp .tbl td.act,
+.estasoft-hp .estasoft-hp-actions {
+	text-align: end;
+	white-space: normal;
+}
+
+.estasoft-hp .tbl td.act .btn,
+.estasoft-hp .estasoft-hp-actions .btn {
+	margin-block: 2px;
+}
+
+/* A link beside other words in a cell is underlined, so colour alone never tells it apart. */
+.estasoft-hp td a:not(.btn):not(.button) {
+	text-decoration: underline;
+}
+
+.estasoft-hp .tb {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--bd);
+}
+
+.estasoft-hp .pgn {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 10px 12px;
+	color: var(--tx2);
+	border-top: 1px solid var(--bd);
+}
+
+/* ------------------------------------------------------------------ register lists */
+.estasoft-hp .g + .card,
+.estasoft-hp .g + .g,
+.estasoft-hp .card + .card,
+.estasoft-hp .card + .estasoft-hp-deleted {
+	margin-top: 16px;
+}
+
+.estasoft-hp .tb input[type="search"] {
+	width: 240px;
+	max-width: 100%;
+}
+
+.estasoft-hp .tb select {
+	max-width: 260px;
+}
+
+.estasoft-hp .tbl td.t1 b {
+	font-weight: 600;
+}
+
+.estasoft-hp .tbl td.t1 b a {
+	color: var(--tx);
+}
+
+.estasoft-hp .tbl .estasoft-hp-actions .btn + .btn,
+.estasoft-hp .tbl .estasoft-hp-actions form + .btn,
+.estasoft-hp .tbl .estasoft-hp-actions form + form {
+	margin-inline-start: 4px;
+}
+
+.estasoft-hp .tbl tr[hidden],
+.estasoft-hp .card[hidden] {
+	display: none;
+}
+
+.estasoft-hp .estasoft-hp-finding__tools {
+	display: inline-block;
+	vertical-align: top;
+	text-align: start;
+}
+
+.estasoft-hp .estasoft-hp-finding__tools summary.btn {
+	list-style: none;
+}
+
+.estasoft-hp .estasoft-hp-finding__tools summary.btn::-webkit-details-marker {
+	display: none;
+}
+
+.estasoft-hp .estasoft-hp-finding__tools[open] {
+	display: block;
+	padding: 8px;
+	margin-top: 4px;
+	background: var(--sf2);
+	border: 1px solid var(--bd);
+	border-radius: 4px;
+}
+
+.estasoft-hp .nomatch {
+	padding: 16px 12px;
+	color: var(--tx2);
+	text-align: center;
+}
+
+.estasoft-hp .rowx {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.estasoft-hp .av {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	color: var(--tx2);
+	background: var(--bd);
+	border: 1px solid var(--bd2);
+	border-radius: 50%;
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-cardnote {
+	margin: 0;
+	padding: 10px 12px 0;
+	color: var(--tx2);
+}
+
+.estasoft-hp .tbl tbody th[scope="row"] {
+	width: 30%;
+	padding: 10px 12px;
+	color: var(--tx);
+	background: transparent;
+	border-bottom: 1px solid var(--bd);
+	font-size: inherit;
+	line-height: inherit;
+	font-weight: 600;
+	vertical-align: top;
+	white-space: normal;
+}
+
+.estasoft-hp .tbl tbody tr:last-child th[scope="row"] {
+	border-bottom: 0;
+}
+
+/* ------------------------------------------------------------------ empty states and facts */
+.estasoft-hp .empty,
+.estasoft-hp .estasoft-hp-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 40px 16px;
+	text-align: center;
+	background: var(--sf);
+	border: 1px dashed var(--bdc);
+	border-radius: 8px;
+}
+
+.estasoft-hp .empty h2 {
+	font-size: 16px;
+	line-height: 22px;
+}
+
+.estasoft-hp .empty p,
+.estasoft-hp .estasoft-hp-empty p {
+	max-width: 420px;
+	color: var(--tx2);
 }
 
 .estasoft-hp .estasoft-hp-facts {
@@ -30,8 +1050,9 @@
 }
 
 .estasoft-hp .estasoft-hp-facts dt {
+	color: var(--tx2);
 	font-size: 12px;
-	color: #50575e;
+	line-height: 16px;
 }
 
 .estasoft-hp .estasoft-hp-facts dd {
@@ -40,53 +1061,98 @@
 	overflow-wrap: anywhere;
 }
 
-/* Status is always shown in words; the border and fill only support it. */
-.estasoft-hp .estasoft-hp-badge {
-	display: inline-block;
-	white-space: nowrap;
-	padding: 1px 8px;
-	border: 1px solid #8c8f94;
-	border-radius: 10px;
-	background: #f6f7f7;
-	font-size: 12px;
+.estasoft-hp .estasoft-hp-defs dt {
+	margin-top: 8px;
 	font-weight: 600;
-	line-height: 1.7;
 }
 
-.estasoft-hp .estasoft-hp-badge--done,
-.estasoft-hp .estasoft-hp-badge--active {
-	border-color: #2e7d32;
-	background: #edf7ee;
+.estasoft-hp .estasoft-hp-defs dd {
+	margin: 2px 0 0;
 }
 
-.estasoft-hp .estasoft-hp-badge--failed {
-	border-color: #b32d2e;
-	background: #fcf0f1;
+/* ------------------------------------------------------------------ the older panels, drawn as cards */
+.estasoft-hp .estasoft-hp-card,
+.estasoft-hp .estasoft-hp-form,
+.estasoft-hp .estasoft-hp-confirm,
+.estasoft-hp .estasoft-hp-setup-card {
+	max-width: none;
+	margin: 0;
+	padding: 0 16px 16px;
+	background: var(--sf);
+	border: 1px solid var(--bd2);
+	border-radius: 8px;
+	box-shadow: 0 1px 2px rgba(33, 37, 41, 0.08);
 }
 
-.estasoft-hp .estasoft-hp-badge--running,
-.estasoft-hp .estasoft-hp-badge--draft {
-	border-color: #996800;
-	background: #fcf9e8;
+.estasoft-hp .estasoft-hp-card > h2:first-child,
+.estasoft-hp .estasoft-hp-form > h2:first-child,
+.estasoft-hp .estasoft-hp-confirm > h2:first-child {
+	margin: 0 -16px 16px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--bd);
+	font-size: 16px;
+	line-height: 22px;
+	font-weight: 600;
 }
 
-.estasoft-hp .estasoft-hp-card form {
-	margin-top: 10px;
+.estasoft-hp .estasoft-hp-card > h3,
+.estasoft-hp .estasoft-hp-form h3 {
+	margin: 16px 0 8px;
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
 }
 
-@media (max-width: 782px) {
-	.estasoft-hp .estasoft-hp-card {
-		padding: 4px 14px 14px;
-	}
+.estasoft-hp .estasoft-hp-card > p,
+.estasoft-hp .estasoft-hp-card > ul,
+.estasoft-hp .estasoft-hp-card > ol,
+.estasoft-hp .estasoft-hp-card > table,
+.estasoft-hp .estasoft-hp-card > dl,
+.estasoft-hp .estasoft-hp-card > form {
+	margin-block: 0 12px;
 }
 
-/* Tabs, registers and forms */
-.estasoft-hp .estasoft-hp-tabs {
-	margin-bottom: 16px;
+.estasoft-hp .estasoft-hp-card ul:not([class]),
+.estasoft-hp .estasoft-hp-card ol:not([class]) {
+	padding-inline-start: 20px;
+	list-style: disc;
+}
+
+.estasoft-hp .estasoft-hp-card ol:not([class]) {
+	list-style: decimal;
+}
+
+.estasoft-hp .estasoft-hp-lede {
+	margin: 0;
+	color: var(--tx2);
+	font-size: 14px;
+}
+
+.estasoft-hp .estasoft-hp-summary-counts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	margin: 0 0 12px;
+}
+
+.estasoft-hp .estasoft-hp-summary-counts a {
+	text-decoration: none;
+}
+
+.estasoft-hp .estasoft-hp-urgent {
+	margin: 8px 0;
+	list-style: none;
+}
+
+.estasoft-hp .estasoft-hp-urgent li {
+	margin: 8px 0;
+}
+
+.estasoft-hp .estasoft-hp-readiness li {
+	margin: 4px 0;
 }
 
 .estasoft-hp .estasoft-hp-register {
-	max-width: 1200px;
 	margin: 0 0 24px;
 }
 
@@ -95,28 +1161,13 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	margin: 8px 0;
+	margin: 8px 0 12px;
 }
 
 .estasoft-hp .estasoft-hp-register__head h2 {
-	margin: 0;
-}
-
-.estasoft-hp .estasoft-hp-empty {
-	max-width: 720px;
-	padding: 20px 24px;
-	background: #fff;
-	border: 1px dashed #8c8f94;
-	border-radius: 4px;
-}
-
-.estasoft-hp .estasoft-hp-table td,
-.estasoft-hp .estasoft-hp-table th {
-	vertical-align: top;
-}
-
-.estasoft-hp .estasoft-hp-actions {
-	white-space: nowrap;
+	font-size: 16px;
+	line-height: 22px;
+	font-weight: 600;
 }
 
 .estasoft-hp .estasoft-hp-inline {
@@ -127,25 +1178,54 @@
 .estasoft-hp .estasoft-hp-danger,
 .estasoft-hp .estasoft-hp-error,
 .estasoft-hp .estasoft-hp-gap {
-	color: #b32d2e;
+	color: var(--ert);
 }
 
-.estasoft-hp .estasoft-hp-form {
-	max-width: 780px;
-	padding: 4px 20px 8px;
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
+.estasoft-hp .estasoft-hp-req {
+	color: var(--ert);
 }
 
-.estasoft-hp .estasoft-hp-fieldset {
+.estasoft-hp .estasoft-hp-deleted {
+	margin-top: 12px;
+}
+
+.estasoft-hp .estasoft-hp-order {
+	margin: 0;
+	padding-inline-start: 20px;
+}
+
+.estasoft-hp .estasoft-hp-list {
+	margin: 0 0 12px;
+	padding-inline-start: 18px;
+	list-style: disc;
+}
+
+.estasoft-hp .estasoft-hp-filterbar {
+	margin: 8px 0 12px;
+}
+
+.estasoft-hp .estasoft-hp-actions-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.estasoft-hp .estasoft-hp-buttons form {
+	margin-inline-end: 8px;
+}
+
+/* ------------------------------------------------------------------ forms */
+.estasoft-hp .estasoft-hp-fieldset,
+.estasoft-hp fieldset {
 	margin: 0 0 18px;
-	padding: 0 0 6px;
+	padding: 0 0 8px;
 	border: 0;
-	border-bottom: 1px solid #dcdcde;
+	border-bottom: 1px solid var(--bd);
 }
 
-.estasoft-hp .estasoft-hp-fieldset legend {
+.estasoft-hp .estasoft-hp-fieldset legend,
+.estasoft-hp fieldset legend {
 	margin-bottom: 10px;
 	padding: 0;
 	font-size: 14px;
@@ -169,164 +1249,98 @@
 .estasoft-hp .estasoft-hp-field.has-error input,
 .estasoft-hp .estasoft-hp-field.has-error textarea,
 .estasoft-hp .estasoft-hp-field.has-error select {
-	border-color: #b32d2e;
+	border-color: var(--er);
+	box-shadow: 0 0 0 1px var(--er);
 }
 
-.estasoft-hp .estasoft-hp-req {
-	color: #b32d2e;
+.estasoft-hp .estasoft-hp-field .description,
+.estasoft-hp .estasoft-hp-field .estasoft-hp-error {
+	margin-top: 4px;
 }
 
-.estasoft-hp .estasoft-hp-tag {
-	display: inline-block;
-	margin-left: 6px;
-	padding: 0 6px;
-	border: 1px solid #996800;
-	border-radius: 3px;
-	background: #fcf9e8;
-	font-size: 11px;
-	font-weight: 600;
-}
-
-.estasoft-hp .estasoft-hp-deleted {
-	margin-top: 12px;
-}
-
-.estasoft-hp .estasoft-hp-order {
-	margin: 0;
-	padding-left: 20px;
-}
-
-.estasoft-hp .estasoft-hp-list {
-	margin: 0 0 12px 18px;
-	list-style: disc;
-}
-
-.estasoft-hp .estasoft-hp-defs dt {
-	margin-top: 8px;
-	font-weight: 600;
-}
-
-.estasoft-hp .estasoft-hp-defs dd {
-	margin: 2px 0 0;
-}
-
-.estasoft-hp .estasoft-hp-filterbar {
-	margin: 8px 0 12px;
-}
-
-.estasoft-hp .estasoft-hp-badge--stale,
-.estasoft-hp .estasoft-hp-badge--expired {
-	border-color: #b32d2e;
-	background: #fcf0f1;
-}
-
-.estasoft-hp .estasoft-hp-badge--due,
-.estasoft-hp .estasoft-hp-badge--renews_soon {
-	border-color: #996800;
-	background: #fcf9e8;
-}
-
-.estasoft-hp .estasoft-hp-badge--verified {
-	border-color: #2e7d32;
-	background: #edf7ee;
-}
-
-.estasoft-hp :focus-visible {
-	outline-offset: 2px;
-}
-
-/* Text buttons made to look like links keep a target of at least 24 pixels. */
-.estasoft-hp .button-link {
-	padding-block: 4px;
-}
-
-/* A link beside other words in a table cell is underlined, so it is not told apart by colour alone. */
-.estasoft-hp td a:not(.button) {
-	text-decoration: underline;
-}
-
-@media (max-width: 782px) {
-	/* A register keeps its columns readable and scrolls sideways instead of squeezing them. */
-	.estasoft-hp .estasoft-hp-table {
-		display: block;
-		position: relative; /* Keeps screen-reader text inside the box that scrolls. */
-		overflow-x: auto;
-	}
-
-	.estasoft-hp .estasoft-hp-table th,
-	.estasoft-hp .estasoft-hp-table td {
-		min-width: 7em;
-	}
-}
-
-/* Findings (M3). Levels are always shown in words as well as colour. */
-.estasoft-hp .estasoft-hp-badge--needs_fixing {
-	background: #fcf0f1;
-	border-color: #d63638;
-	color: #8a2424;
-}
-.estasoft-hp .estasoft-hp-badge--worth_fixing {
-	background: #fcf9e8;
-	border-color: #dba617;
-	color: #6e5700;
-}
-.estasoft-hp .estasoft-hp-badge--info {
-	background: #f0f6fc;
-	border-color: #72aee6;
-	color: #1d4f7c;
-}
-.estasoft-hp .estasoft-hp-findings td {
-	vertical-align: top;
-}
-.estasoft-hp .estasoft-hp-finding__rule {
-	color: #646970;
+.estasoft-hp .estasoft-hp-field .estasoft-hp-error {
 	font-size: 12px;
-}
-.estasoft-hp .estasoft-hp-finding__tools summary {
-	cursor: pointer;
-	padding-block: 3px; /* A target of at least 24 by 24 pixels (WCAG 2.2, 2.5.8). */
-}
-.estasoft-hp .estasoft-hp-finding__tools form {
-	margin-top: 8px;
-}
-.estasoft-hp .estasoft-hp-finding__tools label {
-	display: block;
-	margin-bottom: 4px;
-}
-.estasoft-hp .estasoft-hp-summary-counts {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px 16px;
-	margin: 0 0 12px;
-}
-.estasoft-hp .estasoft-hp-readiness li {
-	margin: 4px 0;
+	line-height: 16px;
 }
 
-/* Runbook editor and restore tests. */
+.estasoft-hp .estasoft-hp-form .submit,
+.estasoft-hp .estasoft-hp-card .submit {
+	margin: 0;
+	padding: 12px 0 0;
+}
+
+.estasoft-hp .form-table th,
+.estasoft-hp .form-table td {
+	padding: 12px 10px 12px 0;
+}
+
 .estasoft-hp .estasoft-hp-rows {
 	margin: 16px 0;
 	padding: 8px 12px 12px;
-	border: 1px solid #dcdcde;
+	border: 1px solid var(--bd2);
 	border-radius: 4px;
 }
+
 .estasoft-hp .estasoft-hp-rows legend {
 	padding: 0 6px;
 	font-weight: 600;
 }
+
 .estasoft-hp .estasoft-hp-row {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
 	align-items: center;
+	gap: 8px;
 	margin: 6px 0;
 }
+
+.estasoft-hp .estasoft-hp-inline-form {
+	margin-top: 12px;
+}
+
+.estasoft-hp .estasoft-hp-logo-preview img {
+	display: block;
+	max-width: 240px;
+	max-height: 120px;
+	margin: 6px 0;
+	padding: 4px;
+	background: #fff;
+	border: 1px solid var(--bd2);
+}
+
+/* ------------------------------------------------------------------ findings, runbooks, handover, setup */
+.estasoft-hp .estasoft-hp-findings td {
+	vertical-align: top;
+}
+
+.estasoft-hp .estasoft-hp-finding__rule {
+	color: var(--tx2);
+	font-size: 12px;
+}
+
+.estasoft-hp .estasoft-hp-finding__tools summary,
+.estasoft-hp .estasoft-hp-snapshot__actions summary,
+.estasoft-hp .estasoft-hp-deleted summary {
+	padding-block: 3px; /* A target of at least 24 by 24 pixels (WCAG 2.2, 2.5.8). */
+	cursor: pointer;
+}
+
+.estasoft-hp .estasoft-hp-finding__tools form {
+	margin-top: 8px;
+}
+
+.estasoft-hp .estasoft-hp-finding__tools label {
+	display: block;
+	margin-bottom: 4px;
+}
+
 .estasoft-hp .estasoft-hp-step {
 	margin: 10px 0;
 	padding: 10px;
-	background: #f6f7f7;
+	background: var(--sf2);
 	border-radius: 4px;
 }
+
 .estasoft-hp .estasoft-hp-step__meta {
 	display: flex;
 	flex-wrap: wrap;
@@ -334,187 +1348,94 @@
 	align-items: center;
 	margin-top: 6px;
 }
+
 .estasoft-hp .estasoft-hp-step__meta label {
 	display: inline-flex;
 	gap: 4px;
 	align-items: center;
-}
-.estasoft-hp .estasoft-hp-inline-form {
-	margin-top: 12px;
-}
-.estasoft-hp .estasoft-hp-badge--result-pass,
-.estasoft-hp .estasoft-hp-badge--runbook-published {
-	background: #edfaef;
-	border-color: #00a32a;
-	color: #0a5a1c;
-}
-.estasoft-hp .estasoft-hp-badge--result-partial,
-.estasoft-hp .estasoft-hp-badge--runbook-draft {
-	background: #fcf9e8;
-	border-color: #dba617;
-	color: #6e5700;
-}
-.estasoft-hp .estasoft-hp-badge--result-fail {
-	background: #fcf0f1;
-	border-color: #d63638;
-	color: #8a2424;
-}
-.estasoft-hp .estasoft-hp-badge--critical {
-	background: #f0f6fc;
-	border-color: #72aee6;
-	color: #1d4f7c;
 }
 
 .estasoft-hp .estasoft-hp-domain h4,
 .estasoft-hp .estasoft-hp-domain h5 {
 	margin: 16px 0 6px;
 }
-.estasoft-hp .estasoft-hp-buttons form {
-	margin-right: 8px;
-}
-.estasoft-hp .estasoft-hp-badge--zone-matches {
-	background: #edfaef;
-	border-color: #00a32a;
-	color: #0a5a1c;
-}
-.estasoft-hp .estasoft-hp-badge--zone-differs,
-.estasoft-hp .estasoft-hp-badge--zone-missing {
-	background: #fcf9e8;
-	border-color: #dba617;
-	color: #6e5700;
-}
-.estasoft-hp .estasoft-hp-badge--zone-skipped {
-	background: #f0f0f1;
-	border-color: #8c8f94;
-	color: #50575e;
-}
 
-.estasoft-hp .estasoft-hp-urgent {
-	margin: 8px 0;
-	padding-left: 0;
-	list-style: none;
-}
-.estasoft-hp .estasoft-hp-urgent li {
-	margin: 8px 0;
-}
-.estasoft-hp .estasoft-hp-summary-counts a {
-	text-decoration: none;
-}
-
-/* Handover screen. */
-.estasoft-hp .estasoft-hp-badge--check-done,
-.estasoft-hp .estasoft-hp-badge--ok,
-.estasoft-hp .estasoft-hp-badge--status-active {
-	background: #edfaef;
-	border-color: #00a32a;
-	color: #0a5a1c;
-}
-.estasoft-hp .estasoft-hp-badge--check-not_done,
-.estasoft-hp .estasoft-hp-badge--status-draft,
-.estasoft-hp .estasoft-hp-badge--unknown {
-	background: #fcf9e8;
-	border-color: #dba617;
-	color: #6e5700;
-}
-.estasoft-hp .estasoft-hp-badge--bad {
-	background: #fcf0f1;
-	border-color: #d63638;
-	color: #8a2424;
-}
-.estasoft-hp .estasoft-hp-badge--check-na,
-.estasoft-hp .estasoft-hp-badge--status-handed_over {
-	background: #f0f6fc;
-	border-color: #72aee6;
-	color: #1d2327;
-}
 .estasoft-hp .estasoft-hp-snapshot__actions {
 	margin-top: 12px;
 }
+
 .estasoft-hp .estasoft-hp-snapshot__actions details {
 	margin: 10px 0;
 }
-.estasoft-hp .estasoft-hp-snapshot__actions summary {
-	cursor: pointer;
-	padding-block: 3px;
-}
+
 .estasoft-hp .estasoft-hp-snapshot dd {
 	overflow-wrap: anywhere;
 }
-.estasoft-hp .estasoft-hp-confirm {
-	max-width: 760px;
-	padding: 4px 16px 12px;
-}
-.estasoft-hp fieldset {
-	margin: 12px 0;
-	padding: 0;
-	border: 0;
-}
-.estasoft-hp fieldset legend {
-	padding: 0;
-	font-weight: 600;
-}
+
 .estasoft-hp .estasoft-hp-sensitive {
-	max-width: 760px;
 	padding: 8px 12px;
-	border: 1px solid #dba617;
-	background: #fcf9e8;
+	color: var(--wnt);
+	background: var(--wnb);
+	border: 1px solid var(--wnbd);
+	border-radius: 4px;
 }
+
 .estasoft-hp .estasoft-hp-pre {
 	white-space: pre-wrap;
 	font-family: inherit;
 }
+
 .estasoft-hp .estasoft-hp-reader {
 	max-width: 820px;
 }
+
 .estasoft-hp .estasoft-hp-readsteps {
 	margin: 0;
 	padding-inline-start: 24px;
 }
+
 .estasoft-hp .estasoft-hp-readsteps li {
 	margin: 0 0 10px;
 	padding-block: 2px;
 }
+
 .estasoft-hp .estasoft-hp-readsteps__care {
 	padding-inline-start: 8px;
-	border-inline-start: 4px solid #b32d2e;
-}
-.estasoft-hp .estasoft-hp-actions-row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	align-items: center;
+	border-inline-start: 4px solid var(--er);
 }
 
-/* Setup guide */
 .estasoft-hp .estasoft-hp-steps {
-	list-style: none;
-	margin: 1em 0;
+	margin: 0;
 	padding: 0;
-	max-width: 52em;
+	list-style: none;
 }
 
-.estasoft-hp .estasoft-hp-step {
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-left-width: 4px;
+.estasoft-hp .estasoft-hp-steps > .estasoft-hp-step {
 	margin: 0 0 12px;
-	padding: 4px 16px 12px;
+	padding: 0 16px 16px;
+	background: var(--sf);
+	border: 1px solid var(--bd2);
+	border-inline-start: 4px solid var(--bdc);
+	border-radius: 8px;
 }
 
 .estasoft-hp .estasoft-hp-step--done {
-	border-left-color: #00a32a;
+	border-inline-start-color: var(--ok);
 }
 
 .estasoft-hp .estasoft-hp-step--skipped {
-	border-left-color: #dba617;
+	border-inline-start-color: var(--wn);
 }
 
 .estasoft-hp .estasoft-hp-step--todo {
-	border-left-color: #2271b1;
+	border-inline-start-color: var(--tx);
 }
 
 .estasoft-hp .estasoft-hp-step h2 {
-	font-size: 1.15em;
+	margin: 12px 0 8px;
+	font-size: 16px;
+	line-height: 22px;
+	font-weight: 600;
 }
 
 .estasoft-hp .estasoft-hp-step-actions {
@@ -529,39 +1450,175 @@
 	margin: 0;
 }
 
-.estasoft-hp .estasoft-hp-logo-preview img {
-	display: block;
-	max-width: 240px;
-	max-height: 120px;
-	margin: 6px 0;
-	border: 1px solid #c3c4c7;
-	padding: 4px;
-	background: #fff;
-}
-
 /* The leaver checklist and other pages meant for paper. */
 .estasoft-hp-checklist {
-	list-style: none;
 	margin: 0 0 1em;
 	padding: 0;
+	list-style: none;
 }
 
 .estasoft-hp-checklist li {
 	margin: 0 0 0.6em;
 }
 
+/* ------------------------------------------------------------------ small screens */
+@media (max-width: 1400px) {
+	.estasoft-hp .ab .site {
+		display: none;
+	}
+}
+
+@media (max-width: 960px) {
+	.estasoft-hp .g4 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.estasoft-hp .g21,
+	.estasoft-hp .g12 {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.estasoft-hp .ab .site {
+		display: none;
+	}
+}
+
+@media (max-width: 782px) {
+	.estasoft-hp .pg {
+		padding: 16px 12px 32px;
+	}
+
+	.estasoft-hp .ab {
+		flex-wrap: wrap;
+		gap: 0 12px;
+		padding-inline: 12px 112px;
+	}
+
+	.estasoft-hp .ab .tabs {
+		flex: 1 1 100%;
+		order: 3;
+	}
+
+	.estasoft-hp .g2,
+	.estasoft-hp .g3,
+	.estasoft-hp .g4 {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.estasoft-hp .btn,
+	.estasoft-hp .button,
+	.estasoft-hp input[type="text"],
+	.estasoft-hp input[type="email"],
+	.estasoft-hp input[type="url"],
+	.estasoft-hp input[type="number"],
+	.estasoft-hp input[type="date"],
+	.estasoft-hp input[type="search"],
+	.estasoft-hp select {
+		min-height: 40px;
+	}
+
+	.estasoft-hp .btn.sm,
+	.estasoft-hp .button-small {
+		min-height: 32px;
+	}
+
+	.estasoft-hp .tb input,
+	.estasoft-hp .tb select {
+		width: 100%;
+	}
+
+	/* A register list turns into one card per row, each value under its own label. */
+	.estasoft-hp .tbl.cards,
+	.estasoft-hp .tbl.cards tbody,
+	.estasoft-hp .tbl.cards tr,
+	.estasoft-hp .tbl.cards td {
+		display: block;
+	}
+
+	.estasoft-hp .tbl.cards thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+
+	.estasoft-hp .tbl.cards tr {
+		padding: 8px 12px;
+		border-bottom: 1px solid var(--bd2);
+	}
+
+	.estasoft-hp .tbl.cards td {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 6px 0;
+		border: 0;
+		text-align: end;
+	}
+
+	.estasoft-hp .tbl.cards td::before {
+		content: attr(data-label);
+		flex: none;
+		max-width: 45%;
+		color: var(--tx2);
+		font-size: 12px;
+		line-height: 20px;
+		font-weight: 600;
+		text-align: start;
+	}
+
+	.estasoft-hp .tbl.cards td.t1 {
+		text-align: start;
+	}
+
+	.estasoft-hp .tbl.cards td.t1::before,
+	.estasoft-hp .tbl.cards td[data-label=""]::before {
+		content: none;
+	}
+
+	.estasoft-hp .tbl.cards td.estasoft-hp-actions {
+		justify-content: flex-start;
+		flex-wrap: wrap;
+	}
+
+	/* Other tables keep their columns readable and scroll sideways instead of squeezing them. */
+	.estasoft-hp .widefat {
+		display: block;
+		position: relative; /* Keeps screen-reader text inside the box that scrolls. */
+		overflow-x: auto;
+	}
+}
+
+@media (max-width: 390px) {
+	.estasoft-hp .ph h1 {
+		font-size: 22px;
+	}
+
+	.estasoft-hp .kpi .n {
+		font-size: 24px;
+	}
+}
+
 @media print {
 	#adminmenumain,
 	#wpadminbar,
 	#wpfooter,
-	.notice,
+	.estasoft-hp .ab,
+	.estasoft-hp .notice,
 	.estasoft-hp-noprint {
 		display: none !important;
 	}
 
+	body.estasoft-hp-screen,
+	.estasoft-hp {
+		background: #fff;
+	}
+
 	#wpcontent,
 	#wpbody-content {
-		margin-left: 0 !important;
-		padding-left: 0 !important;
+		margin-inline-start: 0 !important;
+		padding-inline-start: 0 !important;
 	}
 }

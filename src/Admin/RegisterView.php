@@ -38,8 +38,9 @@ final class RegisterView {
 	 * @param string                $kind  Kind key.
 	 * @param string                $page  Menu slug.
 	 * @param array<string, string> $query Extra query arguments that keep the tab, for example tab=licences.
+	 * @param bool                  $header_action True when the screen already shows the Add button in its page header.
 	 */
-	public function render( string $kind, string $page, array $query = array() ): void {
+	public function render( string $kind, string $page, array $query = array(), bool $header_action = false ): void {
 		$def = Kinds::get( $kind );
 		if ( null === $def ) {
 			return;
@@ -60,42 +61,41 @@ final class RegisterView {
 				$this->confirmDelete( $kind, $base, $id );
 				break;
 			default:
-				$this->listing( $kind, $def, $base );
+				$this->listing( $kind, $def, $base, $header_action );
 		}
 	}
 
 	/**
 	 * The list of records.
 	 *
-	 * @param string               $kind Kind key.
-	 * @param array<string, mixed> $def  Schema.
-	 * @param string               $base Base URL of the screen.
+	 * @param string               $kind          Kind key.
+	 * @param array<string, mixed> $def           Schema.
+	 * @param string               $base          Base URL of the screen.
+	 * @param bool                 $header_action True when the screen keeps the Add button in its page header.
 	 */
-	private function listing( string $kind, array $def, string $base ): void {
+	private function listing( string $kind, array $def, string $base, bool $header_action ): void {
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 		$records  = $this->plugin->records()->listKind( $kind, Capabilities::canSeeSensitive() );
 		$people   = $this->peopleNames();
 		$add_url  = add_query_arg( array( 'view' => 'edit', 'kind' => $kind, 'id' => 0 ), $base );
+		$lead     = (int) $this->plugin->settings()->get( 'thresholds.licence_lead_days', 30 );
+		$today    = Clock::today();
 
 		echo '<div class="estasoft-hp-register" id="register-' . esc_attr( $kind ) . '">';
-		echo '<div class="estasoft-hp-register__head"><h2>' . esc_html( (string) $def['plural'] ) . '</h2>';
-		if ( $can_edit ) {
-			echo '<a class="button button-primary" href="' . esc_url( $add_url ) . '">' . esc_html(
-				sprintf(
-					/* translators: %s: kind label, for example "Licence". */
-					__( 'Add %s', 'estasoft-handover-passport' ),
-					mb_strtolower( (string) $def['label'] )
-				)
-			) . '</a>';
+		if ( ! $header_action ) {
+			echo '<div class="estasoft-hp-register__head"><h2>' . esc_html( (string) $def['plural'] ) . '</h2>';
+			if ( $can_edit ) {
+				echo '<a class="btn pri" href="' . esc_url( $add_url ) . '">' . Icons::svg( 'plus', 16 ) . esc_html( self::addLabel( $def ) ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
+			}
+			echo '</div>';
 		}
-		echo '</div>';
 
 		$this->suggestions( $kind, $records, $base );
 
 		if ( array() === $records ) {
 			echo '<div class="estasoft-hp-empty"><p>' . esc_html( $this->emptyText( $kind, $def ) ) . '</p>';
 			if ( $can_edit ) {
-				echo '<p><a class="button button-primary" href="' . esc_url( $add_url ) . '">' . esc_html(
+				echo '<p><a class="btn pri" href="' . esc_url( $add_url ) . '">' . esc_html(
 					sprintf(
 						/* translators: %s: kind label. */
 						__( 'Add the first %s', 'estasoft-handover-passport' ),
@@ -109,66 +109,283 @@ final class RegisterView {
 			return;
 		}
 
-		$columns   = (array) $def['columns'];
+		if ( Kinds::LICENCE === $kind ) {
+			$this->licenceFigures( $records, $today, $lead );
+		}
+
+		$columns   = Kinds::LICENCE === $kind ? array() : (array) $def['columns'];
 		$facts     = $this->plugin->scanService()->latestFacts();
 		$installed = array_fill_keys( array_map( 'strtolower', array_merge( array_keys( (array) ( $facts['plugins'] ?? array() ) ), array_keys( (array) ( $facts['themes'] ?? array() ) ) ) ), true );
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
-		foreach ( $columns as $column ) {
-			echo '<th scope="col">' . esc_html( $this->columnLabel( $def, (string) $column ) ) . '</th>';
+		$timeless  = ! empty( $def['timeless'] );
+		$licence   = Kinds::LICENCE === $kind;
+		$width     = $licence ? 8 : count( $columns ) + ( $timeless ? 1 : 2 );
+
+		echo '<section class="card flat"><div class="bdy">';
+		$this->toolbar( $kind, $def, count( $records ) );
+		echo '<div class="scr"><table class="tbl cards estasoft-hp-table" data-estasoft-list><caption class="screen-reader-text">' . esc_html( (string) $def['plural'] ) . '</caption><thead><tr>';
+		if ( $licence ) {
+			foreach ( $this->licenceHeadings() as $heading ) {
+				echo '<th scope="col">' . esc_html( $heading ) . '</th>';
+			}
+		} else {
+			foreach ( $columns as $column ) {
+				echo '<th scope="col">' . esc_html( $this->columnLabel( $def, (string) $column ) ) . '</th>';
+			}
 		}
-		$timeless = ! empty( $def['timeless'] );
-		echo '<th scope="col">' . esc_html__( 'Source', 'estasoft-handover-passport' ) . '</th>';
 		if ( ! $timeless ) {
-			echo '<th scope="col">' . esc_html__( 'Review', 'estasoft-handover-passport' ) . '</th>';
-		}
-		if ( Kinds::LICENCE === $kind ) {
-			echo '<th scope="col">' . esc_html__( 'Status', 'estasoft-handover-passport' ) . '</th>';
+			echo '<th scope="col">' . esc_html__( 'Freshness', 'estasoft-handover-passport' ) . '</th>';
 		}
 		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
 
 		foreach ( $records as $record ) {
-			echo '<tr>';
 			if ( ! empty( $record['hidden'] ) ) {
-				echo '<td colspan="' . esc_attr( (string) ( count( $columns ) + ( $timeless ? 1 : 2 ) + ( Kinds::LICENCE === $kind ? 1 : 0 ) ) ) . '"><em>' . esc_html__( 'Sensitive record, hidden', 'estasoft-handover-passport' ) . '</em></td><td></td></tr>';
+				echo '<tr data-f-status="||"><td colspan="' . esc_attr( (string) $width ) . '"><em>' . esc_html__( 'Sensitive record, hidden', 'estasoft-handover-passport' ) . '</em></td><td></td></tr>';
 				continue;
 			}
-			foreach ( $columns as $i => $column ) {
-				$text = $this->cell( $def, (string) $column, $record, $people );
-				if ( 0 === $i && $can_edit ) {
-					echo '<td><strong><a href="' . esc_url( add_query_arg( array( 'view' => 'edit', 'kind' => $kind, 'id' => $record['id'] ), $base ) ) . '">' . esc_html( '' !== $text ? $text : (string) $record['title'] ) . '</a></strong></td>';
-				} else {
-					echo '<td>' . esc_html( $text ) . '</td>';
+			$status = $licence ? LicenceStatus::compute( (array) $record['fields'], $today, $lead ) : '';
+			echo '<tr data-f-status="|' . esc_attr( $status ) . '|">';
+			$edit_url = add_query_arg( array( 'view' => 'edit', 'kind' => $kind, 'id' => $record['id'] ), $base );
+			if ( $licence ) {
+				$this->licenceCells( $record, $status, $installed, $edit_url, $can_edit, $today );
+			} else {
+				foreach ( $columns as $i => $column ) {
+					$this->genericCell( $def, (string) $column, $record, $people, 0 === $i, $edit_url, $can_edit, $today );
 				}
 			}
-			echo '<td>' . View::badge( (string) $record['source'], $this->sourceLabel( (string) $record['source'] ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			if ( ! $timeless ) {
-				echo '<td>' . View::badge( (string) $record['freshness'], Freshness::label( (string) $record['freshness'] ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+				echo '<td data-label="' . esc_attr__( 'Freshness', 'estasoft-handover-passport' ) . '">' . View::badge( (string) $record['freshness'], Freshness::label( (string) $record['freshness'] ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			}
-			if ( Kinds::LICENCE === $kind ) {
-				$status = LicenceStatus::compute( (array) $record['fields'], Clock::today(), (int) $this->plugin->settings()->get( 'thresholds.licence_lead_days', 30 ) );
-				echo '<td>' . View::badge( $status, LicenceStatus::label( $status ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-				$slug = strtolower( (string) ( $record['fields']['slug'] ?? '' ) );
-				if ( '' !== $slug && ! isset( $installed[ $slug ] ) && array() !== $installed ) {
-					echo ' ' . View::badge( 'unknown', __( 'Not installed', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-				}
-				echo '</td>';
-			}
-			echo '<td class="estasoft-hp-actions">';
+			echo '<td class="act estasoft-hp-actions" data-label="">';
 			if ( $can_edit ) {
 				if ( ! $timeless ) {
 					$this->verifyButton( $record, $base );
 				}
 				$this->kindButtons( $kind, $record, $base );
-				echo ' <a href="' . esc_url( add_query_arg( array( 'view' => 'edit', 'kind' => $kind, 'id' => $record['id'] ), $base ) ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>';
+				echo ' <a class="btn sm" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>';
 				if ( 'detected' !== $record['source'] ) {
-					echo ' <a class="estasoft-hp-danger" href="' . esc_url( add_query_arg( array( 'view' => 'delete', 'kind' => $kind, 'id' => $record['id'] ), $base ) ) . '">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</a>';
+					echo ' <a class="btn sm estasoft-hp-danger" href="' . esc_url( add_query_arg( array( 'view' => 'delete', 'kind' => $kind, 'id' => $record['id'] ), $base ) ) . '">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</a>';
 				}
 			}
 			echo '</td></tr>';
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		/* translators: 1: number of items shown, 2: number of items. */
+		$pattern = __( '%1$d of %2$d items', 'estasoft-handover-passport' );
+		echo '<div class="pgn"><span data-estasoft-count data-total="' . esc_attr( (string) count( $records ) ) . '" data-pattern="' . esc_attr( $pattern ) . '" aria-live="polite">' . esc_html(
+			sprintf(
+				/* translators: 1: shown, 2: total. */
+				__( '%1$d of %2$d items', 'estasoft-handover-passport' ),
+				count( $records ),
+				count( $records )
+			)
+		) . '</span></div>';
+		echo '</div></section>';
 		$this->deletedList( $kind, $base, $can_edit );
 		echo '</div>';
+	}
+
+	/**
+	 * Label of the Add button for a kind, for example "Add licence".
+	 *
+	 * @param array<string, mixed> $def Schema.
+	 */
+	public static function addLabel( array $def ): string {
+		return sprintf(
+			/* translators: %s: kind label, for example "licence". */
+			__( 'Add %s', 'estasoft-handover-passport' ),
+			mb_strtolower( (string) $def['label'] )
+		);
+	}
+
+	/**
+	 * The search box, and a status filter on licences. Narrowing the list happens in the browser.
+	 *
+	 * @param string               $kind  Kind key.
+	 * @param array<string, mixed> $def   Schema.
+	 * @param int                  $count Records.
+	 */
+	private function toolbar( string $kind, array $def, int $count ): void {
+		if ( $count < 2 ) {
+			return;
+		}
+		$id    = 'estasoft-hp-find-' . $kind;
+		$label = sprintf(
+			/* translators: %s: plural kind label. */
+			__( 'Search %s', 'estasoft-handover-passport' ),
+			mb_strtolower( (string) $def['plural'] )
+		);
+		echo '<div class="tb"><label class="screen-reader-text" for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>';
+		echo '<input class="fld" type="search" id="' . esc_attr( $id ) . '" data-estasoft-find placeholder="' . esc_attr( $label ) . '" autocomplete="off">';
+		if ( Kinds::LICENCE === $kind ) {
+			echo '<label class="screen-reader-text" for="' . esc_attr( $id ) . '-status">' . esc_html__( 'Status', 'estasoft-handover-passport' ) . '</label>';
+			echo '<select class="fld" id="' . esc_attr( $id ) . '-status" data-estasoft-filter="status"><option value="">' . esc_html__( 'All statuses', 'estasoft-handover-passport' ) . '</option>';
+			foreach ( array( LicenceStatus::EXPIRED, LicenceStatus::SOON, LicenceStatus::ACTIVE, LicenceStatus::CANCELLED, LicenceStatus::UNKNOWN, LicenceStatus::FREE ) as $status ) {
+				echo '<option value="' . esc_attr( $status ) . '">' . esc_html( LicenceStatus::label( $status ) ) . '</option>';
+			}
+			echo '</select>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * The three figures above the licence list: expired, expiring within the lead time, and fine.
+	 *
+	 * @param array<int, array<string, mixed>> $records Records.
+	 * @param string                           $today   Today, Y-m-d.
+	 * @param int                              $lead    Lead days.
+	 */
+	private function licenceFigures( array $records, string $today, int $lead ): void {
+		$expired = 0;
+		$soon    = 0;
+		$fine    = 0;
+		foreach ( $records as $record ) {
+			if ( ! empty( $record['hidden'] ) ) {
+				continue;
+			}
+			$status = LicenceStatus::compute( (array) $record['fields'], $today, $lead );
+			if ( LicenceStatus::EXPIRED === $status ) {
+				++$expired;
+			} elseif ( LicenceStatus::SOON === $status ) {
+				++$soon;
+			} elseif ( in_array( $status, array( LicenceStatus::ACTIVE, LicenceStatus::FREE ), true ) ) {
+				++$fine;
+			}
+		}
+		echo '<div class="g g3">';
+		echo View::kpi( (string) $expired, __( 'Expired', 'estasoft-handover-passport' ), View::badge( $expired > 0 ? 'needs_fixing' : 'ok', $expired > 0 ? __( 'Needs fixing', 'estasoft-handover-passport' ) : __( 'No action', 'estasoft-handover-passport' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts.
+		$soon_card = View::kpi(
+			(string) $soon,
+			sprintf(
+				/* translators: %d: lead time in days. */
+				__( 'Expire in %d days', 'estasoft-handover-passport' ),
+				$lead
+			),
+			View::badge( $soon > 0 ? 'worth_fixing' : 'ok', $soon > 0 ? __( 'Worth fixing', 'estasoft-handover-passport' ) : __( 'No action', 'estasoft-handover-passport' ) )
+		);
+		echo $soon_card; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts.
+		echo View::kpi( (string) $fine, __( 'Active or lifetime', 'estasoft-handover-passport' ), View::badge( 'ok', __( 'No action', 'estasoft-handover-passport' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts.
+		echo '</div>';
+	}
+
+	/**
+	 * Column headings of the licence list.
+	 *
+	 * @return array<int, string>
+	 */
+	private function licenceHeadings(): array {
+		return array(
+			__( 'Item', 'estasoft-handover-passport' ),
+			__( 'Term', 'estasoft-handover-passport' ),
+			__( 'Expires', 'estasoft-handover-passport' ),
+			__( 'Auto-renew', 'estasoft-handover-passport' ),
+			__( 'Status', 'estasoft-handover-passport' ),
+			__( 'Where the key lives', 'estasoft-handover-passport' ),
+		);
+	}
+
+	/**
+	 * The cells of one licence row: item with vendor, term, expiry with days, auto-renew, status and where the key lives.
+	 *
+	 * @param array<string, mixed> $record    Record.
+	 * @param string               $status    Computed status.
+	 * @param array<string, true>  $installed Lower-case slugs of installed plugins and themes.
+	 * @param string               $edit_url  Edit address.
+	 * @param bool                 $can_edit  Whether the viewer may edit.
+	 * @param string               $today     Today, Y-m-d.
+	 */
+	private function licenceCells( array $record, string $status, array $installed, string $edit_url, bool $can_edit, string $today ): void {
+		$fields = (array) $record['fields'];
+		$name   = (string) $record['title'];
+		$vendor = (string) ( $fields['vendor'] ?? '' );
+
+		echo '<td class="t1" data-label="' . esc_attr__( 'Item', 'estasoft-handover-passport' ) . '"><b>';
+		echo $can_edit ? '<a href="' . esc_url( $edit_url ) . '">' . esc_html( $name ) . '</a>' : esc_html( $name );
+		echo '</b>' . $this->subLine( $vendor, $record ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- subLine() escapes its parts.
+
+		$period = (string) ( $fields['billing_period'] ?? '' );
+		$terms  = (array) ( Kinds::get( Kinds::LICENCE )['fields']['billing_period']['options'] ?? array() );
+		echo '<td data-label="' . esc_attr__( 'Term', 'estasoft-handover-passport' ) . '">' . esc_html( (string) ( $terms[ $period ] ?? '' ) ) . '</td>';
+
+		$date     = (string) ( $fields['renews_on'] ?? '' );
+		$lifetime = Dates::isDate( $date ) ? false : ( 'yes' === ( $fields['free'] ?? 'no' ) || 'one_time' === $period );
+		echo '<td data-label="' . esc_attr__( 'Expires', 'estasoft-handover-passport' ) . '">';
+		if ( Dates::isDate( $date ) ) {
+			echo esc_html( Dates::displayDate( $date ) ) . '<span class="sub">' . esc_html( Dates::relative( $date, $today ) ) . '</span>';
+		} elseif ( $lifetime ) {
+			echo esc_html__( 'Never', 'estasoft-handover-passport' );
+		} else {
+			echo '<span class="sub">' . esc_html__( 'Not set', 'estasoft-handover-passport' ) . '</span>';
+		}
+		echo '</td>';
+
+		$auto = (string) ( $fields['auto_renew'] ?? '' );
+		echo '<td data-label="' . esc_attr__( 'Auto-renew', 'estasoft-handover-passport' ) . '">';
+		if ( $lifetime ) {
+			echo View::badge( 'check-na', __( 'Not applicable', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		} elseif ( 'yes' === $auto ) {
+			echo View::badge( 'ok', __( 'On', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		} elseif ( 'no' === $auto ) {
+			echo View::badge( 'bad', __( 'Off', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		} else {
+			echo View::badge( 'unknown', __( 'Unknown', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		}
+		echo '</td>';
+
+		echo '<td data-label="' . esc_attr__( 'Status', 'estasoft-handover-passport' ) . '">' . View::badge( $status, LicenceStatus::label( $status ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		$slug = strtolower( (string) ( $fields['slug'] ?? '' ) );
+		if ( '' !== $slug && ! isset( $installed[ $slug ] ) && array() !== $installed ) {
+			echo '<span class="sub">' . esc_html__( 'Not installed', 'estasoft-handover-passport' ) . '</span>';
+		}
+		echo '</td>';
+
+		$where = (string) ( $fields['key_location'] ?? '' );
+		echo '<td data-label="' . esc_attr__( 'Where the key lives', 'estasoft-handover-passport' ) . '">' . ( '' !== $where ? esc_html( $where ) : '<span class="sub">' . esc_html__( 'Not recorded', 'estasoft-handover-passport' ) . '</span>' ) . '</td>';
+	}
+
+	/**
+	 * One cell of a register that has no special layout. The first is the bold name, and dates carry their distance from today.
+	 *
+	 * @param array<string, mixed> $def      Schema.
+	 * @param string               $column   Column key.
+	 * @param array<string, mixed> $record   Record.
+	 * @param array<int, string>   $people   Person names by ID.
+	 * @param bool                 $first    Whether this is the first column.
+	 * @param string               $edit_url Edit address.
+	 * @param bool                 $can_edit Whether the viewer may edit.
+	 * @param string               $today    Today, Y-m-d.
+	 */
+	private function genericCell( array $def, string $column, array $record, array $people, bool $first, string $edit_url, bool $can_edit, string $today ): void {
+		$text  = $this->cell( $def, $column, $record, $people );
+		$label = esc_attr( $this->columnLabel( $def, $column ) );
+		if ( $first ) {
+			$name = '' !== $text ? $text : (string) $record['title'];
+			echo '<td class="t1" data-label="' . $label . '"><b>' . ( $can_edit ? '<a href="' . esc_url( $edit_url ) . '">' . esc_html( $name ) . '</a>' : esc_html( $name ) ) . '</b>' . $this->subLine( '', $record ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above and in subLine().
+			return;
+		}
+		$type  = (string) ( $def['fields'][ $column ]['type'] ?? 'text' );
+		$value = (string) ( $record['fields'][ $column ] ?? '' );
+		echo '<td data-label="' . $label . '">' . esc_html( $text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $label is escaped above.
+		if ( 'date' === $type && Dates::isDate( $value ) ) {
+			echo '<span class="sub">' . esc_html( Dates::relative( $value, $today ) ) . '</span>';
+		}
+		echo '</td>';
+	}
+
+	/**
+	 * The small line under a name: the vendor, then where the record came from when it was not typed in.
+	 *
+	 * @param string               $vendor Vendor or other helper text. Empty for none.
+	 * @param array<string, mixed> $record Record.
+	 */
+	private function subLine( string $vendor, array $record ): string {
+		$parts = array();
+		if ( '' !== $vendor ) {
+			$parts[] = esc_html( $vendor );
+		}
+		if ( 'entered' !== (string) $record['source'] ) {
+			$parts[] = esc_html( $this->sourceLabel( (string) $record['source'] ) );
+		}
+		return array() === $parts ? '' : '<span class="sub">' . implode( ' · ', $parts ) . '</span>';
 	}
 
 	/**
@@ -434,7 +651,7 @@ final class RegisterView {
 	private function verifyButton( array $record, string $base ): void {
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 		$this->hidden( 'verify', 'item', (int) $record['id'], $base );
-		echo '<button type="submit" class="button-link">' . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form>';
+		echo '<button type="submit" class="btn sm">' . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form>';
 	}
 
 	/**
@@ -577,7 +794,7 @@ final class RegisterView {
 		if ( isset( $buttons[ $kind ] ) ) {
 			echo ' <form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 			$this->hidden( $buttons[ $kind ][0], 'item', (int) $record['id'], $base, $kind );
-			echo '<button type="submit" class="button-link">' . esc_html( $buttons[ $kind ][1] ) . '</button></form>';
+			echo '<button type="submit" class="btn sm">' . esc_html( $buttons[ $kind ][1] ) . '</button></form>';
 		}
 	}
 

@@ -20,6 +20,60 @@
 		}
 	} );
 
+	// A register list narrows as you type in its search box or choose a value in one of its filters. Nothing leaves the browser.
+	// A filter is a select with data-estasoft-filter="name". A row lists its values for that filter in data-f-name, each between bars, for example "|admin|billing|".
+	function narrowList( box ) {
+		var scope = box.closest( '[data-estasoft-wrap]' ) || box.closest( '.card' );
+		var tables = scope ? scope.querySelectorAll( '[data-estasoft-list]' ) : [];
+		if ( ! tables.length ) {
+			return;
+		}
+		var find = scope.querySelector( '[data-estasoft-find]' );
+		var filters = scope.querySelectorAll( '[data-estasoft-filter]' );
+		var count = scope.querySelector( '[data-estasoft-count]' );
+		var word = find ? find.value.trim().toLowerCase() : '';
+		var shown = 0;
+		Array.prototype.forEach.call( tables, function ( table ) {
+			var here = 0;
+			Array.prototype.forEach.call( table.querySelectorAll( 'tbody tr' ), function ( row ) {
+				var match = '' === word || row.textContent.toLowerCase().indexOf( word ) !== -1;
+				Array.prototype.forEach.call( filters, function ( filter ) {
+					if ( match && '' !== filter.value ) {
+						match = ( row.getAttribute( 'data-f-' + filter.getAttribute( 'data-estasoft-filter' ) ) || '' ).indexOf( '|' + filter.value + '|' ) !== -1;
+					}
+				} );
+				row.hidden = ! match;
+				if ( match ) {
+					here++;
+				}
+			} );
+			shown += here;
+			// A card whose rows are all filtered out is hidden with them, when the page has several cards.
+			if ( tables.length > 1 && table.closest( '.card' ) ) {
+				table.closest( '.card' ).hidden = 0 === here;
+			}
+		} );
+		if ( count && count.hasAttribute( 'data-total' ) ) {
+			count.textContent = ( count.getAttribute( 'data-pattern' ) || '%1$d of %2$d items' )
+				.replace( '%1$d', String( shown ) )
+				.replace( '%2$d', count.getAttribute( 'data-total' ) );
+		}
+	}
+	// Pressing Enter in a search box only narrows the list. It does not send the filter form around it.
+	document.addEventListener( 'keydown', function ( event ) {
+		if ( 'Enter' === event.key && event.target && event.target.matches && event.target.matches( '[data-estasoft-find]' ) ) {
+			event.preventDefault();
+		}
+	} );
+	[ 'input', 'change' ].forEach( function ( type ) {
+		document.addEventListener( type, function ( event ) {
+			var target = event.target;
+			if ( target && target.matches && ( target.matches( '[data-estasoft-find]' ) || target.matches( '[data-estasoft-filter]' ) ) ) {
+				narrowList( target );
+			}
+		} );
+	} );
+
 	// A table that scrolls sideways on a narrow screen can be reached and scrolled from the keyboard.
 	function markScrollableTables() {
 		Array.prototype.forEach.call( document.querySelectorAll( '.estasoft-hp .estasoft-hp-table' ), function ( table ) {

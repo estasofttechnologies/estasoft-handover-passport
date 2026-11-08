@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Admin;
 
+use Estasoft\HandoverPassport\Findings\Level;
 use Estasoft\HandoverPassport\Install\Upgrader;
 use Estasoft\HandoverPassport\Plugin;
 use Estasoft\HandoverPassport\Security\Capabilities;
@@ -54,6 +55,9 @@ final class Admin {
 		add_action( 'admin_menu', array( $this, 'menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'admin_notices', array( $this, 'notices' ) );
+		add_filter( 'admin_body_class', array( $this, 'bodyClass' ) );
+		add_filter( 'parent_file', array( $this, 'parentFile' ) );
+		add_filter( 'submenu_file', array( $this, 'submenuFile' ) );
 		add_action( 'network_admin_notices', array( new NetworkNotice(), 'show' ) );
 		add_action( 'admin_post_' . self::SCAN_ACTION, array( $this, 'handleScan' ) );
 		add_filter( 'plugin_action_links_' . ESTASOFT_HP_BASENAME, array( $this, 'actionLinks' ) );
@@ -75,6 +79,32 @@ final class Admin {
 	}
 
 	/**
+	 * The sections shown in the Passport bar and in the menu, in that order: slug => words. Only sections the person
+	 * may open are listed.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sections(): array {
+		$all = array(
+			self::MENU_SLUG       => array( __( 'Overview', 'estasoft-handover-passport' ), Capabilities::VIEW ),
+			InventoryScreen::SLUG => array( __( 'Inventory', 'estasoft-handover-passport' ), Capabilities::VIEW ),
+			SafetyScreen::SLUG    => array( __( 'Safety nets', 'estasoft-handover-passport' ), Capabilities::VIEW ),
+			PeopleScreen::SLUG    => array( __( 'People and access', 'estasoft-handover-passport' ), Capabilities::VIEW ),
+			HistoryScreen::SLUG   => array( __( 'History', 'estasoft-handover-passport' ), Capabilities::VIEW ),
+			FindingsScreen::SLUG  => array( __( 'Findings', 'estasoft-handover-passport' ), Capabilities::VIEW ),
+			HandoverScreen::SLUG  => array( __( 'Handover', 'estasoft-handover-passport' ), Capabilities::VIEW ),
+			SettingsScreen::SLUG  => array( __( 'Settings', 'estasoft-handover-passport' ), Capabilities::CONFIGURE ),
+		);
+		$out = array();
+		foreach ( $all as $slug => $info ) {
+			if ( current_user_can( $info[1] ) ) {
+				$out[ $slug ] = $info[0];
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * Register the menu. A screen is listed only for people who hold its capability.
 	 */
 	public function menu(): void {
@@ -86,7 +116,7 @@ final class Admin {
 			Capabilities::VIEW,
 			self::MENU_SLUG,
 			array( $overview, 'render' ),
-			'dashicons-clipboard',
+			ESTASOFT_HP_URL . 'assets/images/passport-icon.png',
 			80
 		);
 		$this->screen_hooks[] = $top;
@@ -102,20 +132,23 @@ final class Admin {
 		Help::attach( $sub, self::MENU_SLUG );
 
 		$this->screens = array(
-			new SetupScreen( $this->plugin ),
 			new InventoryScreen( $this->plugin ),
 			new SafetyScreen( $this->plugin ),
 			new PeopleScreen( $this->plugin ),
-			new HandoverScreen( $this->plugin ),
 			new HistoryScreen( $this->plugin ),
 			new FindingsScreen( $this->plugin ),
+			new HandoverScreen( $this->plugin ),
 			new SettingsScreen( $this->plugin ),
 		);
 		foreach ( $this->screens as $screen ) {
+			$title = $screen->title();
+			if ( FindingsScreen::SLUG === $screen->slug() && Capabilities::can( Capabilities::VIEW ) ) {
+				$title .= $this->needsFixingBubble();
+			}
 			$hook                 = (string) add_submenu_page(
 				self::MENU_SLUG,
 				$screen->title(),
-				$screen->title(),
+				$title,
 				$screen->capability(),
 				$screen->slug(),
 				array( $screen, 'render' )
@@ -123,6 +156,74 @@ final class Admin {
 			$this->screen_hooks[] = $hook;
 			Help::attach( $hook, $screen->slug() );
 		}
+
+		// The setup guide is reached from the Overview and from the welcome page, so it has no menu item of its own.
+		$setup                = new SetupScreen( $this->plugin );
+		$this->screens[]      = $setup;
+		$hook                 = (string) add_submenu_page(
+			'',
+			$setup->title(),
+			$setup->title(),
+			$setup->capability(),
+			$setup->slug(),
+			array( $setup, 'render' )
+		);
+		$this->screen_hooks[] = $hook;
+		Help::attach( $hook, $setup->slug() );
+	}
+
+	/**
+	 * The count of findings that need fixing, as a small bubble beside Findings in the menu. It is kept for a minute so the
+	 * menu does not run the rules on every page.
+	 */
+	private function needsFixingBubble(): string {
+		$count = get_transient( 'estasoft_hp_menu_count' );
+		if ( false === $count ) {
+			$count = (int) ( $this->plugin->findings()->counts()[ Level::NEEDS ] ?? 0 );
+			set_transient( 'estasoft_hp_menu_count', $count, MINUTE_IN_SECONDS );
+		}
+		$count = (int) $count;
+		if ( $count < 1 ) {
+			return '';
+		}
+		return ' <span class="update-plugins count-' . $count . '"><span class="plugin-count" aria-hidden="true">' . number_format_i18n( $count ) . '</span><span class="screen-reader-text">' . esc_html(
+			sprintf(
+				/* translators: %s: number of findings. */
+				_n( '%s finding needs fixing', '%s findings need fixing', $count, 'estasoft-handover-passport' ),
+				number_format_i18n( $count )
+			)
+		) . '</span></span>';
+	}
+
+	/**
+	 * Mark the page so the stylesheet can use the whole width of the content area on Passport screens.
+	 *
+	 * @param string $classes Space-separated classes.
+	 */
+	public function bodyClass( $classes ): string {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( null !== $screen && in_array( $screen->id, $this->screen_hooks, true ) ) {
+			return trim( (string) $classes . ' estasoft-hp-screen' );
+		}
+		return (string) $classes;
+	}
+
+	/**
+	 * Keep the Passport menu open on the setup guide, which has no menu item.
+	 *
+	 * @param string|null $parent_file Parent file.
+	 */
+	public function parentFile( $parent_file ): string {
+		return SetupScreen::SLUG === Request::key( 'page' ) ? self::MENU_SLUG : (string) $parent_file;
+	}
+
+	/**
+	 * Highlight Overview while the setup guide is open.
+	 *
+	 * @param string|null $file Submenu file.
+	 */
+	public function submenuFile( $file ): string {
+		return SetupScreen::SLUG === Request::key( 'page' ) ? self::MENU_SLUG : (string) $file;
 	}
 
 	/**
@@ -131,6 +232,12 @@ final class Admin {
 	 * @param string $hook Current screen hook suffix.
 	 */
 	public function assets( $hook ): void {
+		// The menu icon is drawn on every admin page, so it is sized here and not in the screen stylesheet.
+		if ( Capabilities::can( Capabilities::VIEW ) ) {
+			wp_register_style( 'estasoft-hp-menu', false, array(), ESTASOFT_HP_VERSION );
+			wp_enqueue_style( 'estasoft-hp-menu' );
+			wp_add_inline_style( 'estasoft-hp-menu', '#adminmenu .toplevel_page_' . self::MENU_SLUG . ' .wp-menu-image img{width:16px;height:16px;padding:9px 0;border-radius:3px;opacity:1;box-sizing:content-box}' );
+		}
 		if ( ! in_array( (string) $hook, $this->screen_hooks, true ) ) {
 			return;
 		}

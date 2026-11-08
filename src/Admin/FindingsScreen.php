@@ -68,6 +68,45 @@ final class FindingsScreen extends Screen {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function describe( string $tab ): string {
+		if ( 'rules' === $tab ) {
+			return __( 'The rules that are checked, with a switch for each. A rule that is off needs a reason.', 'estasoft-handover-passport' );
+		}
+		if ( FindingRepository::OPEN !== $tab ) {
+			return __( 'Each finding states a fact and a date. It clears by itself when the fact stops being true.', 'estasoft-handover-passport' );
+		}
+		$counts = $this->plugin->findings()->counts();
+		$open   = (int) array_sum( array_map( 'intval', $counts ) );
+		return sprintf(
+			/* translators: 1: number of open findings, 2: number of rules. */
+			_n( '%1$d open finding from %2$d rules. A scan runs after each daily check.', '%1$d open findings from %2$d rules. A scan runs after each daily check.', $open, 'estasoft-handover-passport' ),
+			$open,
+			count( RuleCatalog::all() )
+		);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function extra( string $tab ): string {
+		if ( ! Capabilities::can( Capabilities::EDIT ) || 'rules' === $tab ) {
+			return '';
+		}
+		ob_start();
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
+		Form::nonce( self::CHECK );
+		echo '<input type="hidden" name="action" value="' . esc_attr( self::CHECK ) . '"><input type="hidden" name="return" value="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => $tab ), admin_url( 'admin.php' ) ) ) . '">';
+		echo '<button type="submit" class="btn pri">' . Icons::svg( 'refresh', 16 ) . esc_html__( 'Run check now', 'estasoft-handover-passport' ) . '</button></form>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	protected function tab( string $tab ): void {
 		if ( 'rules' === $tab ) {
@@ -90,75 +129,134 @@ final class FindingsScreen extends Screen {
 			usort( $all, static fn( array $a, array $b ): int => strcmp( (string) $b['resolved_at'], (string) $a['resolved_at'] ) );
 			$all = array_slice( $all, 0, 100 );
 		}
-		$can_edit = Capabilities::can( Capabilities::EDIT );
-		$links    = new FindingLinks( $this->plugin );
-
-		echo '<p class="description">' . esc_html__( 'Each finding states a fact and a date. It clears by itself when the fact stops being true.', 'estasoft-handover-passport' ) . '</p>';
+		$links = new FindingLinks( $this->plugin );
 
 		if ( FindingRepository::OPEN === $state ) {
-			$counts = $service->counts();
-			echo '<div class="estasoft-hp-summary-counts">';
-			foreach ( Level::all() as $level ) {
-				echo '<span>' . View::badge( $level, Level::label( $level ) ) . ' <strong>' . esc_html( (string) $counts[ $level ] ) . '</strong></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-			}
-			echo '</div>';
-			$this->severityFilter( $severity );
 			$meta = $service->meta();
 			if ( array() !== $meta['not_checked'] ) {
-				echo '<div class="notice notice-info inline"><p>' . esc_html(
+				echo '<div class="msg in">' . Icons::svg( 'info', 16 ) . '<div>' . esc_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 					sprintf(
 						/* translators: %d: number of rules. */
 						_n( '%d rule could not be checked yet because the data it needs is missing. It is not counted as passed.', '%d rules could not be checked yet because the data they need is missing. They are not counted as passed.', count( $meta['not_checked'] ), 'estasoft-handover-passport' ),
 						count( $meta['not_checked'] )
 					)
-				) . ' <a href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'rules' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'See the rules', 'estasoft-handover-passport' ) . '</a></p></div>';
+				) . ' <a href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'rules' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'See the rules', 'estasoft-handover-passport' ) . '</a></div></div>';
 			}
 		}
 
 		if ( array() === $all ) {
 			echo '<div class="estasoft-hp-empty"><p>' . esc_html( $this->emptyText( $state ) ) . '</p></div>';
-			$this->checkButton( $can_edit );
 			return;
 		}
 
-		echo '<table class="widefat striped estasoft-hp-table estasoft-hp-findings"><thead><tr>';
+		echo '<div class="estasoft-hp-register" data-estasoft-wrap>';
+		$this->toolbar( $all, $links, FindingRepository::OPEN === $state );
+		if ( FindingRepository::OPEN === $state ) {
+			foreach ( Level::all() as $level ) {
+				$group = array_values( array_filter( $all, static fn( array $f ): bool => (string) $f['severity'] === $level ) );
+				if ( array() === $group ) {
+					continue;
+				}
+				$this->group( Level::label( $level ) . ' (' . count( $group ) . ')', $group, $state, $links );
+			}
+		} else {
+			$this->group( '' === $severity ? '' : Level::label( $severity ), $all, $state, $links );
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * The search box and the Level and Where filters. They narrow what is on the page; nothing is sent.
+	 *
+	 * @param array<int, array<string, mixed>> $all   Findings on the page.
+	 * @param FindingLinks                     $links Link helper.
+	 * @param bool                             $level Whether to offer the Level filter.
+	 */
+	private function toolbar( array $all, FindingLinks $links, bool $level ): void {
+		$where = array();
+		foreach ( $all as $finding ) {
+			$name = $links->where( $finding );
+			if ( '' !== $name ) {
+				$where[ sanitize_title( $name ) ] = $name;
+			}
+		}
+		asort( $where );
+		echo '<div class="tb"><label class="screen-reader-text" for="estasoft-hp-find-findings">' . esc_html__( 'Search findings', 'estasoft-handover-passport' ) . '</label>';
+		echo '<input class="fld" type="search" id="estasoft-hp-find-findings" data-estasoft-find placeholder="' . esc_attr__( 'Search findings', 'estasoft-handover-passport' ) . '" autocomplete="off">';
+		if ( $level ) {
+			echo '<label class="screen-reader-text" for="estasoft-hp-find-level">' . esc_html__( 'Level', 'estasoft-handover-passport' ) . '</label>';
+			echo '<select class="fld" id="estasoft-hp-find-level" data-estasoft-filter="level"><option value="">' . esc_html__( 'All levels', 'estasoft-handover-passport' ) . '</option>';
+			foreach ( Level::all() as $key ) {
+				echo '<option value="' . esc_attr( $key ) . '">' . esc_html( Level::label( $key ) ) . '</option>';
+			}
+			echo '</select>';
+		}
+		if ( count( $where ) > 1 ) {
+			echo '<label class="screen-reader-text" for="estasoft-hp-find-where">' . esc_html__( 'Where', 'estasoft-handover-passport' ) . '</label>';
+			echo '<select class="fld" id="estasoft-hp-find-where" data-estasoft-filter="where"><option value="">' . esc_html__( 'Everywhere', 'estasoft-handover-passport' ) . '</option>';
+			foreach ( $where as $key => $name ) {
+				echo '<option value="' . esc_attr( $key ) . '">' . esc_html( $name ) . '</option>';
+			}
+			echo '</select>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * One card with a table of findings.
+	 *
+	 * @param string                           $title    Card title, or an empty string for none.
+	 * @param array<int, array<string, mixed>> $findings Findings.
+	 * @param string                           $state    State.
+	 * @param FindingLinks                     $links    Link helper.
+	 */
+	private function group( string $title, array $findings, string $state, FindingLinks $links ): void {
+		$can_edit = Capabilities::can( Capabilities::EDIT );
+		echo '<section class="card flat">';
+		if ( '' !== $title ) {
+			echo '<div class="hd"><h2>' . esc_html( $title ) . '</h2></div>';
+		}
+		echo '<div class="bdy"><div class="scr"><table class="tbl cards estasoft-hp-table estasoft-hp-findings" data-estasoft-list><caption class="screen-reader-text">' . esc_html( '' !== $title ? $title : __( 'Findings', 'estasoft-handover-passport' ) ) . '</caption><thead><tr>';
 		echo '<th scope="col">' . esc_html__( 'Level', 'estasoft-handover-passport' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Finding', 'estasoft-handover-passport' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Where', 'estasoft-handover-passport' ) . '</th>';
 		echo '<th scope="col">' . esc_html( FindingRepository::RESOLVED === $state ? __( 'Resolved on', 'estasoft-handover-passport' ) : __( 'First seen', 'estasoft-handover-passport' ) ) . '</th>';
 		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th>';
 		echo '</tr></thead><tbody>';
-		foreach ( $all as $finding ) {
-			echo '<tr><td>' . View::badge( (string) $finding['severity'], (string) $finding['severity_label'] ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-			echo '<td>' . esc_html( (string) $finding['message'] ) . '<div class="estasoft-hp-finding__rule">' . esc_html( (string) $finding['rule_id'] . ' · ' . (string) $finding['rule_title'] ) . '</div>';
+		foreach ( $findings as $finding ) {
+			$where = $links->where( $finding );
+			echo '<tr data-f-level="|' . esc_attr( (string) $finding['severity'] ) . '|" data-f-where="|' . esc_attr( sanitize_title( $where ) ) . '|">';
+			echo '<td class="t1" data-label="' . esc_attr__( 'Level', 'estasoft-handover-passport' ) . '">' . View::badge( (string) $finding['severity'], (string) $finding['severity_label'] ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			echo '<td data-label="' . esc_attr__( 'Finding', 'estasoft-handover-passport' ) . '"><b>' . esc_html( (string) $finding['message'] ) . '</b><span class="sub">' . esc_html( (string) $finding['rule_id'] . ' · ' . (string) $finding['rule_title'] ) . '</span>';
 			if ( FindingRepository::SNOOZED === $state && '' !== (string) $finding['snoozed_until'] ) {
-				echo '<div class="estasoft-hp-muted">' . esc_html(
+				echo '<span class="sub">' . esc_html(
 					sprintf(
 						/* translators: %s: date. */
 						__( 'Snoozed until %s', 'estasoft-handover-passport' ),
 						Dates::display( (string) $finding['snoozed_until'] )
 					)
-				) . '</div>';
+				) . '</span>';
 			}
 			if ( FindingRepository::ACCEPTED === $state ) {
-				echo '<div class="estasoft-hp-muted">' . esc_html(
+				echo '<span class="sub">' . esc_html(
 					sprintf(
 						/* translators: %s: reason given when the finding was accepted. */
 						__( 'Accepted: %s', 'estasoft-handover-passport' ),
 						(string) $finding['accepted_reason']
 					)
-				) . '</div>';
+				) . '</span>';
 			}
-			echo '</td><td>' . esc_html( Dates::display( FindingRepository::RESOLVED === $state ? (string) $finding['resolved_at'] : (string) $finding['first_seen'] ) ) . '</td><td class="estasoft-hp-actions">';
+			echo '</td><td data-label="' . esc_attr__( 'Where', 'estasoft-handover-passport' ) . '">' . esc_html( $where ) . '</td>';
+			echo '<td data-label="' . esc_attr( FindingRepository::RESOLVED === $state ? __( 'Resolved on', 'estasoft-handover-passport' ) : __( 'First seen', 'estasoft-handover-passport' ) ) . '">' . esc_html( Dates::display( FindingRepository::RESOLVED === $state ? (string) $finding['resolved_at'] : (string) $finding['first_seen'] ) ) . '</td><td class="act estasoft-hp-actions" data-label="">';
 			if ( FindingRepository::RESOLVED !== $state ) {
-				echo '<a class="button button-small" href="' . esc_url( $links->url( $finding ) ) . '">' . esc_html__( 'Go and fix', 'estasoft-handover-passport' ) . '</a> ';
+				echo '<a class="btn sm" href="' . esc_url( $links->url( $finding ) ) . '">' . esc_html( '' === $where ? __( 'Go and fix', 'estasoft-handover-passport' ) : __( 'Open', 'estasoft-handover-passport' ) ) . '</a> ';
 			}
 			if ( $can_edit ) {
 				$this->tools( $finding, $state );
 			}
 			echo '</td></tr>';
 		}
-		echo '</tbody></table>';
-		$this->checkButton( $can_edit );
+		echo '</tbody></table></div></div></section>';
 	}
 
 	/**
@@ -171,7 +269,7 @@ final class FindingsScreen extends Screen {
 		$action = esc_url( admin_url( 'admin-post.php' ) );
 		$id     = (int) $finding['id'];
 		if ( FindingRepository::OPEN === $state ) {
-			echo '<details class="estasoft-hp-finding__tools"><summary>' . esc_html__( 'Snooze or accept', 'estasoft-handover-passport' ) . '</summary>';
+			echo '<details class="estasoft-hp-finding__tools"><summary class="btn sm">' . Icons::svg( 'clock', 16 ) . esc_html__( 'Snooze or accept', 'estasoft-handover-passport' ) . '</summary>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 			echo '<form method="post" action="' . $action . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above.
 			$this->hidden( $id );
 			echo '<label for="estasoft-hp-days-' . esc_attr( (string) $id ) . '">' . esc_html__( 'Hide for', 'estasoft-handover-passport' ) . '</label>';
@@ -180,17 +278,17 @@ final class FindingsScreen extends Screen {
 				/* translators: %d: number of days. */
 				echo '<option value="' . esc_attr( (string) $days ) . '">' . esc_html( sprintf( _n( '%d day', '%d days', $days, 'estasoft-handover-passport' ), $days ) ) . '</option>';
 			}
-			echo '</select> <button type="submit" name="op" value="snooze" class="button">' . esc_html__( 'Snooze', 'estasoft-handover-passport' ) . '</button>';
+			echo '</select> <button type="submit" name="op" value="snooze" class="btn">' . esc_html__( 'Snooze', 'estasoft-handover-passport' ) . '</button>';
 			echo '<p><label for="estasoft-hp-reason-' . esc_attr( (string) $id ) . '">' . esc_html__( 'Or accept it, and say why', 'estasoft-handover-passport' ) . '</label>';
 			echo '<input type="text" class="widefat" maxlength="500" id="estasoft-hp-reason-' . esc_attr( (string) $id ) . '" name="reason" autocomplete="off"></p>';
-			echo '<button type="submit" name="op" value="accept" class="button">' . esc_html__( 'Accept with this reason', 'estasoft-handover-passport' ) . '</button>';
+			echo '<button type="submit" name="op" value="accept" class="btn">' . esc_html__( 'Accept with this reason', 'estasoft-handover-passport' ) . '</button>';
 			echo '</form></details>';
 			return;
 		}
 		if ( in_array( $state, array( FindingRepository::SNOOZED, FindingRepository::ACCEPTED ), true ) ) {
 			echo '<form method="post" action="' . $action . '" class="estasoft-hp-inline">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above.
 			$this->hidden( $id );
-			echo '<button type="submit" name="op" value="reopen" class="button button-small">' . esc_html__( 'Reopen', 'estasoft-handover-passport' ) . '</button></form>';
+			echo '<button type="submit" name="op" value="reopen" class="btn sm">' . esc_html__( 'Reopen', 'estasoft-handover-passport' ) . '</button></form>';
 		}
 	}
 
@@ -203,20 +301,6 @@ final class FindingsScreen extends Screen {
 		Form::nonce( self::ACTION );
 		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '"><input type="hidden" name="id" value="' . esc_attr( (string) $id ) . '">';
 		echo '<input type="hidden" name="return" value="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => Request::key( 'tab', 'open' ) ), admin_url( 'admin.php' ) ) ) . '">';
-	}
-
-	/**
-	 * Level filter for the open list.
-	 *
-	 * @param string $current Current level key or empty.
-	 */
-	private function severityFilter( string $current ): void {
-		echo '<form method="get" class="estasoft-hp-filter"><input type="hidden" name="page" value="' . esc_attr( self::SLUG ) . '"><input type="hidden" name="tab" value="open">';
-		echo '<label for="estasoft-hp-severity">' . esc_html__( 'Show', 'estasoft-handover-passport' ) . '</label> <select id="estasoft-hp-severity" name="severity"><option value="">' . esc_html__( 'All levels', 'estasoft-handover-passport' ) . '</option>';
-		foreach ( Level::all() as $level ) {
-			echo '<option value="' . esc_attr( $level ) . '"' . selected( $current, $level, false ) . '>' . esc_html( Level::label( $level ) ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
-		}
-		echo '</select> <button class="button" type="submit">' . esc_html__( 'Filter', 'estasoft-handover-passport' ) . '</button></form>';
 	}
 
 	/**
@@ -235,21 +319,6 @@ final class FindingsScreen extends Screen {
 			default:
 				return __( 'No open findings. This means the rules found nothing to report on the data they could read. It is not a statement that the site is in good shape.', 'estasoft-handover-passport' );
 		}
-	}
-
-	/**
-	 * Button that runs every rule again.
-	 *
-	 * @param bool $can_edit Whether the viewer may run it.
-	 */
-	private function checkButton( bool $can_edit ): void {
-		if ( ! $can_edit ) {
-			return;
-		}
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline-form">';
-		Form::nonce( self::CHECK );
-		echo '<input type="hidden" name="action" value="' . esc_attr( self::CHECK ) . '"><input type="hidden" name="return" value="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => Request::key( 'tab', 'open' ) ), admin_url( 'admin.php' ) ) ) . '">';
-		echo '<p><button type="submit" class="button">' . esc_html__( 'Check the rules now', 'estasoft-handover-passport' ) . '</button></p></form>';
 	}
 
 	/**

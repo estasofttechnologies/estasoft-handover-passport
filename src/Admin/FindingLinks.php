@@ -32,6 +32,58 @@ final class FindingLinks {
 	 * @param array<string, mixed> $finding Presented finding.
 	 */
 	public function url( array $finding ): string {
+		return add_query_arg( $this->args( $finding ), admin_url( 'admin.php' ) );
+	}
+
+	/**
+	 * The words for the button that opens a finding, naming where it leads: "Open Licences".
+	 *
+	 * @param array<string, mixed> $finding Presented finding.
+	 */
+	public function label( array $finding ): string {
+		$name = $this->where( $finding );
+		if ( '' === $name ) {
+			return __( 'Go and fix', 'estasoft-handover-passport' );
+		}
+		/* translators: %s: name of the place that opens, for example "Licences". */
+		return sprintf( __( 'Open %s', 'estasoft-handover-passport' ), $name );
+	}
+
+	/**
+	 * The name of the place where a finding is fixed, for example "Licences". Empty when it has no particular place.
+	 *
+	 * @param array<string, mixed> $finding Presented finding.
+	 */
+	public function where( array $finding ): string {
+		$args  = $this->args( $finding );
+		$names = array(
+			InventoryScreen::SLUG . '|licences' => __( 'Licences', 'estasoft-handover-passport' ),
+			InventoryScreen::SLUG . '|domains'  => __( 'Domains', 'estasoft-handover-passport' ),
+			InventoryScreen::SLUG . '|hosting'  => __( 'Hosting', 'estasoft-handover-passport' ),
+			InventoryScreen::SLUG . '|services' => __( 'Services', 'estasoft-handover-passport' ),
+			InventoryScreen::SLUG . '|stack'    => __( 'Stack', 'estasoft-handover-passport' ),
+			SafetyScreen::SLUG . '|backups'     => __( 'Backups', 'estasoft-handover-passport' ),
+			SafetyScreen::SLUG . '|tests'       => __( 'Restore tests', 'estasoft-handover-passport' ),
+			SafetyScreen::SLUG . '|runbooks'    => __( 'Runbooks', 'estasoft-handover-passport' ),
+			SafetyScreen::SLUG . '|urls'        => __( 'Critical URLs', 'estasoft-handover-passport' ),
+			PeopleScreen::SLUG . '|people'      => __( 'People', 'estasoft-handover-passport' ),
+			PeopleScreen::SLUG . '|ownership'   => __( 'Ownership', 'estasoft-handover-passport' ),
+			PeopleScreen::SLUG . '|access'      => __( 'Access', 'estasoft-handover-passport' ),
+			HistoryScreen::SLUG . '|incidents'  => __( 'Incidents', 'estasoft-handover-passport' ),
+			HandoverScreen::SLUG . '|checklist' => __( 'Checklist', 'estasoft-handover-passport' ),
+			HandoverScreen::SLUG . '|snapshots' => __( 'Snapshots', 'estasoft-handover-passport' ),
+			SettingsScreen::SLUG . '|general'   => __( 'Settings', 'estasoft-handover-passport' ),
+		);
+		return $names[ (string) ( $args['page'] ?? '' ) . '|' . (string) ( $args['tab'] ?? '' ) ] ?? '';
+	}
+
+	/**
+	 * Query arguments of the place that fixes a finding.
+	 *
+	 * @param array<string, mixed> $finding Presented finding.
+	 * @return array<string, mixed>
+	 */
+	private function args( array $finding ): array {
 		$screen = (array) $finding['screen'];
 		$args   = array( 'page' => (string) ( $screen['page'] ?? Admin::MENU_SLUG ) );
 		if ( '' !== (string) ( $screen['tab'] ?? '' ) ) {
@@ -49,7 +101,7 @@ final class FindingLinks {
 		} elseif ( 'runbook' === $finding['subject_type'] && $id > 0 ) {
 			$args = array( 'page' => SafetyScreen::SLUG, 'tab' => 'runbooks', 'view' => 'edit', 'id' => $id );
 		}
-		return add_query_arg( $args, admin_url( 'admin.php' ) );
+		return $args;
 	}
 
 	/**

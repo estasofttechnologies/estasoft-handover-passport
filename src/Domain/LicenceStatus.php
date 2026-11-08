@@ -14,7 +14,7 @@ use Estasoft\HandoverPassport\Support\Dates;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Expired, Renews soon, Active, Cancelled or Unknown.
+ * Expired, Expires soon, Active, Cancelled or Unknown.
  */
 final class LicenceStatus {
 
@@ -58,7 +58,7 @@ final class LicenceStatus {
 	public static function label( string $status ): string {
 		$labels = array(
 			self::EXPIRED   => __( 'Expired', 'estasoft-handover-passport' ),
-			self::SOON      => __( 'Renews soon', 'estasoft-handover-passport' ),
+			self::SOON      => __( 'Expires soon', 'estasoft-handover-passport' ),
 			self::ACTIVE    => __( 'Active', 'estasoft-handover-passport' ),
 			self::CANCELLED => __( 'Cancelled', 'estasoft-handover-passport' ),
 			self::UNKNOWN   => __( 'Unknown', 'estasoft-handover-passport' ),

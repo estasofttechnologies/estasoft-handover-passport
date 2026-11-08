@@ -129,14 +129,55 @@ final class HistoryScreen extends Screen {
 	 *
 	 * @param string $tab Tab key.
 	 */
+	protected function describe( string $tab ): string {
+		if ( ! $this->onList() ) {
+			return '';
+		}
+		switch ( $tab ) {
+			case 'notes':
+				return __( 'Notes about work done on the site, such as updates, fixes and migrations. Agencies can use this as a maintenance log.', 'estasoft-handover-passport' );
+			case 'incidents':
+				return __( 'Write down what went wrong while it is fresh: what happened, the effect, the cause, the fix, how long the site took to come back and what will change. The next maintainer learns more from this than from the change log.', 'estasoft-handover-passport' );
+			default:
+				$count = $this->plugin->changeLog()->repo()->countFor( array() );
+				return sprintf(
+					/* translators: %d: number of entries in the change log. */
+					_n( '%d entry. Detected changes are written for you; add the rest by hand.', '%d entries. Detected changes are written for you; add the rest by hand.', $count, 'estasoft-handover-passport' ),
+					$count
+				);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function action( string $tab ): ?array {
+		if ( 'incidents' === $tab ) {
+			return $this->addAction( Kinds::INCIDENT, $tab );
+		}
+		if ( 'changes' === $tab && Capabilities::can( Capabilities::EDIT ) ) {
+			return array(
+				'label' => __( 'Add entry', 'estasoft-handover-passport' ),
+				'url'   => add_query_arg( array( 'page' => self::SLUG, 'tab' => 'notes' ), admin_url( 'admin.php' ) ) . '#estasoft-hp-add-note',
+			);
+		}
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
 	protected function tab( string $tab ): void {
 		if ( 'notes' === $tab ) {
 			$this->notes();
 			return;
 		}
 		if ( 'incidents' === $tab ) {
-			echo '<p class="description">' . esc_html__( 'Write down what went wrong while it is fresh: what happened, the effect, the cause, the fix, how long the site took to come back and what will change. The next maintainer learns more from this than from the change log.', 'estasoft-handover-passport' ) . '</p>';
-			( new RegisterView( $this->plugin ) )->render( Kinds::INCIDENT, self::SLUG, $this->keep( 'incidents' ) );
+			( new RegisterView( $this->plugin ) )->render( Kinds::INCIDENT, self::SLUG, $this->keep( 'incidents' ), true );
 			return;
 		}
 		$this->changes();
@@ -167,27 +208,31 @@ final class HistoryScreen extends Screen {
 			$base = add_query_arg( 'since_snapshot', (string) $since_id, $base );
 		}
 
-		echo '<form method="get" action="' . esc_url( admin_url( 'admin.php' ) ) . '" class="estasoft-hp-filterbar">';
+		echo '<section class="card flat"><div class="bdy">';
+		echo '<form method="get" action="' . esc_url( admin_url( 'admin.php' ) ) . '" class="tb estasoft-hp-filterbar">';
 		echo '<input type="hidden" name="page" value="' . esc_attr( self::SLUG ) . '"><input type="hidden" name="tab" value="changes">';
-		echo '<label for="estasoft-hp-kind">' . esc_html__( 'Show', 'estasoft-handover-passport' ) . '</label> <select id="estasoft-hp-kind" name="kind"><option value="">' . esc_html__( 'Everything', 'estasoft-handover-passport' ) . '</option>';
+		echo '<label class="screen-reader-text" for="estasoft-hp-find-changes">' . esc_html__( 'Search the change log', 'estasoft-handover-passport' ) . '</label>';
+		echo '<input class="fld" type="search" id="estasoft-hp-find-changes" data-estasoft-find placeholder="' . esc_attr__( 'Search this page', 'estasoft-handover-passport' ) . '" autocomplete="off">';
+		echo '<label class="screen-reader-text" for="estasoft-hp-kind">' . esc_html__( 'Kind', 'estasoft-handover-passport' ) . '</label><select id="estasoft-hp-kind" name="kind"><option value="">' . esc_html__( 'All kinds', 'estasoft-handover-passport' ) . '</option>';
 		foreach ( ChangeText::filterKinds() as $key => $label ) {
 			echo '<option value="' . esc_attr( $key ) . '"' . selected( $kind, $key, false ) . '>' . esc_html( $label ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
 		}
 		echo '</select>';
 		if ( array() !== $snapshots ) {
-			echo ' <label for="estasoft-hp-since">' . esc_html__( 'Since snapshot', 'estasoft-handover-passport' ) . '</label> <select id="estasoft-hp-since" name="since_snapshot"><option value="">' . esc_html__( 'Any time', 'estasoft-handover-passport' ) . '</option>';
+			echo '<label class="screen-reader-text" for="estasoft-hp-since">' . esc_html__( 'Since snapshot', 'estasoft-handover-passport' ) . '</label><select id="estasoft-hp-since" name="since_snapshot"><option value="">' . esc_html__( 'Any time', 'estasoft-handover-passport' ) . '</option>';
 			foreach ( $snapshots as $snapshot ) {
 				echo '<option value="' . esc_attr( (string) $snapshot['id'] ) . '"' . selected( $since_id, (int) $snapshot['id'], false ) . '>' . esc_html( (string) $snapshot['name'] . ' · ' . Dates::display( (string) $snapshot['created_at'], true ) . ' UTC' ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
 			}
 			echo '</select>';
 		}
-		echo ' <button type="submit" class="button">' . esc_html__( 'Filter', 'estasoft-handover-passport' ) . '</button></form>';
+		echo '<button type="submit" class="btn">' . esc_html__( 'Filter', 'estasoft-handover-passport' ) . '</button><span class="sp1"></span>';
 		if ( Capabilities::can( Capabilities::EXPORT ) ) {
-			echo '<p><a class="button" href="' . esc_url( $this->csvUrl( $kind, $since_id ) ) . '">' . esc_html__( 'Download as CSV', 'estasoft-handover-passport' ) . '</a> <span class="description">' . esc_html__( 'The entries that match the filter above, opened in a spreadsheet.', 'estasoft-handover-passport' ) . '</span></p>';
+			echo '<a class="btn" href="' . esc_url( $this->csvUrl( $kind, $since_id ) ) . '">' . Icons::svg( 'download', 16 ) . esc_html__( 'Export CSV', 'estasoft-handover-passport' ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 		}
+		echo '</form>';
 
 		if ( null !== $since ) {
-			echo '<p class="description">' . esc_html(
+			echo '<p class="estasoft-hp-cardnote">' . esc_html(
 				sprintf(
 					/* translators: 1: snapshot name, 2: date and time. */
 					__( 'Showing what changed after the snapshot “%1$s”, made %2$s UTC.', 'estasoft-handover-passport' ),
@@ -200,30 +245,47 @@ final class HistoryScreen extends Screen {
 			$empty = null !== $since
 				? __( 'Nothing has changed since this snapshot.', 'estasoft-handover-passport' )
 				: __( 'No changes are logged yet. Updates, new administrators and edits to records appear here with who made them.', 'estasoft-handover-passport' );
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html( $empty ) . '</p></div>';
+			echo '<div class="estasoft-hp-empty"><p>' . esc_html( $empty ) . '</p></div></div></section>';
 			return;
 		}
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'When', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'What', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Who', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Source', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
-		foreach ( $rows as $row ) {
-			echo '<tr><td>' . esc_html( Dates::display( (string) $row['changed_at'], true ) ) . '</td><td>' . esc_html( ChangeText::describe( $row ) ) . '</td><td>' . esc_html( (string) $row['actor_label'] ) . '</td><td>' . esc_html( (string) $row['source'] ) . '</td></tr>';
+		$kinds = ChangeText::filterKinds();
+		echo '<div class="scr"><table class="tbl cards estasoft-hp-table" data-estasoft-list><caption class="screen-reader-text">' . esc_html__( 'Change log', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
+		foreach ( array( __( 'When', 'estasoft-handover-passport' ), __( 'What changed', 'estasoft-handover-passport' ), __( 'Kind', 'estasoft-handover-passport' ), __( 'Source', 'estasoft-handover-passport' ), __( 'By', 'estasoft-handover-passport' ) ) as $heading ) {
+			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
 		}
-		echo '</tbody></table>';
+		echo '</tr></thead><tbody>';
+		foreach ( $rows as $row ) {
+			$detected = in_array( (string) $row['source'], array( 'scan', 'wordpress' ), true );
+			echo '<tr>';
+			echo '<td class="t1" data-label="' . esc_attr__( 'When', 'estasoft-handover-passport' ) . '">' . esc_html( Dates::display( (string) $row['changed_at'], true ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'What changed', 'estasoft-handover-passport' ) . '">' . esc_html( ChangeText::describe( $row ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Kind', 'estasoft-handover-passport' ) . '">' . esc_html( $kinds[ (string) $row['kind'] ] ?? ucfirst( str_replace( '_', ' ', (string) $row['kind'] ) ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Source', 'estasoft-handover-passport' ) . '"><span class="tag">' . Icons::svg( $detected ? 'search' : 'edit' ) . esc_html( $detected ? __( 'Detected', 'estasoft-handover-passport' ) : __( 'Entered', 'estasoft-handover-passport' ) ) . '</span></td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
+			echo '<td data-label="' . esc_attr__( 'By', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $row['actor_label'] ) . '</td>';
+			echo '</tr>';
+		}
+		echo '</tbody></table></div>';
 
 		$pages = (int) ceil( $total / self::PER_PAGE );
+		$first = ( $page_no - 1 ) * self::PER_PAGE + 1;
+		$link  = add_query_arg( array_filter( array( 'kind' => $kind ) ), $base );
+		echo '<div class="pgn"><span>' . esc_html(
+			sprintf(
+				/* translators: 1: first entry shown, 2: last entry shown, 3: all entries. */
+				__( '%1$d to %2$d of %3$d items', 'estasoft-handover-passport' ),
+				$first,
+				$first + count( $rows ) - 1,
+				$total
+			)
+		) . '</span>';
 		if ( $pages > 1 ) {
-			echo '<div class="tablenav"><div class="tablenav-pages">' . wp_kses_post(
-				paginate_links(
-					array(
-						'base'      => add_query_arg( 'paged', '%#%', '' === $kind ? $base : add_query_arg( 'kind', $kind, $base ) ),
-						'format'    => '',
-						'current'   => $page_no,
-						'total'     => $pages,
-						'prev_text' => __( 'Previous', 'estasoft-handover-passport' ),
-						'next_text' => __( 'Next', 'estasoft-handover-passport' ),
-					)
-				)
-			) . '</div></div>';
+			echo '<span class="row">';
+			echo $page_no > 1 ? '<a class="btn sm" href="' . esc_url( add_query_arg( 'paged', (string) ( $page_no - 1 ), $link ) ) . '">' . esc_html__( 'Previous', 'estasoft-handover-passport' ) . '</a>' : '<span class="btn sm" aria-disabled="true">' . esc_html__( 'Previous', 'estasoft-handover-passport' ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
+			echo ' ';
+			echo $page_no < $pages ? '<a class="btn sm" href="' . esc_url( add_query_arg( 'paged', (string) ( $page_no + 1 ), $link ) ) . '">' . esc_html__( 'Next', 'estasoft-handover-passport' ) . '</a>' : '<span class="btn sm" aria-disabled="true">' . esc_html__( 'Next', 'estasoft-handover-passport' ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
+			echo '</span>';
 		}
+		echo '</div></div></section>';
 	}
 
 	/**
@@ -258,7 +320,7 @@ final class HistoryScreen extends Screen {
 			$state  = FormState::take( 'note' );
 			$input  = null === $state ? array() : $state['input'];
 			$errors = null === $state ? array() : $state['errors'];
-			echo '<div class="estasoft-hp-form"><h2>' . esc_html__( 'Add a note', 'estasoft-handover-passport' ) . '</h2>';
+			echo '<div class="estasoft-hp-form" id="estasoft-hp-add-note"><h2>' . esc_html__( 'Add a note', 'estasoft-handover-passport' ) . '</h2>';
 			if ( array() !== $errors ) {
 				echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html( (string) reset( $errors ) ) . '</p></div>';
 			}
@@ -282,17 +344,28 @@ final class HistoryScreen extends Screen {
 		}
 
 		$rows = $this->plugin->changeLog()->repo()->search( array( 'kind' => 'maintenance_note' ), 50 );
-		echo '<div class="estasoft-hp-register"><h2>' . esc_html__( 'Maintenance log', 'estasoft-handover-passport' ) . '</h2>';
+		echo '<div class="estasoft-hp-register">';
 		if ( array() === $rows ) {
 			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'Notes about work done on the site, such as updates, fixes and migrations, appear here. Agencies can use this as a maintenance log.', 'estasoft-handover-passport' ) . '</p></div></div>';
 			return;
 		}
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Date', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Type', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'About', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Note', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'By', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
+		View::cardStart( __( 'Maintenance log', 'estasoft-handover-passport' ), '', true );
+		echo '<div class="scr"><table class="tbl cards estasoft-hp-table"><thead><tr>';
+		foreach ( array( __( 'Date', 'estasoft-handover-passport' ), __( 'Type', 'estasoft-handover-passport' ), __( 'About', 'estasoft-handover-passport' ), __( 'Note', 'estasoft-handover-passport' ), __( 'By', 'estasoft-handover-passport' ) ) as $heading ) {
+			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
+		}
+		echo '</tr></thead><tbody>';
 		foreach ( $rows as $row ) {
 			$data = (array) $row['after_data'];
-			echo '<tr><td>' . esc_html( Dates::displayDate( (string) ( $data['date'] ?? Dates::datePart( (string) $row['changed_at'] ) ) ) ) . '</td><td>' . esc_html( $types[ (string) ( $data['type'] ?? '' ) ] ?? (string) $row['subject_label'] ) . '</td><td>' . esc_html( (string) ( $data['asset'] ?? '' ) ) . '</td><td>' . esc_html( (string) $row['note'] ) . '</td><td>' . esc_html( (string) $row['actor_label'] ) . '</td></tr>';
+			echo '<tr><td class="t1" data-label="' . esc_attr__( 'Date', 'estasoft-handover-passport' ) . '">' . esc_html( Dates::displayDate( (string) ( $data['date'] ?? Dates::datePart( (string) $row['changed_at'] ) ) ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Type', 'estasoft-handover-passport' ) . '">' . esc_html( $types[ (string) ( $data['type'] ?? '' ) ] ?? (string) $row['subject_label'] ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'About', 'estasoft-handover-passport' ) . '">' . esc_html( (string) ( $data['asset'] ?? '' ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Note', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $row['note'] ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'By', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $row['actor_label'] ) . '</td></tr>';
 		}
 		echo '</tbody></table></div>';
+		View::cardEnd();
+		echo '</div>';
 	}
 
 	/**

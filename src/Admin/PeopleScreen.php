@@ -52,6 +52,48 @@ final class PeopleScreen extends Screen {
 	 *
 	 * @param string $tab Tab key.
 	 */
+	protected function describe( string $tab ): string {
+		if ( ! $this->onList() ) {
+			return '';
+		}
+		switch ( $tab ) {
+			case 'ownership':
+				return __( 'Who owns, holds and pays for each asset, and what is left to transfer to the client.', 'estasoft-handover-passport' );
+			case 'access':
+				return __( 'Who can sign in to which system, and where those credentials are kept. Never the credentials themselves.', 'estasoft-handover-passport' );
+			default:
+				$count = count( $this->plugin->people()->all() );
+				return sprintf(
+					/* translators: %d: number of people and organisations. */
+					_n( '%d person or organisation that matters to this site.', '%d people and organisations that matter to this site.', $count, 'estasoft-handover-passport' ),
+					$count
+				);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function action( string $tab ): ?array {
+		if ( 'access' === $tab ) {
+			return $this->addAction( Kinds::ACCESS, $tab );
+		}
+		if ( 'people' !== $tab || ! $this->onList() || ! Capabilities::can( Capabilities::EDIT ) ) {
+			return null;
+		}
+		return array(
+			'label' => __( 'Add person', 'estasoft-handover-passport' ),
+			'url'   => add_query_arg( array( 'page' => self::SLUG, 'tab' => 'people', 'view' => 'edit', 'id' => 0 ), admin_url( 'admin.php' ) ),
+		);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
 	protected function tab( string $tab ): void {
 		$register = new RegisterView( $this->plugin );
 		switch ( $tab ) {
@@ -59,7 +101,7 @@ final class PeopleScreen extends Screen {
 				$this->ownership();
 				break;
 			case 'access':
-				$register->render( Kinds::ACCESS, self::SLUG, $this->keep( 'access' ) );
+				$register->render( Kinds::ACCESS, self::SLUG, $this->keep( 'access' ), true );
 				if ( 'list' === Request::key( 'view', 'list' ) ) {
 					$this->administrators();
 				}

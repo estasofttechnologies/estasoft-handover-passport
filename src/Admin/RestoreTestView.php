@@ -53,8 +53,7 @@ final class RestoreTestView {
 		$settings = $this->plugin->settings();
 		$last     = $service->lastPass();
 
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Restore tests', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p>' . esc_html__( 'A backup is only known to work when someone has restored it. Log each test here, with what was restored and how long it took.', 'estasoft-handover-passport' ) . '</p>';
+		View::cardStart( __( 'Recovery targets', 'estasoft-handover-passport' ) );
 		View::facts(
 			array(
 				__( 'Last test that passed', 'estasoft-handover-passport' ) => null === $last ? __( 'None logged', 'estasoft-handover-passport' ) : Dates::displayDate( $last ),
@@ -66,7 +65,7 @@ final class RestoreTestView {
 		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
 			echo '<p><a href="' . esc_url( add_query_arg( array( 'page' => SettingsScreen::SLUG, 'tab' => 'findings' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Change the recovery targets', 'estasoft-handover-passport' ) . '</a></p>';
 		}
-		echo '</div>';
+		View::cardEnd();
 
 		if ( $can_edit ) {
 			$this->form( $base );
@@ -80,30 +79,32 @@ final class RestoreTestView {
 		foreach ( $this->plugin->runbooks()->all() as $runbook ) {
 			$runbooks[ (int) $runbook['id'] ] = (string) $runbook['title'];
 		}
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
+		View::cardStart( __( 'Restore tests', 'estasoft-handover-passport' ), '', true );
+		echo '<div class="scr"><table class="tbl cards estasoft-hp-table"><caption class="screen-reader-text">' . esc_html__( 'Restore tests', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
 		foreach ( array( __( 'Date', 'estasoft-handover-passport' ), __( 'Who', 'estasoft-handover-passport' ), __( 'What', 'estasoft-handover-passport' ), __( 'Where', 'estasoft-handover-passport' ), __( 'Backup used', 'estasoft-handover-passport' ), __( 'Time taken', 'estasoft-handover-passport' ), __( 'Result', 'estasoft-handover-passport' ), __( 'Runbook', 'estasoft-handover-passport' ), __( 'Problems found', 'estasoft-handover-passport' ) ) as $heading ) {
 			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
 		}
 		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
 		foreach ( $tests as $test ) {
 			$runbook = (int) $test['runbook_id'] > 0 ? ( $runbooks[ (int) $test['runbook_id'] ] ?? __( 'Deleted runbook', 'estasoft-handover-passport' ) ) . ' v' . (int) $test['runbook_version'] : '';
-			echo '<tr><td>' . esc_html( Dates::displayDate( (string) $test['test_date'] ) ) . '</td>';
-			echo '<td>' . esc_html( (string) $test['who'] ) . '</td>';
-			echo '<td>' . esc_html( RestoreTestService::scopes()[ (string) $test['scope'] ] ?? '' ) . '</td>';
-			echo '<td>' . esc_html( RestoreTestService::places()[ (string) $test['place'] ] ?? '' ) . '</td>';
-			echo '<td>' . esc_html( Dates::displayDate( empty( $test['backup_date'] ) ? null : (string) $test['backup_date'] ) ) . '</td>';
-			echo '<td>' . esc_html( (int) $test['minutes'] > 0 ? sprintf( /* translators: %d: minutes. */ _n( '%d minute', '%d minutes', (int) $test['minutes'], 'estasoft-handover-passport' ), (int) $test['minutes'] ) : '' ) . '</td>';
-			echo '<td>' . View::badge( 'result-' . (string) $test['result'], RestoreTestService::results()[ (string) $test['result'] ] ?? '' ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-			echo '<td>' . esc_html( $runbook ) . '</td>';
-			echo '<td>' . esc_html( (string) $test['problems'] ) . '</td><td class="estasoft-hp-actions">';
+			echo '<tr><td class="t1" data-label="' . esc_attr__( 'Date', 'estasoft-handover-passport' ) . '">' . esc_html( Dates::displayDate( (string) $test['test_date'] ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Who', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $test['who'] ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'What', 'estasoft-handover-passport' ) . '">' . esc_html( RestoreTestService::scopes()[ (string) $test['scope'] ] ?? '' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Where', 'estasoft-handover-passport' ) . '">' . esc_html( RestoreTestService::places()[ (string) $test['place'] ] ?? '' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Backup used', 'estasoft-handover-passport' ) . '">' . esc_html( Dates::displayDate( empty( $test['backup_date'] ) ? null : (string) $test['backup_date'] ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Time taken', 'estasoft-handover-passport' ) . '">' . esc_html( (int) $test['minutes'] > 0 ? sprintf( /* translators: %d: minutes. */ _n( '%d minute', '%d minutes', (int) $test['minutes'], 'estasoft-handover-passport' ), (int) $test['minutes'] ) : '' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Result', 'estasoft-handover-passport' ) . '">' . View::badge( 'result-' . (string) $test['result'], RestoreTestService::results()[ (string) $test['result'] ] ?? '' ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			echo '<td data-label="' . esc_attr__( 'Runbook', 'estasoft-handover-passport' ) . '">' . esc_html( $runbook ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Problems found', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $test['problems'] ) . '</td><td class="act estasoft-hp-actions" data-label="">';
 			if ( $can_edit ) {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 				$this->hidden( 'delete', (int) $test['id'], $base );
-				echo '<button type="submit" class="button-link estasoft-hp-danger">' . esc_html__( 'Remove', 'estasoft-handover-passport' ) . '</button></form>';
+				echo '<button type="submit" class="btn sm estasoft-hp-danger">' . esc_html__( 'Remove', 'estasoft-handover-passport' ) . '</button></form>';
 			}
 			echo '</td></tr>';
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		View::cardEnd();
 	}
 
 	/**
@@ -158,7 +159,7 @@ final class RestoreTestView {
 			$runbooks[ (int) $runbook['id'] ] = (string) $runbook['title'];
 		}
 
-		echo '<details class="estasoft-hp-card"' . ( array() !== $errors ? ' open' : '' ) . '><summary><strong>' . esc_html__( 'Log a restore test', 'estasoft-handover-passport' ) . '</strong></summary>';
+		echo '<details class="estasoft-hp-card" id="estasoft-hp-log-test"' . ( array() !== $errors || '1' === Request::key( 'log' ) ? ' open' : '' ) . '><summary><strong>' . esc_html__( 'Log a restore test', 'estasoft-handover-passport' ) . '</strong></summary>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		$this->hidden( 'log', 0, $base );
 		Form::row( 'f[test_date]', array( 'type' => 'date', 'label' => __( 'Date of the test', 'estasoft-handover-passport' ), 'required' => true ), $value( 'test_date', Clock::today() ), $errors['test_date'] ?? '' );

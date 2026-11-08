@@ -61,15 +61,11 @@ final class PeopleView {
 		$people   = $this->plugin->people()->all();
 		$add_url  = add_query_arg( array( 'view' => 'edit', 'id' => 0 ), $base );
 
-		echo '<div class="estasoft-hp-register"><div class="estasoft-hp-register__head"><h2>' . esc_html__( 'People and organisations', 'estasoft-handover-passport' ) . '</h2>';
-		if ( $can_edit ) {
-			echo '<a class="button button-primary" href="' . esc_url( $add_url ) . '">' . esc_html__( 'Add a person', 'estasoft-handover-passport' ) . '</a>';
-		}
-		echo '</div>';
+		echo '<div class="estasoft-hp-register">';
 		if ( array() === $people ) {
 			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'List the client, the agency team, the host and the vendors, so a new person knows who to call.', 'estasoft-handover-passport' ) . '</p>';
 			if ( $can_edit ) {
-				echo '<p><a class="button button-primary" href="' . esc_url( $add_url ) . '">' . esc_html__( 'Add the first person', 'estasoft-handover-passport' ) . '</a></p>';
+				echo '<p><a class="btn pri" href="' . esc_url( $add_url ) . '">' . esc_html__( 'Add the first person', 'estasoft-handover-passport' ) . '</a></p>';
 			}
 			echo '</div></div>';
 			return;
@@ -77,38 +73,107 @@ final class PeopleView {
 
 		$roles = PeopleService::roles();
 		$kinds = PeopleService::kinds();
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
-		foreach ( array( __( 'Name', 'estasoft-handover-passport' ), __( 'Organisation', 'estasoft-handover-passport' ), __( 'Kind', 'estasoft-handover-passport' ), __( 'Roles', 'estasoft-handover-passport' ), __( 'Email', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Review', 'estasoft-handover-passport' ) ) as $heading ) {
+		$orgs  = array();
+		foreach ( $people as $person ) {
+			$org = trim( (string) $person['organisation'] );
+			if ( '' !== $org ) {
+				$orgs[ $org ] = $org;
+			}
+		}
+		natcasesort( $orgs );
+
+		echo '<section class="card flat"><div class="bdy">';
+		if ( count( $people ) > 1 ) {
+			echo '<div class="tb"><label class="screen-reader-text" for="estasoft-hp-find-people">' . esc_html__( 'Search people', 'estasoft-handover-passport' ) . '</label>';
+			echo '<input class="fld" type="search" id="estasoft-hp-find-people" data-estasoft-find placeholder="' . esc_attr__( 'Search people', 'estasoft-handover-passport' ) . '" autocomplete="off">';
+			if ( count( $orgs ) > 1 ) {
+				echo '<label class="screen-reader-text" for="estasoft-hp-find-org">' . esc_html__( 'Organisation', 'estasoft-handover-passport' ) . '</label>';
+				echo '<select class="fld" id="estasoft-hp-find-org" data-estasoft-filter="org"><option value="">' . esc_html__( 'All organisations', 'estasoft-handover-passport' ) . '</option>';
+				foreach ( $orgs as $org ) {
+					echo '<option value="' . esc_attr( sanitize_title( $org ) ) . '">' . esc_html( $org ) . '</option>';
+				}
+				echo '</select>';
+			}
+			echo '<label class="screen-reader-text" for="estasoft-hp-find-role">' . esc_html__( 'Role', 'estasoft-handover-passport' ) . '</label>';
+			echo '<select class="fld" id="estasoft-hp-find-role" data-estasoft-filter="role"><option value="">' . esc_html__( 'All roles', 'estasoft-handover-passport' ) . '</option>';
+			foreach ( $roles as $key => $label ) {
+				echo '<option value="' . esc_attr( $key ) . '">' . esc_html( $label ) . '</option>';
+			}
+			echo '</select></div>';
+		}
+
+		echo '<div class="scr"><table class="tbl cards estasoft-hp-table" data-estasoft-list><caption class="screen-reader-text">' . esc_html__( 'People and organisations', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
+		foreach ( array( __( 'Person', 'estasoft-handover-passport' ), __( 'Role', 'estasoft-handover-passport' ), __( 'Email', 'estasoft-handover-passport' ), __( 'Phone', 'estasoft-handover-passport' ), __( 'Freshness', 'estasoft-handover-passport' ) ) as $heading ) {
 			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
 		}
 		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
 		foreach ( $people as $person ) {
 			$role_names = array_map( static fn( string $key ): string => $roles[ $key ] ?? $key, (array) $person['roles'] );
 			$edit       = add_query_arg( array( 'view' => 'edit', 'id' => $person['id'] ), $base );
-			echo '<tr><td><strong>';
-			echo $can_edit ? '<a href="' . esc_url( $edit ) . '">' . esc_html( (string) $person['name'] ) . '</a>' : esc_html( (string) $person['name'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
-			echo '</strong></td><td>' . esc_html( (string) $person['organisation'] ) . '</td><td>' . esc_html( $kinds[ (string) $person['kind'] ] ?? (string) $person['kind'] ) . '</td><td>' . esc_html( implode( ', ', $role_names ) ) . '</td><td>' . esc_html( (string) $person['email'] ) . '</td>';
-			echo '<td>' . ( ! empty( $person['left_on'] ) ? esc_html(
-				sprintf(
-					/* translators: %s: date. */
-					__( 'Left %s', 'estasoft-handover-passport' ),
-					Dates::displayDate( (string) $person['left_on'] )
-				)
-			) : esc_html__( 'Active', 'estasoft-handover-passport' ) ) . '</td>';
-			echo '<td>' . View::badge( (string) $person['freshness'], Freshness::label( (string) $person['freshness'] ) ) . '</td><td class="estasoft-hp-actions">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			$name       = (string) $person['name'];
+			$org        = trim( (string) $person['organisation'] );
+			$sub        = array();
+			if ( '' !== $org ) {
+				$sub[] = esc_html( $org );
+			}
+			if ( '' !== (string) ( $kinds[ (string) $person['kind'] ] ?? '' ) ) {
+				$sub[] = esc_html( $kinds[ (string) $person['kind'] ] );
+			}
+			if ( ! empty( $person['left_on'] ) ) {
+				$sub[] = esc_html(
+					sprintf(
+						/* translators: %s: date. */
+						__( 'Left %s', 'estasoft-handover-passport' ),
+						Dates::displayDate( (string) $person['left_on'] )
+					)
+				);
+			}
+			echo '<tr data-f-org="|' . esc_attr( sanitize_title( $org ) ) . '|" data-f-role="|' . esc_attr( implode( '|', array_map( 'strval', (array) $person['roles'] ) ) ) . '|">';
+			echo '<td class="t1" data-label="' . esc_attr__( 'Person', 'estasoft-handover-passport' ) . '"><span class="rowx"><span class="av" aria-hidden="true">' . esc_html( self::initials( $name ) ) . '</span><span><b>';
+			echo $can_edit ? '<a href="' . esc_url( $edit ) . '">' . esc_html( $name ) . '</a>' : esc_html( $name ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
+			echo '</b>' . ( array() !== $sub ? '<span class="sub">' . implode( ' · ', $sub ) . '</span>' : '' ) . '</span></span></td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Each part is escaped above.
+			echo '<td data-label="' . esc_attr__( 'Role', 'estasoft-handover-passport' ) . '">' . esc_html( implode( ', ', $role_names ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Email', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $person['email'] ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Phone', 'estasoft-handover-passport' ) . '">' . esc_html( (string) ( $person['phone'] ?? '' ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Freshness', 'estasoft-handover-passport' ) . '">' . View::badge( (string) $person['freshness'], Freshness::label( (string) $person['freshness'] ) ) . '</td><td class="act estasoft-hp-actions" data-label="">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			if ( $can_edit ) {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 				$this->register->hidden( 'verify', 'person', (int) $person['id'], $base );
-				echo '<button type="submit" class="button-link">' . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form> ';
-				echo '<a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a> ';
+				echo '<button type="submit" class="btn sm">' . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form> ';
+				echo '<a class="btn sm" href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a> ';
 				if ( empty( $person['left_on'] ) ) {
-					echo '<a href="' . esc_url( OffboardView::url( (int) $person['id'] ) ) . '">' . esc_html__( 'Offboard', 'estasoft-handover-passport' ) . '</a> ';
+					echo '<a class="btn sm" href="' . esc_url( OffboardView::url( (int) $person['id'] ) ) . '">' . esc_html__( 'Offboard', 'estasoft-handover-passport' ) . '</a> ';
 				}
-				echo '<a class="estasoft-hp-danger" href="' . esc_url( add_query_arg( array( 'view' => 'delete', 'id' => $person['id'] ), $base ) ) . '">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</a>';
+				echo '<a class="btn sm estasoft-hp-danger" href="' . esc_url( add_query_arg( array( 'view' => 'delete', 'id' => $person['id'] ), $base ) ) . '">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</a>';
 			}
 			echo '</td></tr>';
 		}
 		echo '</tbody></table></div>';
+		/* translators: 1: number of items shown, 2: number of items. */
+		$pattern = __( '%1$d of %2$d items', 'estasoft-handover-passport' );
+		echo '<div class="pgn"><span data-estasoft-count data-total="' . esc_attr( (string) count( $people ) ) . '" data-pattern="' . esc_attr( $pattern ) . '" aria-live="polite">' . esc_html(
+			sprintf(
+				/* translators: 1: shown, 2: total. */
+				__( '%1$d of %2$d items', 'estasoft-handover-passport' ),
+				count( $people ),
+				count( $people )
+			)
+		) . '</span></div>';
+		echo '</div></section></div>';
+	}
+
+	/**
+	 * Up to two capital letters from a name, for the round mark beside it.
+	 *
+	 * @param string $name Name.
+	 */
+	public static function initials( string $name ): string {
+		$words = preg_split( '/\s+/u', trim( $name ), -1, PREG_SPLIT_NO_EMPTY );
+		if ( false === $words || array() === $words ) {
+			return '';
+		}
+		$first = mb_strtoupper( mb_substr( (string) $words[0], 0, 1 ) );
+		return 1 === count( $words ) ? $first : $first . mb_strtoupper( mb_substr( (string) $words[ count( $words ) - 1 ], 0, 1 ) );
 	}
 
 	/**
@@ -127,9 +192,10 @@ final class PeopleView {
 		}
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 
-		echo '<div class="estasoft-hp-register" id="estasoft-hp-roles"><h2>' . esc_html__( 'Roles', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p class="description">' . esc_html__( 'Each role can have several people. Emergency contacts are called in the order shown.', 'estasoft-handover-passport' ) . '</p>';
-		echo '<table class="widefat striped estasoft-hp-table"><tbody>';
+		echo '<div class="estasoft-hp-register" id="estasoft-hp-roles">';
+		View::cardStart( __( 'Roles', 'estasoft-handover-passport' ), '', true );
+		echo '<p class="estasoft-hp-cardnote">' . esc_html__( 'Each role can have several people. Emergency contacts are called in the order shown.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<table class="tbl estasoft-hp-roles"><tbody>';
 		foreach ( PeopleService::roles() as $key => $label ) {
 			$ids = $people->inRole( $key );
 			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>';
@@ -146,7 +212,7 @@ final class PeopleView {
 							}
 							echo ' <form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 							$this->register->hidden( 'move', 'role', (int) $pid, $base, $key );
-							echo '<input type="hidden" name="dir" value="' . esc_attr( $dir ) . '"><button type="submit" class="button-link">' . esc_html( $dir_label ) . '</button></form>';
+							echo '<input type="hidden" name="dir" value="' . esc_attr( $dir ) . '"><button type="submit" class="btn sm">' . esc_html( $dir_label ) . '</button></form>';
 						}
 					}
 					echo '</li>';
@@ -155,7 +221,9 @@ final class PeopleView {
 			}
 			echo '</td></tr>';
 		}
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
+		View::cardEnd();
+		echo '</div>';
 	}
 
 	/**

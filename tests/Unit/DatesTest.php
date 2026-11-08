@@ -34,4 +34,13 @@ final class DatesTest extends TestCase {
 		$this->assertSame( '2028-02-29', Dates::addMonths( '2028-01-31', 1 ) );
 		$this->assertSame( '2027-01-31', Dates::addMonths( '2026-01-31', 12 ) );
 	}
+
+	public function test_relative_dates_read_in_words(): void {
+		$this->assertSame( 'in 25 days', Dates::relative( '2026-12-03', '2026-11-08' ) );
+		$this->assertSame( '98 days ago', Dates::relative( '2026-08-02', '2026-11-08' ) );
+		$this->assertSame( 'today', Dates::relative( '2026-11-08', '2026-11-08' ) );
+		$this->assertSame( 'tomorrow', Dates::relative( '2026-11-09', '2026-11-08' ) );
+		$this->assertSame( 'yesterday', Dates::relative( '2026-11-07', '2026-11-08' ) );
+		$this->assertSame( '', Dates::relative( '', '2026-11-08' ) );
+	}
 }

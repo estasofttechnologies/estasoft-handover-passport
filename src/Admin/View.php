@@ -17,17 +17,29 @@ defined( 'ABSPATH' ) || exit;
 final class View {
 
 	/**
-	 * Print the opening of a screen: wrapper, title and an optional action link.
+	 * Print the opening of a screen: the Passport bar with its sections, then the page header (title, a line of
+	 * description and an optional main action).
 	 *
-	 * @param string                                 $title   Screen title.
-	 * @param array{label: string, url: string}|null $action  Optional primary link.
+	 * @param string                                 $title       Screen title.
+	 * @param array{label: string, url: string}|null $action      Optional main action, shown as the one filled button.
+	 * @param string                                 $description One line under the title.
+	 * @param string                                 $actions     Markup for the header's action area, built from escaped parts.
 	 */
-	public static function open( string $title, ?array $action = null ): void {
-		echo '<div class="wrap estasoft-hp"><h1 class="wp-heading-inline">' . esc_html( $title ) . '</h1>';
-		if ( null !== $action ) {
-			echo ' <a class="page-title-action" href="' . esc_url( $action['url'] ) . '">' . esc_html( $action['label'] ) . '</a>';
+	public static function open( string $title, ?array $action = null, string $description = '', string $actions = '' ): void {
+		echo '<div class="wrap estasoft-hp">';
+		self::appBar();
+		echo '<main class="pg"><div class="ph"><div class="tx"><h1 class="wp-heading-inline">' . esc_html( $title ) . '</h1>';
+		if ( '' !== $description ) {
+			echo '<p>' . esc_html( $description ) . '</p>';
 		}
-		echo '<hr class="wp-header-end">';
+		echo '</div>';
+		if ( null !== $action ) {
+			$actions .= '<a class="btn pri" href="' . esc_url( $action['url'] ) . '">' . Icons::svg( 'plus', 16 ) . esc_html( $action['label'] ) . '</a>';
+		}
+		if ( '' !== $actions ) {
+			echo '<div class="act">' . $actions . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts by the caller.
+		}
+		echo '</div><hr class="wp-header-end">';
 		self::flash();
 	}
 
@@ -35,7 +47,25 @@ final class View {
 	 * Print the end of a screen.
 	 */
 	public static function close(): void {
-		echo '</div>';
+		echo '</main></div>';
+	}
+
+	/**
+	 * The Passport bar: the mark, the eight sections and the site address. Only sections the person may open are listed.
+	 */
+	private static function appBar(): void {
+		$current = Request::key( 'page' );
+		echo '<header class="ab"><span class="brand"><img src="' . esc_url( ESTASOFT_HP_URL . 'assets/images/passport-icon.png' ) . '" alt="" width="24" height="24">' . esc_html__( 'ESTASOFT PASSPORT', 'estasoft-handover-passport' ) . '</span>';
+		echo '<nav class="tabs" aria-label="' . esc_attr__( 'Passport sections', 'estasoft-handover-passport' ) . '">';
+		foreach ( Admin::sections() as $slug => $label ) {
+			echo '<a class="tab' . ( $slug === $current ? ' on' : '' ) . '" href="' . esc_url( add_query_arg( 'page', $slug, admin_url( 'admin.php' ) ) ) . '"' . ( $slug === $current ? ' aria-current="page"' : '' ) . '>' . esc_html( $label ) . '</a>';
+		}
+		echo '</nav>';
+		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+		if ( '' !== $host ) {
+			echo '<span class="site">' . Icons::svg( 'globe', 14 ) . esc_html( $host ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
+		}
+		echo '</header>';
 	}
 
 	/**
@@ -178,13 +208,90 @@ final class View {
 	}
 
 	/**
-	 * Print a status in words, with a class for styling; colour is never the only signal (ADM-4).
+	 * A status in words with a small icon. The colour and the icon only support the words (ADM-4).
 	 *
-	 * @param string $state Slug used for the class.
+	 * @param string $state Slug used for the class and for the look.
 	 * @param string $label Words shown.
 	 */
 	public static function badge( string $state, string $label ): string {
-		return '<span class="estasoft-hp-badge estasoft-hp-badge--' . esc_attr( sanitize_html_class( $state ) ) . '">' . esc_html( $label ) . '</span>';
+		$tone = self::tone( $state );
+		$icon = array(
+			'ok' => 'ok',
+			'wn' => 'warning',
+			'er' => 'error',
+			'in' => '',
+		)[ $tone ];
+		if ( in_array( $state, array( 'running', 'due', 'renews_soon', 'setup-todo' ), true ) ) {
+			$icon = 'clock';
+		} elseif ( in_array( $state, array( 'info', 'critical', 'status-handed_over' ), true ) ) {
+			$icon = 'info';
+		} elseif ( in_array( $state, array( 'check-na', 'zone-skipped' ), true ) ) {
+			$icon = 'minus';
+		} elseif ( 'later' === $state ) {
+			$icon = 'calendar';
+		}
+		return '<span class="bd ' . esc_attr( $tone ) . ' estasoft-hp-badge estasoft-hp-badge--' . esc_attr( sanitize_html_class( $state ) ) . '">' . Icons::svg( $icon ) . esc_html( $label ) . '</span>';
+	}
+
+	/**
+	 * Which of the four looks a status takes: ok, wn (warning), er (error) or in (neutral).
+	 *
+	 * @param string $state Status slug.
+	 */
+	public static function tone( string $state ): string {
+		if ( in_array( $state, array( 'done', 'active', 'verified', 'result-pass', 'runbook-published', 'zone-matches', 'check-done', 'ok', 'free', 'status-active', 'setup-done' ), true ) ) {
+			return 'ok';
+		}
+		if ( in_array( $state, array( 'failed', 'stale', 'expired', 'needs_fixing', 'result-fail', 'bad' ), true ) ) {
+			return 'er';
+		}
+		if ( in_array( $state, array( 'running', 'draft', 'due', 'renews_soon', 'worth_fixing', 'result-partial', 'runbook-draft', 'zone-differs', 'zone-missing', 'check-not_done', 'status-draft', 'unknown', 'setup-todo', 'setup-skipped' ), true ) ) {
+			return 'wn';
+		}
+		return 'in';
+	}
+
+	/**
+	 * Open a card: a head with the title and optional actions, then the body.
+	 *
+	 * @param string $title   Title, plain text.
+	 * @param string $actions Markup for the head, built from escaped parts. Empty for none.
+	 * @param bool   $flat    True when the body holds a list or table that runs to the edges.
+	 */
+	public static function cardStart( string $title, string $actions = '', bool $flat = false ): void {
+		echo '<section class="card' . ( $flat ? ' flat' : '' ) . '"><div class="hd"><h2>' . esc_html( $title ) . '</h2>' . $actions . '</div><div class="bdy">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts by the caller.
+	}
+
+	/**
+	 * Close a card, with an optional footer.
+	 *
+	 * @param string $footer Markup for the footer, built from escaped parts. Empty for none.
+	 */
+	public static function cardEnd( string $footer = '' ): void {
+		echo '</div>' . ( '' !== $footer ? '<div class="ft">' . $footer . '</div>' : '' ) . '</section>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts by the caller.
+	}
+
+	/**
+	 * A progress bar that says its meaning in words for assistive technology.
+	 *
+	 * @param int    $part  How many are done.
+	 * @param int    $total How many there are.
+	 * @param string $words What a reader hears.
+	 */
+	public static function bar( int $part, int $total, string $words ): string {
+		$width = $total > 0 ? max( 0, min( 100, (int) round( 100 * $part / $total ) ) ) : 0;
+		return '<div class="bar" role="img" aria-label="' . esc_attr( $words ) . '"><i style="width:' . $width . '%"></i></div>';
+	}
+
+	/**
+	 * A figure card: a large number, what it counts and a line of status.
+	 *
+	 * @param string $number Figure, plain text.
+	 * @param string $label  What it counts, plain text.
+	 * @param string $status Markup built by badge() or the bar() helper.
+	 */
+	public static function kpi( string $number, string $label, string $status = '' ): string {
+		return '<div class="card kpi"><div class="n">' . esc_html( $number ) . '</div><div class="k">' . esc_html( $label ) . '</div>' . ( '' !== $status ? '<div class="s">' . $status . '</div>' : '' ) . '</div>';
 	}
 
 	/**

@@ -115,10 +115,18 @@ final class Form {
 	}
 
 	/**
-	 * Print the security token for a form without an element id, so a page with
-	 * many forms stays valid HTML.
+	 * The security token and referer field of a form, as markup, for code that builds a form in one string.
 	 *
 	 * @param string $action Nonce action.
+	 */
+	public static function nonceField( string $action ): string {
+		return '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp_create_nonce( $action ) ) . '">' . wp_referer_field( false );
+	}
+
+	/**
+	 * Print the security token for a form without an element id, so a page with many forms stays valid HTML.
+	 *
+	 * @param string $action  Nonce action.
 	 * @param bool   $referer Whether to add the referer field.
 	 */
 	public static function nonce( string $action, bool $referer = true ): void {

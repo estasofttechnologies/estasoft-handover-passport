@@ -52,6 +52,45 @@ final class InventoryScreen extends Screen {
 	 *
 	 * @param string $tab Tab key.
 	 */
+	protected function describe( string $tab ): string {
+		if ( ! $this->onList() ) {
+			return '';
+		}
+		switch ( $tab ) {
+			case 'licences':
+				return $this->countLine( Kinds::LICENCE ) . ' ' . __( 'Passport records where each key lives and never the key itself.', 'estasoft-handover-passport' );
+			case 'services':
+				return $this->countLine( Kinds::SERVICE ) . ' ' . __( 'The outside services the site depends on, and who looks after each.', 'estasoft-handover-passport' );
+			case 'domains':
+				return __( 'Every domain the site uses, who holds it and when it expires.', 'estasoft-handover-passport' );
+			case 'hosting':
+				return __( 'Who hosts the site, the environments it runs in and the layers around it.', 'estasoft-handover-passport' );
+			default:
+				return __( 'What the site is built from, read from the site itself.', 'estasoft-handover-passport' );
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function action( string $tab ): ?array {
+		switch ( $tab ) {
+			case 'licences':
+				return $this->addAction( Kinds::LICENCE, $tab );
+			case 'services':
+				return $this->addAction( Kinds::SERVICE, $tab );
+			default:
+				return null;
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
 	protected function tab( string $tab ): void {
 		$register = new RegisterView( $this->plugin );
 		$keep     = $this->keep( $tab );
@@ -65,7 +104,7 @@ final class InventoryScreen extends Screen {
 				( new StackView( $this->plugin ) )->render( self::SLUG );
 				break;
 			case 'licences':
-				$register->render( Kinds::LICENCE, self::SLUG, $keep );
+				$register->render( Kinds::LICENCE, self::SLUG, $keep, true );
 				break;
 			case 'domains':
 				( new DomainView( $this->plugin ) )->render( self::SLUG, $keep );
@@ -74,7 +113,7 @@ final class InventoryScreen extends Screen {
 				$this->hosting( $register, $keep );
 				break;
 			default:
-				$register->render( Kinds::SERVICE, self::SLUG, $keep );
+				$register->render( Kinds::SERVICE, self::SLUG, $keep, true );
 		}
 	}
 

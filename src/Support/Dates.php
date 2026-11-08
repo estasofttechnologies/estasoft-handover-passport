@@ -120,4 +120,32 @@ final class Dates {
 		}
 		return gmdate( 'j M Y', $stamp );
 	}
+
+	/**
+	 * A date in words relative to today: "in 25 days", "9 days ago", "today", "tomorrow" or "yesterday".
+	 *
+	 * @param string $date  Y-m-d.
+	 * @param string $today Y-m-d.
+	 */
+	public static function relative( string $date, string $today ): string {
+		if ( ! self::isDate( $date ) || ! self::isDate( $today ) ) {
+			return '';
+		}
+		$days = self::daysBetween( $today, $date );
+		if ( 0 === $days ) {
+			return __( 'today', 'estasoft-handover-passport' );
+		}
+		if ( 1 === $days ) {
+			return __( 'tomorrow', 'estasoft-handover-passport' );
+		}
+		if ( -1 === $days ) {
+			return __( 'yesterday', 'estasoft-handover-passport' );
+		}
+		if ( $days > 0 ) {
+			/* translators: %d: number of days from today. */
+			return sprintf( __( 'in %d days', 'estasoft-handover-passport' ), $days );
+		}
+		/* translators: %d: number of days before today. */
+		return sprintf( __( '%d days ago', 'estasoft-handover-passport' ), -$days );
+	}
 }
