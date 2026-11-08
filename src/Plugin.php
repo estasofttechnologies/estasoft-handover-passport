@@ -111,6 +111,10 @@ final class Plugin {
 		}
 		$this->booted = true;
 
+		if ( Upgrader::waitsForAdminVisit() ) {
+			return; // Network activation: this site is set up on its first admin visit (WPI-5).
+		}
+
 		add_action( 'plugins_loaded', array( Upgrader::class, 'maybeUpgrade' ), 5 );
 
 		( new ChangeCapture( $this->changeLog() ) )->register();

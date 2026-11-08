@@ -75,6 +75,18 @@ No. When the same data turns up on a different address, the plugin pauses remind
 
 Under Settings, Privacy and data, it lists links that point at a person or a record that no longer exists, and records of a kind this version does not know. These can be left by a failed import, a manual database edit or a downgrade. It changes nothing until you tick the confirmation box and press the button, then looks again and removes only what is still wrong. History notes how many rows were removed, not which.
 
+= Does it work on a multisite network? =
+
+Yes, one site at a time. When you activate it for the whole network, each site keeps its own Passport and gets it set up the first time someone opens that site's dashboard. Nothing is set up, and nothing runs, on a site nobody has opened yet. The network admin shows a note about this. A single view across all the sites is not part of this version.
+
+= How do I report a security problem? =
+
+Please do not post it in the support forum. Use the private vulnerability reporting on the plugin's GitHub page (https://github.com/estasofttechnologies/estasoft-handover-passport/security/advisories/new) or write to ESTASOFT TECHNOLOGIES through https://estasoft.com. A fix that ships is announced in the changelog. Only the latest release receives security fixes.
+
+= Can developers extend it? =
+
+Yes. The plugin has actions and filters for records, findings, reminders, snapshots and exports, and a REST API under `estasoft-passport/v1`. Every hook is described, with an example, in `docs/HOOKS.md`, and the routes in `docs/REST-API.md`, in the plugin folder and on GitHub (https://github.com/estasofttechnologies/estasoft-handover-passport). Changes inside `v1` only add fields and routes.
+
 = What happens to my data if I delete the plugin? =
 
 By default, nothing: the data stays in the database. A setting turns on full removal when the plugin is deleted.

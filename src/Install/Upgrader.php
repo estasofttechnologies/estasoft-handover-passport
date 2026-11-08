@@ -24,6 +24,28 @@ final class Upgrader {
 	private const LOCK_SECONDS = 120;
 
 	/**
+	 * Whether this site still waits for somebody to open its dashboard before the Passport is set up (WPI-5).
+	 *
+	 * Network activation does not install anything. A site gets its own tables, settings and scheduled tasks on its first
+	 * visit to the admin area, and nothing runs on the front end, in the REST API or in cron before that.
+	 */
+	public static function waitsForAdminVisit(): bool {
+		return self::mustWait( (int) get_option( Installer::DB_VERSION_OPTION, 0 ), is_multisite(), is_admin(), defined( 'WP_CLI' ) && WP_CLI );
+	}
+
+	/**
+	 * The rule behind waitsForAdminVisit(), apart from the request.
+	 *
+	 * @param int  $stored    Stored schema version, 0 when the site was never set up.
+	 * @param bool $multisite Whether this is a network.
+	 * @param bool $admin     Whether the request is for the admin area.
+	 * @param bool $cli       Whether the request is a WP-CLI command, which stands for a person with access.
+	 */
+	public static function mustWait( int $stored, bool $multisite, bool $admin, bool $cli ): bool {
+		return 0 === $stored && $multisite && ! $admin && ! $cli;
+	}
+
+	/**
 	 * Install or upgrade this site when its stored version is behind.
 	 */
 	public static function maybeUpgrade(): void {
@@ -37,6 +59,7 @@ final class Upgrader {
 		try {
 			if ( 0 === $stored ) {
 				Installer::installSite();
+				Schedule::queueScan( 5 ); // A site set up on its first admin visit gets its baseline scan too (SCN-7).
 			} else {
 				foreach ( self::steps() as $version => $step ) {
 					if ( $version > $stored && $version <= Schema::VERSION ) {

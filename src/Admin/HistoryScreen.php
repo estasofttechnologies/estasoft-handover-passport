@@ -229,14 +229,20 @@ final class HistoryScreen extends Screen {
 	/**
 	 * The filter that leaves only what was logged after a snapshot was made. The log entry written when the snapshot was
 	 * made is used when it still exists, so that entry itself is never counted; otherwise the time of the snapshot is.
+	 * An entry counts only when it was written within a minute of the snapshot, so a leftover entry of an earlier
+	 * snapshot that had the same number cannot be mistaken for it.
 	 *
 	 * @param array<string, mixed> $snapshot Snapshot row.
 	 * @return array<string, mixed>
 	 */
 	private function sinceFilter( array $snapshot ): array {
-		$made = $this->plugin->changeLog()->repo()->search( array( 'kind' => 'snapshot_created', 'subject_type' => 'snapshot', 'subject_id' => (int) $snapshot['id'] ), 1 );
-		if ( array() !== $made ) {
-			return array( 'after_id' => (int) $made[0]['id'] );
+		$made_at = strtotime( (string) $snapshot['created_at'] . ' UTC' );
+		$entries = $this->plugin->changeLog()->repo()->search( array( 'kind' => 'snapshot_created', 'subject_type' => 'snapshot', 'subject_id' => (int) $snapshot['id'] ), 10 );
+		foreach ( $entries as $entry ) {
+			$logged_at = strtotime( (string) $entry['changed_at'] . ' UTC' );
+			if ( false !== $made_at && false !== $logged_at && abs( $logged_at - $made_at ) <= 60 ) {
+				return array( 'after_id' => (int) $entry['id'] );
+			}
 		}
 		return array( 'since' => (string) $snapshot['created_at'] );
 	}

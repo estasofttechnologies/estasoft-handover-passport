@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-08T16:03:29+00:00\n"
+"POT-Creation-Date: 2026-11-08T16:42:55+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: estasoft-handover-passport\n"
@@ -699,71 +699,71 @@ msgstr ""
 msgid "Remind me"
 msgstr ""
 
-#: src/Admin/Admin.php:82
 #: src/Admin/Admin.php:83
+#: src/Admin/Admin.php:84
 #: src/Admin/DashboardWidget.php:51
 #: src/Admin/OverviewScreen.php:54
 #: src/Admin/SiteHealth.php:223
 msgid "Passport"
 msgstr ""
 
-#: src/Admin/Admin.php:93
 #: src/Admin/Admin.php:94
+#: src/Admin/Admin.php:95
 msgid "Overview"
 msgstr ""
 
 #. translators: %s: short error code.
-#: src/Admin/Admin.php:158
+#: src/Admin/Admin.php:159
 #, php-format
 msgid "Passport could not finish an update of its data. Your records were not changed. Code: %s"
 msgstr ""
 
-#: src/Admin/Admin.php:168
+#: src/Admin/Admin.php:169
 msgid "WordPress cron is switched off and the last scan is old. Ask your host to run WordPress cron from the server, or run \"wp estasoft-passport scan\" on a schedule."
 msgstr ""
 
-#: src/Admin/Admin.php:178
+#: src/Admin/Admin.php:179
 msgid "This site is marked as a copy. Reminders, emailed copies and scheduled checks are off here, so they are not sent a second time."
 msgstr ""
 
-#: src/Admin/Admin.php:185
+#: src/Admin/Admin.php:186
 msgid "Is this a copy of the site?"
 msgstr ""
 
 #. translators: 1: address the Passport was set up on, 2: address of this site now.
-#: src/Admin/Admin.php:189
+#: src/Admin/Admin.php:190
 #, php-format
 msgid "Passport was set up at %1$s and this site is now at %2$s. Reminders, emailed copies and scheduled checks are paused until you say which it is."
 msgstr ""
 
-#: src/Admin/Admin.php:197
+#: src/Admin/Admin.php:198
 msgid "This site moved"
 msgstr ""
 
-#: src/Admin/Admin.php:198
+#: src/Admin/Admin.php:199
 msgid "This is a copy"
 msgstr ""
 
-#: src/Admin/Admin.php:199
+#: src/Admin/Admin.php:200
 msgid "Moved keeps everything and takes the new address. Copy keeps reminders off on this site."
 msgstr ""
 
-#: src/Admin/Admin.php:201
+#: src/Admin/Admin.php:202
 msgid "Ask someone who can change Passport settings to answer."
 msgstr ""
 
-#: src/Admin/Admin.php:211
+#: src/Admin/Admin.php:212
 #: src/Admin/SettingsScreen.php:199
 #: src/Admin/SettingsScreen.php:315
 #: src/Admin/SettingsScreen.php:498
 msgid "You do not have permission to change settings."
 msgstr ""
 
-#: src/Admin/Admin.php:237
+#: src/Admin/Admin.php:238
 msgid "Dismiss"
 msgstr ""
 
-#: src/Admin/Admin.php:245
+#: src/Admin/Admin.php:246
 #: src/Admin/FindingsScreen.php:334
 #: src/Admin/FindingsScreen.php:366
 #: src/Admin/FindingsScreen.php:392
@@ -771,16 +771,16 @@ msgstr ""
 msgid "You do not have permission to do that."
 msgstr ""
 
-#: src/Admin/Admin.php:264
+#: src/Admin/Admin.php:265
 msgid "You do not have permission to run a scan."
 msgstr ""
 
-#: src/Admin/Admin.php:287
+#: src/Admin/Admin.php:288
 #: src/Admin/SiteHealth.php:229
 msgid "Open Passport"
 msgstr ""
 
-#: src/Admin/Admin.php:302
+#: src/Admin/Admin.php:303
 msgid "Documentation"
 msgstr ""
 
@@ -2833,6 +2833,10 @@ msgstr ""
 #: src/Admin/SettingsScreen.php:109
 #: src/Domain/Kinds.php:323
 msgid "Services"
+msgstr ""
+
+#: src/Admin/NetworkNotice.php:45
+msgid "Estasoft Handover Passport keeps a separate Passport for each site. A site gets its own the first time someone opens its dashboard. A view across the whole network is not part of this version."
 msgstr ""
 
 #: src/Admin/NotesView.php:53

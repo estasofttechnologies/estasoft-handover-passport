@@ -55,7 +55,7 @@ final class View {
 			/* translators: %d: seconds until the action may be repeated. */
 			$text .= ' ' . sprintf( _n( '%d second left.', '%d seconds left.', $seconds, 'estasoft-handover-passport' ), $seconds );
 		}
-		echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible" role="status"><p>' . esc_html( $text ) . '</p></div>';
+		echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible" role="' . ( str_contains( $class, 'notice-error' ) ? 'alert' : 'status' ) . '"><p>' . esc_html( $text ) . '</p></div>';
 	}
 
 	/**
@@ -79,7 +79,7 @@ final class View {
 			return;
 		}
 		delete_transient( $key );
-		echo '<div class="notice ' . ( ! empty( $said['error'] ) ? 'notice-error' : 'notice-success' ) . ' is-dismissible" role="status"><p>' . esc_html( (string) $said['text'] ) . '</p></div>';
+		echo '<div class="notice ' . ( ! empty( $said['error'] ) ? 'notice-error' : 'notice-success' ) . ' is-dismissible" role="' . ( ! empty( $said['error'] ) ? 'alert' : 'status' ) . '"><p>' . esc_html( (string) $said['text'] ) . '</p></div>';
 	}
 
 	/**

@@ -230,14 +230,31 @@
 	background: #edf7ee;
 }
 
-:focus-visible {
+.estasoft-hp :focus-visible {
 	outline-offset: 2px;
 }
 
+/* Text buttons made to look like links keep a target of at least 24 pixels. */
+.estasoft-hp .button-link {
+	padding-block: 4px;
+}
+
+/* A link beside other words in a table cell is underlined, so it is not told apart by colour alone. */
+.estasoft-hp td a:not(.button) {
+	text-decoration: underline;
+}
+
 @media (max-width: 782px) {
+	/* A register keeps its columns readable and scrolls sideways instead of squeezing them. */
 	.estasoft-hp .estasoft-hp-table {
 		display: block;
+		position: relative; /* Keeps screen-reader text inside the box that scrolls. */
 		overflow-x: auto;
+	}
+
+	.estasoft-hp .estasoft-hp-table th,
+	.estasoft-hp .estasoft-hp-table td {
+		min-width: 7em;
 	}
 }
 
@@ -266,6 +283,7 @@
 }
 .estasoft-hp .estasoft-hp-finding__tools summary {
 	cursor: pointer;
+	padding-block: 3px; /* A target of at least 24 by 24 pixels (WCAG 2.2, 2.5.8). */
 }
 .estasoft-hp .estasoft-hp-finding__tools form {
 	margin-top: 8px;
@@ -416,6 +434,7 @@
 }
 .estasoft-hp .estasoft-hp-snapshot__actions summary {
 	cursor: pointer;
+	padding-block: 3px;
 }
 .estasoft-hp .estasoft-hp-snapshot dd {
 	overflow-wrap: anywhere;

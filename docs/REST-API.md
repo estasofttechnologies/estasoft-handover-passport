@@ -44,3 +44,7 @@ Every collection accepts `page`, `per_page` (1 to 100, default 20), `search`, `o
 - **Errors** have a code that starts with `estasoft_hp_` and a status. Examples: `estasoft_hp_forbidden` (401 or 403), `estasoft_hp_invalid` (400), `estasoft_hp_missing` (400), `estasoft_hp_unknown_field` (400), `estasoft_hp_secret` (400), `estasoft_hp_wait` (429). The message never repeats text that was sent, and a request that looks like a password, key or token is refused rather than stored.
 - **Limits.** A scan, or a DNS, certificate or address check of the same subject, can be started once a minute. A second request gets `429` with `Retry-After` and `data.retry_after` in seconds. The same limit applies to the Scan now button and to WP-CLI.
 - **History.** Changes made through the API are recorded with `rest` as their origin and the name of the signed-in person.
+
+## Stability
+
+Everything above lives in the `estasoft-passport/v1` namespace. Within `v1`, a release only adds routes, fields and optional parameters. It does not rename or remove one, and it does not change what a field means. If a route or a field has to go, it stays in `v1` for at least one more release after the changelog announces it, and the removal ships with `v2`. A client that ignores fields it does not know will keep working.

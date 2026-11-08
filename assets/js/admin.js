@@ -20,6 +20,23 @@
 		}
 	} );
 
+	// A table that scrolls sideways on a narrow screen can be reached and scrolled from the keyboard.
+	function markScrollableTables() {
+		Array.prototype.forEach.call( document.querySelectorAll( '.estasoft-hp .estasoft-hp-table' ), function ( table ) {
+			if ( table.scrollWidth > table.clientWidth + 1 ) {
+				table.setAttribute( 'tabindex', '0' );
+			} else {
+				table.removeAttribute( 'tabindex' );
+			}
+		} );
+	}
+	window.addEventListener( 'resize', markScrollableTables );
+	if ( 'loading' === document.readyState ) {
+		document.addEventListener( 'DOMContentLoaded', markScrollableTables );
+	} else {
+		markScrollableTables();
+	}
+
 	// Print buttons: the page prints without the admin menu around it.
 	document.addEventListener( 'click', function ( event ) {
 		var target = event.target;

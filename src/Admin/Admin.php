@@ -54,6 +54,7 @@ final class Admin {
 		add_action( 'admin_menu', array( $this, 'menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'admin_notices', array( $this, 'notices' ) );
+		add_action( 'network_admin_notices', array( new NetworkNotice(), 'show' ) );
 		add_action( 'admin_post_' . self::SCAN_ACTION, array( $this, 'handleScan' ) );
 		add_filter( 'plugin_action_links_' . ESTASOFT_HP_BASENAME, array( $this, 'actionLinks' ) );
 		add_filter( 'plugin_row_meta', array( $this, 'rowMeta' ), 10, 2 );
