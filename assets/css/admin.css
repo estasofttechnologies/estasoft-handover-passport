@@ -1652,6 +1652,18 @@ body.estasoft-hp-screen {
 }
 
 @media (max-width: 782px) {
+	.estasoft-hp .msg {
+		flex-wrap: wrap;
+	}
+
+	.estasoft-hp .msg > div {
+		flex: 1 1 200px;
+	}
+
+	.estasoft-hp .msg > .btn {
+		margin-inline-start: 0;
+	}
+
 	.estasoft-hp .pg {
 		padding: 16px 12px 32px;
 	}
