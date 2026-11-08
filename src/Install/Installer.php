@@ -12,6 +12,7 @@ namespace Estasoft\HandoverPassport\Install;
 use Estasoft\HandoverPassport\Data\Schema;
 use Estasoft\HandoverPassport\Passport\Passport;
 use Estasoft\HandoverPassport\Security\Capabilities;
+use Estasoft\HandoverPassport\Security\CopyGuard;
 use Estasoft\HandoverPassport\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
@@ -22,7 +23,6 @@ defined( 'ABSPATH' ) || exit;
 final class Installer {
 
 	public const DB_VERSION_OPTION = 'estasoft_hp_db_version';
-	public const SITE_HOST_OPTION  = 'estasoft_hp_site_host';
 
 	/**
 	 * Install everything one site needs.
@@ -35,19 +35,9 @@ final class Installer {
 		if ( false === get_option( Settings::OPTION, false ) ) {
 			add_option( Settings::OPTION, Settings::defaults(), '', false );
 		}
-		if ( false === get_option( self::SITE_HOST_OPTION, false ) ) {
-			add_option( self::SITE_HOST_OPTION, self::currentHost(), '', false );
-		}
+		( new CopyGuard() )->check(); // Remember the host this Passport was set up on (IMP-4).
 
 		Schedule::register();
 		update_option( self::DB_VERSION_OPTION, Schema::VERSION, true );
-	}
-
-	/**
-	 * Host of the site address, lower case.
-	 */
-	public static function currentHost(): string {
-		$host = wp_parse_url( home_url(), PHP_URL_HOST );
-		return is_string( $host ) ? strtolower( $host ) : '';
 	}
 }

@@ -11,9 +11,9 @@ namespace Estasoft\HandoverPassport\Admin;
 
 use Estasoft\HandoverPassport\Domain\Freshness;
 use Estasoft\HandoverPassport\Domain\Kinds;
-use Estasoft\HandoverPassport\Domain\Sensitivity;
 use Estasoft\HandoverPassport\Findings\Level;
 use Estasoft\HandoverPassport\Plugin;
+use Estasoft\HandoverPassport\Reminders\UpcomingDates;
 use Estasoft\HandoverPassport\Scan\ScanService;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Support\Clock;
@@ -74,6 +74,7 @@ final class OverviewScreen {
 		$this->findings();
 		$this->readiness();
 		$this->dates();
+		$this->reminderStatus();
 		$this->freshness();
 		$this->safety();
 		$this->stack( $facts );
@@ -202,29 +203,14 @@ final class OverviewScreen {
 	 */
 	private function dates(): void {
 		$today = Clock::today();
-		$until = Dates::addDays( $today, 90 );
 		$can   = Capabilities::canSeeSensitive();
 		$rows  = array();
-		$skip  = array( Kinds::BACKUP, Kinds::ACCESS );
-		$items = $this->plugin->records();
-		foreach ( $items->items()->dueBetween( $today, $until ) as $row ) {
-			if ( in_array( (string) $row['kind'], $skip, true ) || ! in_array( (string) $row['kind'], Kinds::registerKinds(), true ) ) {
+		foreach ( ( new UpcomingDates( $this->plugin->records() ) )->between( $today, Dates::addDays( $today, 90 ) ) as $date ) {
+			if ( $date['sensitive'] && ! $can ) {
 				continue;
 			}
-			$record = Sensitivity::forViewer( $items->hydrate( $row ), $can );
-			if ( ! empty( $record['hidden'] ) ) {
-				continue;
-			}
-			$def    = Kinds::get( (string) $row['kind'] );
-			$rows[] = array( (string) $record['due_date'], (string) ( $def['label'] ?? '' ), (string) $record['title'] );
+			$rows[] = array( $date['date'], $date['kind_label'], $date['title'] );
 		}
-		foreach ( $items->items()->ofKind( Kinds::SSL ) as $cert ) {
-			$valid_to = (string) ( ( is_array( $cert['data'] ) ? $cert['data'] : array() )['valid_to'] ?? '' );
-			if ( Dates::isDate( $valid_to ) && $valid_to >= $today && $valid_to <= $until ) {
-				$rows[] = array( $valid_to, __( 'Certificate', 'estasoft-handover-passport' ), (string) $cert['title'] );
-			}
-		}
-		usort( $rows, static fn( array $a, array $b ): int => strcmp( $a[0], $b[0] ) );
 
 		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Next 90 days', 'estasoft-handover-passport' ) . '</h2>';
 		if ( array() === $rows ) {
@@ -239,6 +225,34 @@ final class OverviewScreen {
 			echo '<tr><td>' . esc_html( Dates::displayDate( $row[0] ) ) . '</td><td>' . esc_html( $row[2] ) . ' <span class="estasoft-hp-muted">' . esc_html( $row[1] ) . '</span></td><td>' . esc_html( $in ) . '</td></tr>';
 		}
 		echo '</tbody></table></div>';
+	}
+
+	/**
+	 * Says so when reminders are off, paused, or may not be arriving (RMD-5, IMP-4). Nothing is printed when all is well.
+	 */
+	private function reminderStatus(): void {
+		$service = $this->plugin->reminders();
+		$health  = $service->health();
+		$lines   = array();
+		if ( ! $service->enabled() ) {
+			$lines[] = __( 'Reminders are switched off in Settings, so no date is emailed.', 'estasoft-handover-passport' );
+		} elseif ( $this->plugin->copyGuard()->paused() ) {
+			$lines[] = __( 'Reminders are paused on this address until the question at the top of the page is answered.', 'estasoft-handover-passport' );
+		}
+		if ( $health['failed_days'] > 0 || false === $health['test_ok'] ) {
+			$lines[] = __( 'The last reminder email or test email could not be sent. Reminders depend on working site email. Send a test email in Settings, Reminders, to check.', 'estasoft-handover-passport' );
+		}
+		if ( array() === $lines ) {
+			return;
+		}
+		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Reminders', 'estasoft-handover-passport' ) . '</h2>';
+		foreach ( $lines as $line ) {
+			echo '<p>' . esc_html( $line ) . '</p>';
+		}
+		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
+			echo '<p><a class="button" href="' . esc_url( add_query_arg( array( 'page' => SettingsScreen::SLUG, 'tab' => 'reminders' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Open reminder settings', 'estasoft-handover-passport' ) . '</a></p>';
+		}
+		echo '</div>';
 	}
 
 	/**

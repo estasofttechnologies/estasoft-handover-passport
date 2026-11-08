@@ -45,6 +45,7 @@ function estasoft_hp_uninstall_site(): void {
 		'estasoft_hp_snapshot_check',
 		'estasoft_hp_reminder_health',
 		'estasoft_hp_copy_guard',
+		'estasoft_hp_digest_last',
 	);
 	foreach ( $options as $option ) {
 		delete_option( $option );

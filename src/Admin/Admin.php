@@ -23,6 +23,7 @@ final class Admin {
 	public const MENU_SLUG = 'estasoft-passport';
 	public const SCAN_ACTION = 'estasoft_hp_scan_now';
 	public const DISMISS_ACTION = 'estasoft_hp_dismiss';
+	public const COPY_ACTION = 'estasoft_hp_copy_answer';
 	public const DISMISS_META = 'estasoft_hp_dismissed';
 
 	/**
@@ -58,6 +59,7 @@ final class Admin {
 		add_filter( 'plugin_row_meta', array( $this, 'rowMeta' ), 10, 2 );
 		add_action( 'admin_init', array( $this, 'welcomeRedirect' ) );
 		add_action( 'admin_post_' . self::DISMISS_ACTION, array( $this, 'handleDismiss' ) );
+		add_action( 'admin_post_' . self::COPY_ACTION, array( $this, 'handleCopyAnswer' ) );
 
 		( new Actions( $this->plugin ) )->register();
 		( new PrivacyPolicy() )->register();
@@ -146,10 +148,64 @@ final class Admin {
 			);
 		}
 
+		$this->copyNotice();
+
 		$hours = $this->plugin->scanService()->hoursSinceLast();
 		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON && ( null === $hours || $hours > (int) $this->plugin->settings()->get( 'thresholds.scan_stale_hours', 48 ) ) ) {
 			$this->notice( 'cron_off', 'notice-warning', __( 'WordPress cron is switched off and the last scan is old. Ask your host to run WordPress cron from the server, or run "wp estasoft-passport scan" on a schedule.', 'estasoft-handover-passport' ) );
 		}
+	}
+
+	/**
+	 * The copy guard question (IMP-4). It stays until someone answers, because reminders are paused until then.
+	 */
+	private function copyNotice(): void {
+		$guard = $this->plugin->copyGuard();
+		if ( $guard->isMarkedCopy() ) {
+			$this->notice( 'copy_marked', 'notice-info', __( 'This site is marked as a copy. Reminders, emailed copies and scheduled checks are off here, so they are not sent a second time.', 'estasoft-handover-passport' ) );
+			return;
+		}
+		if ( ! $guard->pending() ) {
+			return;
+		}
+		$state = $guard->state();
+		echo '<div class="notice notice-warning estasoft-hp-copy-notice" role="alert"><p><strong>' . esc_html__( 'Is this a copy of the site?', 'estasoft-handover-passport' ) . '</strong> ';
+		echo esc_html(
+			sprintf(
+				/* translators: 1: address the Passport was set up on, 2: address of this site now. */
+				__( 'Passport was set up at %1$s and this site is now at %2$s. Reminders, emailed copies and scheduled checks are paused until you say which it is.', 'estasoft-handover-passport' ),
+				(string) ( $state['from'] ?? '' ),
+				(string) ( $state['to'] ?? '' )
+			)
+		) . '</p>';
+		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline-form"><input type="hidden" name="action" value="' . esc_attr( self::COPY_ACTION ) . '">';
+			Form::nonce( self::COPY_ACTION );
+			echo '<p><button type="submit" name="answer" value="moved" class="button button-primary">' . esc_html__( 'This site moved', 'estasoft-handover-passport' ) . '</button> ';
+			echo '<button type="submit" name="answer" value="copy" class="button">' . esc_html__( 'This is a copy', 'estasoft-handover-passport' ) . '</button></p>';
+			echo '<p class="description">' . esc_html__( 'Moved keeps everything and takes the new address. Copy keeps reminders off on this site.', 'estasoft-handover-passport' ) . '</p></form>';
+		} else {
+			echo '<p>' . esc_html__( 'Ask someone who can change Passport settings to answer.', 'estasoft-handover-passport' ) . '</p>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Save the answer to the copy question.
+	 */
+	public function handleCopyAnswer(): void {
+		if ( ! Capabilities::can( Capabilities::CONFIGURE ) ) {
+			wp_die( esc_html__( 'You do not have permission to change settings.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
+		}
+		check_admin_referer( self::COPY_ACTION );
+		$answer = sanitize_key( Request::post( 'answer' ) );
+		$done   = $this->plugin->copyGuard()->answer( $answer );
+		$notice = ! $done ? 'denied' : ( 'moved' === $answer ? 'copy_moved' : 'copy_marked' );
+		if ( $done ) {
+			$this->plugin->changeLog()->add( 'copy_answered', 'site', 0, home_url(), array(), array( 'answer' => $answer ) );
+		}
+		wp_safe_redirect( add_query_arg( 'estasoft_hp_notice', $notice, admin_url( 'admin.php?page=' . self::MENU_SLUG ) ) );
+		exit;
 	}
 
 	/**

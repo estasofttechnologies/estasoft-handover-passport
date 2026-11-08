@@ -67,9 +67,16 @@ final class ChangeText {
 			case 'record_restored':
 				/* translators: %s: record title. */
 				return sprintf( __( 'Restored: %s', 'estasoft-handover-passport' ), $label );
+			case 'record_renewed':
+				/* translators: 1: record title, 2: the new date. */
+				return sprintf( __( 'Renewed: %1$s, next date %2$s', 'estasoft-handover-passport' ), $label, (string) ( $after['value'] ?? '' ) );
 			case 'record_verified':
 				/* translators: %s: record title. */
 				return sprintf( __( 'Verified: %s', 'estasoft-handover-passport' ), $label );
+			case 'copy_answered':
+				return 'moved' === (string) ( $after['answer'] ?? '' )
+					? __( 'Site address confirmed as the new address of this site', 'estasoft-handover-passport' )
+					: __( 'Site marked as a copy; reminders stay off', 'estasoft-handover-passport' );
 			case 'person_added':
 				/* translators: %s: person's name. */
 				return sprintf( __( 'Person added: %s', 'estasoft-handover-passport' ), $label );
@@ -145,6 +152,7 @@ final class ChangeText {
 			'record_added'              => __( 'Record added', 'estasoft-handover-passport' ),
 			'record_edited'             => __( 'Record edited', 'estasoft-handover-passport' ),
 			'record_deleted'            => __( 'Record deleted', 'estasoft-handover-passport' ),
+			'record_renewed'            => __( 'Record renewed', 'estasoft-handover-passport' ),
 			'maintenance_note'          => __( 'Maintenance note', 'estasoft-handover-passport' ),
 			'finding_accepted'          => __( 'Finding accepted', 'estasoft-handover-passport' ),
 			'rule_disabled'             => __( 'Rule switched off', 'estasoft-handover-passport' ),

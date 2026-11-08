@@ -43,7 +43,6 @@ class Passport {
 			'logo_id'         => 0,
 			'brand_color'     => '#2f4858',
 			'successor_notes' => '',
-			'reminder_list'   => array(),
 			'setup'           => array(
 				'done'    => array(),
 				'skipped' => array(),
@@ -62,9 +61,6 @@ class Passport {
 		if ( null === $this->cache ) {
 			$stored      = get_option( self::OPTION, array() );
 			$this->cache = array_replace_recursive( self::defaults(), is_array( $stored ) ? $stored : array() );
-			if ( isset( $stored['reminder_list'] ) && is_array( $stored['reminder_list'] ) ) {
-				$this->cache['reminder_list'] = array_values( $stored['reminder_list'] );
-			}
 		}
 		return $this->cache;
 	}

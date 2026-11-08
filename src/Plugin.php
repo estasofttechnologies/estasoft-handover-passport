@@ -12,6 +12,7 @@ namespace Estasoft\HandoverPassport;
 use Estasoft\HandoverPassport\Admin\Admin;
 use Estasoft\HandoverPassport\Changes\ChangeCapture;
 use Estasoft\HandoverPassport\Changes\ChangeLog;
+use Estasoft\HandoverPassport\Cli\RemindersCommand;
 use Estasoft\HandoverPassport\Cli\ScanCommand;
 use Estasoft\HandoverPassport\Data\ChangeRepository;
 use Estasoft\HandoverPassport\Data\FindingRepository;
@@ -29,9 +30,11 @@ use Estasoft\HandoverPassport\Passport\Passport;
 use Estasoft\HandoverPassport\Rest\Routes;
 use Estasoft\HandoverPassport\Scan\Collector;
 use Estasoft\HandoverPassport\Scan\ScanService;
+use Estasoft\HandoverPassport\Security\CopyGuard;
 use Estasoft\HandoverPassport\Security\SecretGuard;
 use Estasoft\HandoverPassport\Services\CheckService;
 use Estasoft\HandoverPassport\Services\PeopleService;
+use Estasoft\HandoverPassport\Services\ReminderService;
 use Estasoft\HandoverPassport\Services\RecordService;
 use Estasoft\HandoverPassport\Services\RestoreTestService;
 use Estasoft\HandoverPassport\Services\RunbookService;
@@ -92,6 +95,9 @@ final class Plugin {
 		add_action( Schedule::SCAN, array( $this, 'runScheduledScan' ) );
 		add_action( Schedule::EVENT_SCAN, array( $this, 'runEventScan' ) );
 		add_action( Schedule::RETENTION, array( $this, 'runRetention' ) );
+		add_action( Schedule::REMINDERS, array( $this, 'runReminders' ) );
+		add_action( Schedule::DIGEST, array( $this, 'runDigest' ) );
+		add_action( 'estasoft_hp_scan_completed', array( $this->copyGuard(), 'check' ), 5, 0 );
 		add_action( 'estasoft_hp_record_saved', array( $this, 'queueFindings' ), 20, 0 );
 		add_action( 'estasoft_hp_scan_completed', array( $this, 'queueFindings' ), 20, 0 );
 
@@ -103,6 +109,7 @@ final class Plugin {
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'estasoft-passport scan', new ScanCommand( $this ) );
+			\WP_CLI::add_command( 'estasoft-passport reminders', new RemindersCommand( $this ) );
 		}
 	}
 
@@ -133,6 +140,21 @@ final class Plugin {
 	 */
 	public function runRetention(): void {
 		( new Retention( $this->settings(), new ItemRepository(), new PeopleRepository(), new LinkRepository(), new ChangeRepository(), new FindingRepository(), new ReminderRepository() ) )->run();
+	}
+
+	/**
+	 * Cron callback for the daily reminders. Paused by the copy guard on a copy of the site.
+	 */
+	public function runReminders(): void {
+		$this->reminders()->run();
+		$this->findings()->run();
+	}
+
+	/**
+	 * Cron callback for the weekly summary.
+	 */
+	public function runDigest(): void {
+		$this->reminders()->digest();
 	}
 
 	/**
@@ -202,6 +224,20 @@ final class Plugin {
 	 */
 	public function restoreTests(): RestoreTestService {
 		return $this->shared( 'restore_tests', fn(): RestoreTestService => new RestoreTestService( new TestRepository(), new RunbookRepository(), $this->secretGuard(), $this->changeLog() ) );
+	}
+
+	/**
+	 * Reminder emails, the weekly summary and the delivery check.
+	 */
+	public function reminders(): ReminderService {
+		return $this->shared( 'reminders', fn(): ReminderService => new ReminderService( $this, new ReminderRepository(), $this->copyGuard() ) );
+	}
+
+	/**
+	 * Copy guard.
+	 */
+	public function copyGuard(): CopyGuard {
+		return $this->shared( 'copy_guard', static fn(): CopyGuard => new CopyGuard() );
 	}
 
 	/**

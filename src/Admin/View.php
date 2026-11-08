@@ -47,7 +47,7 @@ final class View {
 		if ( '' === $key || ! isset( $map[ $key ] ) ) {
 			return;
 		}
-		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid' ), true ) ? 'notice-error' : 'notice-success';
+		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid', 'renew_invalid', 'mail_failed', 'mail_invalid', 'mail_wait' ), true ) ? 'notice-error' : 'notice-success';
 		echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible" role="status"><p>' . esc_html( $map[ $key ] ) . '</p></div>';
 	}
 
@@ -59,6 +59,14 @@ final class View {
 	private static function messages(): array {
 		return array(
 			'scan_done'   => __( 'Scan finished.', 'estasoft-handover-passport' ),
+			'renewed'       => __( 'Renewed. The next date is saved and the reminders start again for it.', 'estasoft-handover-passport' ),
+			'renew_invalid' => __( 'The date was not accepted. Use a real date in the form YYYY-MM-DD that is later than the current one.', 'estasoft-handover-passport' ),
+			'mail_sent'     => __( 'The test email was sent. Check the inbox of that address.', 'estasoft-handover-passport' ),
+			'mail_failed'   => __( 'The site could not send the test email. Reminders depend on working site email.', 'estasoft-handover-passport' ),
+			'mail_invalid'  => __( 'Enter a valid email address for the test.', 'estasoft-handover-passport' ),
+			'mail_wait'     => __( 'A test email was just sent to that address. Wait a minute and try again.', 'estasoft-handover-passport' ),
+			'copy_moved'  => __( 'Saved. Passport now treats this address as the site\'s address, and reminders carry on.', 'estasoft-handover-passport' ),
+			'copy_marked' => __( 'Saved. This site is marked as a copy, so reminders, emailed copies and scheduled checks stay off here.', 'estasoft-handover-passport' ),
 			'scan_busy'   => __( 'A scan is already running. Try again in a minute.', 'estasoft-handover-passport' ),
 			'scan_failed' => __( 'The scan could not finish. Nothing was changed.', 'estasoft-handover-passport' ),
 			'saved'       => __( 'Saved.', 'estasoft-handover-passport' ),

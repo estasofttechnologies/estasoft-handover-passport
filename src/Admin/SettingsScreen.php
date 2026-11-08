@@ -9,8 +9,10 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Admin;
 
+use Estasoft\HandoverPassport\Domain\LeadTimes;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Security\Capabilities;
+use Estasoft\HandoverPassport\Support\Dates;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,12 +23,14 @@ final class SettingsScreen extends Screen {
 
 	public const SLUG   = 'estasoft-passport-settings';
 	public const ACTION = 'estasoft_hp_save_settings';
+	public const MAIL_ACTION = 'estasoft_hp_test_mail';
 
 	/**
 	 * Attach the save handler.
 	 */
 	public function register(): void {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handleSave' ) );
+		add_action( 'admin_post_' . self::MAIL_ACTION, array( $this, 'handleTestMail' ) );
 	}
 
 	/**
@@ -126,6 +130,57 @@ final class SettingsScreen extends Screen {
 			$this->generalTab( $settings );
 		}
 		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save settings', 'estasoft-handover-passport' ) . '</button></p></form>';
+		if ( 'reminders' === $tab ) {
+			$this->deliveryPanel();
+		}
+	}
+
+	/**
+	 * Delivery check: what the last runs did and a Send test email button (RMD-5). It is a form of its own, after the settings form.
+	 */
+	private function deliveryPanel(): void {
+		$health = $this->plugin->reminders()->health();
+		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Delivery check', 'estasoft-handover-passport' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Reminders go out through the email of this WordPress site. If the site cannot send email, no reminder arrives. Send a test email to see whether it can.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<dl class="estasoft-hp-defs">';
+		$rows = array(
+			__( 'Last daily run', 'estasoft-handover-passport' )   => '' === $health['last_run'] ? __( 'Not yet', 'estasoft-handover-passport' ) : Dates::display( $health['last_run'], true ),
+			__( 'Last reminder sent', 'estasoft-handover-passport' ) => '' === $health['last_sent'] ? __( 'None yet', 'estasoft-handover-passport' ) : Dates::display( $health['last_sent'], true ),
+		);
+		if ( '' !== $health['test_at'] ) {
+			$rows[ __( 'Last test email', 'estasoft-handover-passport' ) ] = Dates::display( $health['test_at'], true ) . ' (' . ( $health['test_ok'] ? __( 'sent', 'estasoft-handover-passport' ) : __( 'not sent', 'estasoft-handover-passport' ) ) . ')';
+		}
+		if ( $health['failed_days'] > 0 ) {
+			$rows[ __( 'Days in a row with failed reminders', 'estasoft-handover-passport' ) ] = (string) $health['failed_days'];
+		}
+		if ( '' !== $health['last_error'] ) {
+			$rows[ __( 'Last error from the mailer', 'estasoft-handover-passport' ) ] = $health['last_error'];
+		}
+		foreach ( $rows as $term => $text ) {
+			echo '<dt>' . esc_html( (string) $term ) . '</dt><dd>' . esc_html( (string) $text ) . '</dd>';
+		}
+		echo '</dl>';
+		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::MAIL_ACTION ) . '">';
+			Form::nonce( self::MAIL_ACTION );
+			Form::row( 'test_mail_to', array( 'type' => 'email', 'label' => __( 'Send a test email to', 'estasoft-handover-passport' ) ), (string) wp_get_current_user()->user_email );
+			echo '<p><button type="submit" class="button">' . esc_html__( 'Send test email', 'estasoft-handover-passport' ) . '</button></p></form>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Send the test email.
+	 */
+	public function handleTestMail(): void {
+		if ( ! Capabilities::can( Capabilities::CONFIGURE ) ) {
+			wp_die( esc_html__( 'You do not have permission to change settings.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
+		}
+		check_admin_referer( self::MAIL_ACTION );
+		$result = $this->plugin->reminders()->sendTest( Request::post( 'test_mail_to' ) );
+		$notice = array( 'sent' => 'mail_sent', 'invalid' => 'mail_invalid', 'wait' => 'mail_wait' )[ $result['reason'] ] ?? 'mail_failed';
+		wp_safe_redirect( add_query_arg( 'estasoft_hp_notice', $notice, add_query_arg( array( 'page' => self::SLUG, 'tab' => 'reminders' ), admin_url( 'admin.php' ) ) ) );
+		exit;
 	}
 
 	/**
@@ -181,8 +236,8 @@ final class SettingsScreen extends Screen {
 	private function remindersTab( $settings ): void {
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Reminders', 'estasoft-handover-passport' ) . '</legend>';
 		Form::checkbox( 'reminders_enabled', __( 'Send reminder e-mails', 'estasoft-handover-passport' ), (bool) $settings->get( 'reminders_enabled', true ), __( 'One e-mail per date at each lead time below. Nothing is sent once the date is renewed or the record is removed.', 'estasoft-handover-passport' ) );
-		Form::row( 'reminder_days', array( 'type' => 'text', 'label' => __( 'Lead times (days before the date, comma separated)', 'estasoft-handover-passport' ), 'max' => 60 ), implode( ', ', array_map( 'strval', (array) $settings->get( 'reminder_days', array( 60, 30, 14, 7, 1, 0 ) ) ) ) );
-		Form::row( 'reminder_emails', array( 'type' => 'lines', 'label' => __( 'Who receives them (one address per line)', 'estasoft-handover-passport' ), 'help' => __( 'The account holder and payer on each record are added automatically when they have an address.', 'estasoft-handover-passport' ) ), (array) $settings->get( 'reminder_emails', array() ) );
+		Form::row( 'reminder_days', array( 'type' => 'text', 'label' => __( 'Lead times (days before the date, comma separated)', 'estasoft-handover-passport' ), 'max' => 60 ), implode( ', ', $this->plugin->reminders()->leadTimes() ) );
+		Form::row( 'reminder_emails', array( 'type' => 'lines', 'label' => __( 'Who receives them (one address per line)', 'estasoft-handover-passport' ), 'help' => __( 'The account holder and payer on each record are added automatically when they have an address. With nobody listed and no holder or payer address, reminders go to the site administration email.', 'estasoft-handover-passport' ) ), (array) $settings->get( 'reminder_emails', array() ) );
 		Form::checkbox( 'digest_enabled', __( 'Also send a weekly summary on Mondays at 08:00', 'estasoft-handover-passport' ), (bool) $settings->get( 'digest_enabled', false ), __( 'A short list of what needs attention. Off by default.', 'estasoft-handover-passport' ) );
 		echo '</fieldset>';
 	}
@@ -289,14 +344,7 @@ final class SettingsScreen extends Screen {
 			$settings->update( array( 'thresholds' => $thresholds, 'recovery' => $recovery ) );
 			$changed[] = __( 'finding thresholds', 'estasoft-handover-passport' );
 		} elseif ( 'reminders' === $tab ) {
-			$days = array();
-			foreach ( explode( ',', Request::post( 'reminder_days' ) ) as $part ) {
-				$part = trim( $part );
-				if ( '' !== $part && ctype_digit( $part ) && (int) $part <= 365 ) {
-					$days[ (int) $part ] = (int) $part;
-				}
-			}
-			rsort( $days );
+			$days = LeadTimes::parse( Request::post( 'reminder_days' ) );
 			$emails = array();
 			foreach ( preg_split( '/\R/', Request::postedTextarea( 'reminder_emails' ) ) ?: array() as $line ) {
 				$address = sanitize_email( $line );
@@ -307,7 +355,7 @@ final class SettingsScreen extends Screen {
 			$settings->update(
 				array(
 					'reminders_enabled' => '1' === Request::post( 'reminders_enabled' ),
-					'reminder_days'     => array_values( array() === $days ? array( 60, 30, 14, 7, 1, 0 ) : $days ),
+					'reminder_days'     => array() === $days ? LeadTimes::DEFAULT : $days,
 					'reminder_emails'   => array_values( array_slice( $emails, 0, 20 ) ),
 					'digest_enabled'    => '1' === Request::post( 'digest_enabled' ),
 				)
