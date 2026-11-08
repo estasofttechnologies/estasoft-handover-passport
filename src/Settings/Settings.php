@@ -32,7 +32,7 @@ class Settings {
 	 */
 	public static function defaults(): array {
 		return array(
-			'review_days'        => array(
+			'review_days'         => array(
 				'stack'    => 30,
 				'licences' => 90,
 				'domains'  => 90,
@@ -44,34 +44,34 @@ class Settings {
 				'services' => 180,
 				'other'    => 180,
 			),
-			'due_days'           => 14,
-			'scan_time'          => '03:00',
-			'scan_limit'         => 20,
-			'reminders_enabled'  => true,
-			'reminder_days'      => array( 60, 30, 14, 7, 1, 0 ),
-			'reminder_emails'    => array(),
-			'digest_enabled'     => false,
-			'backup_confirm'     => 30,
-			'access_review_days' => 90,
-			'retention'          => array(
+			'due_days'            => 14,
+			'scan_time'           => '03:00',
+			'scan_limit'          => 20,
+			'reminders_enabled'   => true,
+			'reminder_days'       => array( 60, 30, 14, 7, 1, 0 ),
+			'reminder_emails'     => array(),
+			'digest_enabled'      => false,
+			'backup_confirm'      => 30,
+			'access_review_days'  => 90,
+			'retention'           => array(
 				'changes_months'   => 24,
 				'findings_months'  => 12,
 				'reminders_months' => 12,
 				'exports_months'   => 12,
 				'deleted_days'     => 30,
 			),
-			'import_undo_days'   => 7,
-			'emailed_copy'       => array(
+			'import_undo_days'    => 7,
+			'emailed_copy'        => array(
 				'enabled'     => false,
 				'addresses'   => array(),
 				'on_snapshot' => true,
 				'monthly'     => true,
 			),
-			'url_check_weekly'   => false,
-			'restore_checks'     => array(),
-			'dashboard_widget'   => false,
-			'calendar_feed'      => false,
-			'pack'               => array(
+			'url_check_weekly'    => false,
+			'restore_checks'      => array(),
+			'dashboard_widget'    => false,
+			'calendar_feed'       => false,
+			'pack'                => array(
 				'title'       => '',
 				'cover_text'  => '',
 				'footer_text' => '',
@@ -79,11 +79,11 @@ class Settings {
 				'credit'      => false,
 				'language'    => '',
 			),
-			'recovery'           => array(
+			'recovery'            => array(
 				'data_loss_hours' => null,
 				'downtime_hours'  => null,
 			),
-			'thresholds'         => array(
+			'thresholds'          => array(
 				'eol_warn_days'       => 90,
 				'update_age_days'     => 30,
 				'licence_warn_days'   => 60,
@@ -96,11 +96,11 @@ class Settings {
 				'scan_stale_hours'    => 48,
 				'access_review_days'  => 90,
 			),
-			'disabled_rules'     => array(),
-			'profiles'           => array(),
-			'capability_grants'  => array(),
+			'disabled_rules'      => array(),
+			'profiles'            => array(),
+			'capability_grants'   => array(),
 			'delete_on_uninstall' => false,
-			'dismissed_notices'  => array(),
+			'dismissed_notices'   => array(),
 		);
 	}
 
@@ -121,14 +121,14 @@ class Settings {
 	 * Read one value by dotted path.
 	 *
 	 * @param string $path    For example "retention.changes_months".
-	 * @param mixed  $default Value when the path is missing.
+	 * @param mixed  $fallback Value when the path is missing.
 	 * @return mixed
 	 */
-	public function get( string $path, $default = null ) {
+	public function get( string $path, $fallback = null ) {
 		$value = $this->all();
 		foreach ( explode( '.', $path ) as $segment ) {
 			if ( ! is_array( $value ) || ! array_key_exists( $segment, $value ) ) {
-				return $default;
+				return $fallback;
 			}
 			$value = $value[ $segment ];
 		}

@@ -12,9 +12,9 @@
 defined( 'ABSPATH' ) || exit;
 
 return array(
-	'version'  => 1,
-	'reviewed' => '2026-11-08',
-	'php'      => array(
+	'version'   => 1,
+	'reviewed'  => '2026-11-08',
+	'php'       => array(
 		// Branch => last day of security support.
 		'5.6' => '2018-12-31',
 		'7.0' => '2018-12-03',

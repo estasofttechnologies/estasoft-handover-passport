@@ -122,12 +122,12 @@ final class PrintPage {
 	/**
 	 * A checklist on its own page, with a box to tick, a line for the result and a line for who checked.
 	 *
-	 * @param string                       $title      Heading.
-	 * @param string                       $intro      A sentence under the heading.
-	 * @param list<array<string, string>>  $items      Items with label, detail and kind.
-	 * @param PackStyle                    $style      Style.
-	 * @param string                       $site       Name of the site.
-	 * @param string                       $printed_at Date and time of printing, in UTC.
+	 * @param string                            $title      Heading.
+	 * @param string                            $intro      A sentence under the heading.
+	 * @param array<int, array<string, string>> $items      Items with label, detail and kind.
+	 * @param PackStyle                         $style      Style.
+	 * @param string                            $site       Name of the site.
+	 * @param string                            $printed_at Date and time of printing, in UTC.
 	 */
 	public static function checklist( string $title, string $intro, array $items, PackStyle $style, string $site, string $printed_at ): string {
 		$out  = '<section class="book">' . self::head( $style, $site ) . '<h1>' . self::text( $title ) . '</h1>';
@@ -166,7 +166,7 @@ final class PrintPage {
 	 * Owner, time and version, for the line under the title.
 	 *
 	 * @param array<string, mixed> $book Runbook.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private static function meta( array $book ): array {
 		return array(

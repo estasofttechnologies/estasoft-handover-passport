@@ -37,7 +37,7 @@ abstract class BaseController extends WP_REST_Controller {
 	/**
 	 * Names that the orderby parameter accepts, the first being the default.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	abstract protected function orderbyChoices(): array;
 
@@ -160,7 +160,7 @@ abstract class BaseController extends WP_REST_Controller {
 	/**
 	 * A page of items with the totals in the headers (API-3).
 	 *
-	 * @param array{items: list<array<string, mixed>>, total: int, pages: int} $result Output of the pager.
+	 * @param array{items: array<int, array<string, mixed>>, total: int, pages: int} $result Output of the pager.
 	 */
 	protected function listResponse( array $result ): WP_REST_Response {
 		$response = new WP_REST_Response( $result['items'] );

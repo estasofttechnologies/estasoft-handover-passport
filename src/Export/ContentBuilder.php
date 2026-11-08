@@ -81,11 +81,11 @@ final class ContentBuilder {
 	/**
 	 * Remove what this pack may not hold: Sensitive records the person did not tick, and Sensitive field values.
 	 *
-	 * @param list<array<string, mixed>> $sections Chapters, possibly changed by a filter.
-	 * @param Profile                    $profile  Profile.
-	 * @param ExportData                 $data     Passport data.
-	 * @param ExportOptions              $options  Rights.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, array<string, mixed>> $sections Chapters, possibly changed by a filter.
+	 * @param Profile                          $profile  Profile.
+	 * @param ExportData                       $data     Passport data.
+	 * @param ExportOptions                    $options  Rights.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function enforce( array $sections, Profile $profile, ExportData $data, ExportOptions $options ): array {
 		$sensitive_ids = array();
@@ -136,9 +136,9 @@ final class ContentBuilder {
 	/**
 	 * Drop the definition of a Sensitive field that no remaining item holds.
 	 *
-	 * @param list<array<string, mixed>> $fields Field definitions.
-	 * @param list<array<string, mixed>> $items  Items kept.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, array<string, mixed>> $fields Field definitions.
+	 * @param array<int, array<string, mixed>> $items  Items kept.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function fieldsStillUsed( array $fields, array $items ): array {
 		$out = array();
@@ -160,9 +160,9 @@ final class ContentBuilder {
 	/**
 	 * Sensitive records that are in the final content, by title only (EXP-4).
 	 *
-	 * @param list<array<string, mixed>> $sections Chapters after enforcement.
-	 * @param ExportData                 $data     Passport data.
-	 * @return list<array{ref: string, title: string}>
+	 * @param array<int, array<string, mixed>> $sections Chapters after enforcement.
+	 * @param ExportData                       $data     Passport data.
+	 * @return array<int, array{ref: string, title: string}>
 	 */
 	private function sensitiveIncluded( array $sections, ExportData $data ): array {
 		$sensitive = array();

@@ -225,21 +225,21 @@ final class ExportView {
 	/**
 	 * Make the file and send it, or go back with the reason.
 	 *
-	 * @param string    $pack   Pack key.
-	 * @param string    $format Format key or "print".
-	 * @param list<int> $ids    Sensitive records the person confirmed.
-	 * @param string    $return Where to go when it cannot be made.
+	 * @param string          $pack   Pack key.
+	 * @param string          $format Format key or "print".
+	 * @param array<int, int> $ids    Sensitive records the person confirmed.
+	 * @param string          $return_to Where to go when it cannot be made.
 	 */
-	private function deliver( string $pack, string $format, array $ids, string $return ): never {
+	private function deliver( string $pack, string $format, array $ids, string $return_to ): never {
 		$options = new ExportOptions( Capabilities::canSeeSensitive(), $ids, get_current_user_id() );
 		try {
 			$result = $this->plugin->exports()->make( sanitize_key( $pack ), sanitize_key( $format ), $options );
 		} catch ( ValidationError | ExportRefused | RenderFailed $e ) {
 			View::say( $e->getMessage() );
-			$this->back( $return, '' );
+			$this->back( $return_to, '' );
 		} catch ( SecretFound $e ) {
 			View::say( __( 'A value in the Passport looks like a password or key, so no file was made. Open the record named in the history or the findings and remove it.', 'estasoft-handover-passport' ) );
-			$this->back( $return, '' );
+			$this->back( $return_to, '' );
 		}
 		Download::send( $result, ExportService::PRINT === $result->format );
 	}
@@ -265,8 +265,8 @@ final class ExportView {
 		} catch ( ValidationError | SecretFound $e ) {
 			$label = $e instanceof ValidationError ? $e->field() : (string) strtok( $e->field(), '.' );
 			$keys  = array(
-				__( 'Name', 'estasoft-handover-passport' )     => 'name',
-				__( 'Copy of', 'estasoft-handover-passport' )  => 'base',
+				__( 'Name', 'estasoft-handover-passport' ) => 'name',
+				__( 'Copy of', 'estasoft-handover-passport' ) => 'base',
 				__( 'Chapters', 'estasoft-handover-passport' ) => 'sections',
 			);
 			FormState::put( $this->plugin->secretGuard(), 'pack_copy', array( 'name' => Request::post( 'name' ), 'base' => Request::post( 'base' ), 'sections' => $sections ?? array() ), array( ( $keys[ $label ] ?? 'name' ) => $e->getMessage() ) );
@@ -278,15 +278,15 @@ final class ExportView {
 	/**
 	 * Redirect and stop.
 	 *
-	 * @param string                $return URL.
+	 * @param string                $return_to URL.
 	 * @param string                $notice Notice key, or an empty string for none.
 	 * @param array<string, string> $args   More query arguments.
 	 */
-	private function back( string $return, string $notice, array $args = array() ): never {
+	private function back( string $return_to, string $notice, array $args = array() ): never {
 		if ( '' !== $notice ) {
 			$args['estasoft_hp_notice'] = $notice;
 		}
-		wp_safe_redirect( array() === $args ? $return : add_query_arg( $args, $return ) );
+		wp_safe_redirect( array() === $args ? $return_to : add_query_arg( $args, $return_to ) );
 		exit;
 	}
 }

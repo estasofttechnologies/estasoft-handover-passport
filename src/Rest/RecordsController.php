@@ -336,7 +336,7 @@ final class RecordsController extends BaseController {
 	/**
 	 * Every live record in a register that this caller may see.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function visible(): array {
 		$may   = Capabilities::canSeeSensitive();

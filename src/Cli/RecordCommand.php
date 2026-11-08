@@ -55,7 +55,7 @@ final class RecordCommand {
 	 *
 	 * @subcommand list
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function list_( $args, $assoc_args ): void {
@@ -102,7 +102,7 @@ final class RecordCommand {
 	 *
 	 *     wp estasoft-passport record verify 7 --user=admin
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function verify( $args, $assoc_args ): void {
@@ -127,7 +127,7 @@ final class RecordCommand {
 	 *
 	 *     wp estasoft-passport record renew 7 2027-03-01 --user=admin
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function renew( $args, $assoc_args ): void {
@@ -141,7 +141,7 @@ final class RecordCommand {
 	/**
 	 * The record named by the first argument, or an error.
 	 *
-	 * @param list<string> $args Positional arguments.
+	 * @param array<int, string> $args Positional arguments.
 	 * @return array<string, mixed>
 	 */
 	private function find( array $args ): array {

@@ -35,14 +35,14 @@ final class Engine {
 	 *
 	 * @param Context              $context  What the rules look at.
 	 * @param array<string, mixed> $disabled Disabled rules: ID to reason.
-	 * @return array{opened: int, updated: int, resolved: int, not_checked: list<string>}
+	 * @return array{opened: int, updated: int, resolved: int, not_checked: array<int, string>}
 	 */
 	public function run( Context $context, array $disabled = array() ): array {
-		$now      = Clock::sql();
-		$rules    = RuleCatalog::all();
-		$stored   = $this->findings->query( array(), 'id', 'ASC' );
-		$active   = array();
-		$by_rule  = array();
+		$now     = Clock::sql();
+		$rules   = RuleCatalog::all();
+		$stored  = $this->findings->query( array(), 'id', 'ASC' );
+		$active  = array();
+		$by_rule = array();
 		foreach ( $stored as $row ) {
 			if ( FindingRepository::RESOLVED === (string) $row['state'] ) {
 				continue;
@@ -100,30 +100,30 @@ final class Engine {
 	/**
 	 * Create or refresh one finding.
 	 *
-	 * @param Candidate                                                              $candidate Candidate.
-	 * @param string                                                                 $rule_id   Rule ID.
-	 * @param array<string, mixed>|null                                              $row       Stored finding or null.
-	 * @param string                                                                 $now       UTC date-time.
-	 * @param array{opened: int, updated: int, resolved: int, not_checked: list<string>} $summary   Counters.
+	 * @param Candidate                                                                        $candidate Candidate.
+	 * @param string                                                                           $rule_id   Rule ID.
+	 * @param array<string, mixed>|null                                                        $row       Stored finding or null.
+	 * @param string                                                                           $now       UTC date-time.
+	 * @param array{opened: int, updated: int, resolved: int, not_checked: array<int, string>} $summary   Counters.
 	 */
 	private function apply( Candidate $candidate, string $rule_id, ?array $row, string $now, array &$summary ): void {
 		if ( null === $row ) {
 			$new = array(
-				'rule_id'        => $rule_id,
-				'subject_type'   => $candidate->subject_type,
-				'subject_id'     => $candidate->subject_id,
-				'subject_key'    => $candidate->subject_key,
-				'severity'       => $candidate->level,
-				'state'          => FindingRepository::OPEN,
-				'message_values' => $candidate->values,
-				'first_seen'     => $now,
-				'last_seen'      => $now,
-				'snoozed_until'  => null,
+				'rule_id'         => $rule_id,
+				'subject_type'    => $candidate->subject_type,
+				'subject_id'      => $candidate->subject_id,
+				'subject_key'     => $candidate->subject_key,
+				'severity'        => $candidate->level,
+				'state'           => FindingRepository::OPEN,
+				'message_values'  => $candidate->values,
+				'first_seen'      => $now,
+				'last_seen'       => $now,
+				'snoozed_until'   => null,
 				'accepted_reason' => '',
-				'accepted_by'    => 0,
-				'resolved_at'    => null,
+				'accepted_by'     => 0,
+				'resolved_at'     => null,
 			);
-			$id = $this->findings->insert( $new );
+			$id  = $this->findings->insert( $new );
 			++$summary['opened'];
 			/**
 			 * Fires when a new finding appears.

@@ -17,14 +17,23 @@ defined( 'ABSPATH' ) || exit;
  */
 class SnapshotRepository extends Repository {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'snapshots';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function jsonColumns(): array {
 		return array( 'acknowledgements' );
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'name', 'profile_key', 'note', 'content', 'hash', 'schema_version', 'plugin_version', 'created_at', 'created_by', 'acknowledgements' );
 	}
@@ -56,7 +65,7 @@ class SnapshotRepository extends Repository {
 	/**
 	 * Snapshots, newest first, without the bulky content.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function listAll(): array {
 		$rows = $this->rows( "SELECT id, name, profile_key, note, hash, schema_version, plugin_version, created_at, created_by, acknowledgements FROM {$this->table()} ORDER BY created_at DESC, id DESC" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Fixed table name, no variables.
@@ -66,7 +75,7 @@ class SnapshotRepository extends Repository {
 	/**
 	 * How many snapshots contain any of the strings in their saved content (privacy tools).
 	 *
-	 * @param list<string> $needles Texts to look for, such as an email address or a name.
+	 * @param array<int, string> $needles Texts to look for, such as an email address or a name.
 	 */
 	public function countMentioning( array $needles ): int {
 		$needles = array_values( array_filter( array_unique( $needles ), static fn( string $text ): bool => '' !== $text ) );

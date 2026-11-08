@@ -45,7 +45,7 @@ final class ScanCommand {
 	 *     wp estasoft-passport scan
 	 *     wp estasoft-passport scan --format=json
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function __invoke( $args, $assoc_args ): void {

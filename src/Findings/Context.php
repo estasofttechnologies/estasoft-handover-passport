@@ -21,26 +21,26 @@ final class Context {
 	/**
 	 * Constructor.
 	 *
-	 * @param string                                      $today               Today as Y-m-d in site time.
-	 * @param string                                      $now                 Now as a UTC date-time.
-	 * @param array<string, mixed>                        $facts               Facts of the latest finished scan, or empty.
-	 * @param array<string, mixed>|null                   $last_scan           Latest scan row of any state.
-	 * @param int|null                                    $scan_age_hours      Hours since the last finished scan.
-	 * @param array<string, list<array<string, mixed>>>   $items               Live records by kind, unredacted.
-	 * @param list<array<string, mixed>>                  $people              Live people with their roles.
-	 * @param array<int, list<array<string, mixed>>>      $assets_by_person    What each person owns or can reach: item_id and relation.
-	 * @param array<string, list<int>>                    $role_holders        Person IDs by role key, in order.
-	 * @param list<array<string, mixed>>                  $runbooks            Live runbooks.
-	 * @param list<array<string, mixed>>                  $tests               Restore tests, newest first.
-	 * @param int                                         $snapshot_count      Number of snapshots.
-	 * @param list<array<string, mixed>>                  $snapshot_mismatches Snapshots whose hash does not match.
-	 * @param array<string, int>                          $thresholds          Thresholds from Settings.
-	 * @param array<string, int|null>                     $recovery            Acceptable data loss and downtime in hours.
-	 * @param array<string, int>                          $review_days         Review interval by section.
-	 * @param int                                         $due_days            Days a record stays Due.
-	 * @param array<string, mixed>                        $state               Small flags kept by other parts: reminder health, copy guard.
-	 * @param SupportDates                                $support             Shipped support dates.
-	 * @param list<array{slug: string, kind: string, service: string, plugin: string}> $service_hints Plugins that imply a service.
+	 * @param string                                                                         $today               Today as Y-m-d in site time.
+	 * @param string                                                                         $now                 Now as a UTC date-time.
+	 * @param array<string, mixed>                                                           $facts               Facts of the latest finished scan, or empty.
+	 * @param array<string, mixed>|null                                                      $last_scan           Latest scan row of any state.
+	 * @param int|null                                                                       $scan_age_hours      Hours since the last finished scan.
+	 * @param array<string, array<int, array<string, mixed>>>                                $items               Live records by kind, unredacted.
+	 * @param array<int, array<string, mixed>>                                               $people              Live people with their roles.
+	 * @param array<int, array<int, array<string, mixed>>>                                   $assets_by_person    What each person owns or can reach: item_id and relation.
+	 * @param array<string, array<int, int>>                                                 $role_holders        Person IDs by role key, in order.
+	 * @param array<int, array<string, mixed>>                                               $runbooks            Live runbooks.
+	 * @param array<int, array<string, mixed>>                                               $tests               Restore tests, newest first.
+	 * @param int                                                                            $snapshot_count      Number of snapshots.
+	 * @param array<int, array<string, mixed>>                                               $snapshot_mismatches Snapshots whose hash does not match.
+	 * @param array<string, int>                                                             $thresholds          Thresholds from Settings.
+	 * @param array<string, int|null>                                                        $recovery            Acceptable data loss and downtime in hours.
+	 * @param array<string, int>                                                             $review_days         Review interval by section.
+	 * @param int                                                                            $due_days            Days a record stays Due.
+	 * @param array<string, mixed>                                                           $state               Small flags kept by other parts: reminder health, copy guard.
+	 * @param SupportDates                                                                   $support             Shipped support dates.
+	 * @param array<int, array{slug: string, kind: string, service: string, plugin: string}> $service_hints Plugins that imply a service.
 	 */
 	public function __construct(
 		public readonly string $today,
@@ -78,7 +78,7 @@ final class Context {
 	 * Live records of one kind.
 	 *
 	 * @param string $kind Kind key.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function items( string $kind ): array {
 		return $this->items[ $kind ] ?? array();
@@ -89,11 +89,11 @@ final class Context {
 	 *
 	 * @param array<string, mixed> $record  Hydrated record.
 	 * @param string               $field   Field key.
-	 * @param string               $default Default.
+	 * @param string               $fallback Default.
 	 */
-	public static function field( array $record, string $field, string $default = '' ): string {
-		$value = $record['fields'][ $field ] ?? $default;
-		return is_scalar( $value ) ? trim( (string) $value ) : $default;
+	public static function field( array $record, string $field, string $fallback = '' ): string {
+		$value = $record['fields'][ $field ] ?? $fallback;
+		return is_scalar( $value ) ? trim( (string) $value ) : $fallback;
 	}
 
 	/**
@@ -101,7 +101,7 @@ final class Context {
 	 *
 	 * @param array<string, mixed> $record Hydrated record.
 	 * @param string               $field  Field key such as payer.
-	 * @return list<int>
+	 * @return array<int, int>
 	 */
 	public static function owners( array $record, string $field ): array {
 		return array_values( array_map( 'intval', (array) ( $record['owners'][ $field ] ?? array() ) ) );
@@ -111,24 +111,24 @@ final class Context {
 	 * A threshold from Settings.
 	 *
 	 * @param string $key     Threshold key.
-	 * @param int    $default Default when missing.
+	 * @param int    $fallback Default when missing.
 	 */
-	public function threshold( string $key, int $default ): int {
-		return isset( $this->thresholds[ $key ] ) ? (int) $this->thresholds[ $key ] : $default;
+	public function threshold( string $key, int $fallback ): int {
+		return isset( $this->thresholds[ $key ] ) ? (int) $this->thresholds[ $key ] : $fallback;
 	}
 
 	/**
 	 * A value from the facts by dotted path.
 	 *
 	 * @param string $path    For example "core.php_version".
-	 * @param mixed  $default Default.
+	 * @param mixed  $fallback Default.
 	 * @return mixed
 	 */
-	public function fact( string $path, $default = null ) {
+	public function fact( string $path, $fallback = null ) {
 		$value = $this->facts;
 		foreach ( explode( '.', $path ) as $segment ) {
 			if ( ! is_array( $value ) || ! array_key_exists( $segment, $value ) ) {
-				return $default;
+				return $fallback;
 			}
 			$value = $value[ $segment ];
 		}
@@ -196,10 +196,10 @@ final class Context {
 	 * A small flag kept by another part of the plugin.
 	 *
 	 * @param string $key     Key.
-	 * @param mixed  $default Default.
+	 * @param mixed  $fallback Default.
 	 * @return mixed
 	 */
-	public function state( string $key, $default = null ) {
-		return $this->state[ $key ] ?? $default;
+	public function state( string $key, $fallback = null ) {
+		return $this->state[ $key ] ?? $fallback;
 	}
 }

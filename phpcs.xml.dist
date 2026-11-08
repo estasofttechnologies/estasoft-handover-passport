@@ -7,6 +7,7 @@
 	<exclude-pattern>/lib/*</exclude-pattern>
 	<exclude-pattern>/node_modules/*</exclude-pattern>
 	<exclude-pattern>/tests/*</exclude-pattern>
+	<exclude-pattern>/bin/*</exclude-pattern>
 	<exclude-pattern>/.wordpress-org/*</exclude-pattern>
 
 	<arg name="extensions" value="php"/>
@@ -17,8 +18,37 @@
 	<config name="minimum_wp_version" value="6.4"/>
 	<config name="testVersion" value="8.1-"/>
 
-	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Extra">
+		<!-- Methods are camelCase (PSR-1); functions and hooks keep WordPress snake_case. -->
+		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid"/>
+		<!-- Short associative arrays stay on one line when they fit. -->
+		<exclude name="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound"/>
+		<!-- Exception messages are fixed text from this plugin, never raw input; screens escape them when they print. -->
+		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
+	</rule>
 	<rule ref="WordPress-Docs"/>
+
+	<!-- Methods that implement an interface or override a parent method say so with {@inheritDoc}. -->
+	<rule ref="Squiz.Commenting.FunctionComment">
+		<properties>
+			<property name="skipIfInheritdoc" value="true"/>
+		</properties>
+	</rule>
+	<!-- The sniff counts "throw" statements in the body. A method also throws what the methods it calls throw, and says so. -->
+	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber">
+		<severity>0</severity>
+	</rule>
+	<!-- WP-CLI always hands a command both $args and $assoc_args; an unused trailing one is part of the signature. -->
+	<rule ref="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed">
+		<severity>0</severity>
+	</rule>
+
+	<!-- "wordpress" in lower case is also a machine value here (a source label, a plugin slug), not text for people. -->
+	<rule ref="WordPress.WP.CapitalPDangit">
+		<exclude name="WordPress.WP.CapitalPDangit.Misspelled"/>
+		<exclude name="WordPress.WP.CapitalPDangit.MisspelledInText"/>
+		<exclude name="WordPress.WP.CapitalPDangit.MisspelledInComment"/>
+	</rule>
 	<rule ref="PHPCompatibilityWP"/>
 
 	<rule ref="WordPress.WP.I18n">

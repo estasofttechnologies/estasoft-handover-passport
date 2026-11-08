@@ -33,14 +33,23 @@ final class PdfRenderer implements Renderer {
 	 */
 	private const DEFAULT_SECONDS = 60;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function key(): string {
 		return 'pdf';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function extension(): string {
 		return 'pdf';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function mime(): string {
 		return 'application/pdf';
 	}
@@ -65,7 +74,7 @@ final class PdfRenderer implements Renderer {
 	 * Things the person should know about the PDF of this content.
 	 *
 	 * @param array<string, mixed> $content Pack content.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function warnings( array $content ): array {
 		$text = (string) json_encode( $content, JSON_UNESCAPED_UNICODE ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- Only searched, never output.
@@ -75,6 +84,11 @@ final class PdfRenderer implements Renderer {
 		return array();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws RenderFailed When the file cannot be made.
+	 */
 	public function render( array $content, PackStyle $style, string $hash, string $label ): string {
 		$why = self::unavailable();
 		if ( '' !== $why ) {
@@ -85,7 +99,7 @@ final class PdfRenderer implements Renderer {
 			throw new RenderFailed( __( 'There is no safe place to build the file.', 'estasoft-handover-passport' ) . ' ' . $this->fallback() );
 		}
 		$started    = microtime( true );
-		$old_errors = error_reporting();
+		$old_errors = error_reporting(); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_error_reporting,WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting -- Only read, to put it back afterwards.
 		// The library is written for older PHP versions and may report deprecations; they must not end up in the file.
 		error_reporting( $old_errors & ~( E_DEPRECATED | E_USER_DEPRECATED ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_error_reporting,WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting -- Library notices must not corrupt the file.
 		try {
@@ -99,7 +113,7 @@ final class PdfRenderer implements Renderer {
 		} catch ( \Throwable $e ) {
 			throw new RenderFailed( __( 'The PDF library stopped before the file was finished.', 'estasoft-handover-passport' ) . ' ' . $this->fallback(), 0, $e );
 		} finally {
-			error_reporting( $old_errors ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting -- Put back what was changed.
+			error_reporting( $old_errors ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_error_reporting,WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting -- Put back what was changed.
 			TempFiles::discardDir( $work );
 		}
 	}
@@ -121,31 +135,31 @@ final class PdfRenderer implements Renderer {
 		$one_page = HtmlRenderer::isOnePage( $content );
 		$margin   = $one_page ? 12 : 16;
 		$config   = array(
-			'mode'                   => 'utf-8',
-			'format'                 => PackStyle::LETTER === $style->page_size ? 'Letter' : 'A4',
-			'tempDir'                => $work,
-			'fontDir'                => $fonts['dirs'],
-			'fontdata'               => $fonts['fontdata'],
-			'default_font'           => 'dejavusans',
-			'default_font_size'      => $one_page ? 9 : 10,
-			'backupSubsFont'         => $fonts['backups'],
-			'useSubstitutions'       => true,
-			'autoScriptToLang'       => true,
-			'autoLangToFont'         => false,
-			'allow_output_buffering' => false,
-			'margin_left'            => $margin,
-			'margin_right'           => $margin,
-			'margin_top'             => $margin,
-			'margin_bottom'          => $margin + 6,
-			'margin_footer'          => 6,
-			'shrink_tables_to_fit'   => 1,
-			'showImageErrors'        => false,
-			'enableImports'          => false,
-			'allowAnnotationFiles'   => false,
+			'mode'                       => 'utf-8',
+			'format'                     => PackStyle::LETTER === $style->page_size ? 'Letter' : 'A4',
+			'tempDir'                    => $work,
+			'fontDir'                    => $fonts['dirs'],
+			'fontdata'                   => $fonts['fontdata'],
+			'default_font'               => 'dejavusans',
+			'default_font_size'          => $one_page ? 9 : 10,
+			'backupSubsFont'             => $fonts['backups'],
+			'useSubstitutions'           => true,
+			'autoScriptToLang'           => true,
+			'autoLangToFont'             => false,
+			'allow_output_buffering'     => false,
+			'margin_left'                => $margin,
+			'margin_right'               => $margin,
+			'margin_top'                 => $margin,
+			'margin_bottom'              => $margin + 6,
+			'margin_footer'              => 6,
+			'shrink_tables_to_fit'       => 1,
+			'showImageErrors'            => false,
+			'enableImports'              => false,
+			'allowAnnotationFiles'       => false,
 			'curlAllowUnsafeSslRequests' => false,
-			'debug'                  => false,
-			'debugfonts'             => false,
-			'whitelistStreamWrappers' => array( 'file' ),
+			'debug'                      => false,
+			'debugfonts'                 => false,
+			'whitelistStreamWrappers'    => array( 'file' ),
 		);
 		/**
 		 * Filters the settings given to the PDF library. A filter cannot turn off the limits on the network and on
@@ -154,8 +168,8 @@ final class PdfRenderer implements Renderer {
 		 * @param array<string, mixed> $config Library settings.
 		 * @param array<string, mixed> $content Pack content.
 		 */
-		$config = (array) apply_filters( 'estasoft_hp_pdf_config', $config, $content );
-		$config['tempDir']  = $work;
+		$config                  = (array) apply_filters( 'estasoft_hp_pdf_config', $config, $content );
+		$config['tempDir']       = $work;
 		$config['enableImports'] = false;
 
 		$container = new \Estasoft\HandoverPassport\Vendor\Mpdf\Container\SimpleContainer(
@@ -164,7 +178,7 @@ final class PdfRenderer implements Renderer {
 				'localContentLoader' => new PluginFilesOnly( array( ESTASOFT_HP_DIR . 'lib/pdf', $fonts['dirs'][ count( $fonts['dirs'] ) - 1 ] ) ),
 			)
 		);
-		$mpdf = new \Estasoft\HandoverPassport\Vendor\Mpdf\Mpdf( $config, $container );
+		$mpdf      = new \Estasoft\HandoverPassport\Vendor\Mpdf\Mpdf( $config, $container );
 		$mpdf->SetTitle( Layout::title( $content, $style ) );
 		$mpdf->SetAuthor( (string) ( $content['site']['name'] ?? '' ) );
 		$mpdf->SetSubject( (string) ( $content['profile']['label'] ?? '' ) );

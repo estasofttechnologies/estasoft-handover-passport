@@ -20,10 +20,10 @@ final class Request {
 	 * A query-string key.
 	 *
 	 * @param string $name    Parameter.
-	 * @param string $default Default.
+	 * @param string $fallback Default.
 	 */
-	public static function key( string $name, string $default = '' ): string {
-		return isset( $_GET[ $name ] ) && is_scalar( $_GET[ $name ] ) ? sanitize_key( wp_unslash( (string) $_GET[ $name ] ) ) : $default; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation parameter.
+	public static function key( string $name, string $fallback = '' ): string {
+		return isset( $_GET[ $name ] ) && is_scalar( $_GET[ $name ] ) ? sanitize_key( wp_unslash( (string) $_GET[ $name ] ) ) : $fallback; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation parameter.
 	}
 
 	/**
@@ -99,7 +99,7 @@ final class Request {
 	 * Call only after check_admin_referer().
 	 *
 	 * @param string $name Field name.
-	 * @return list<array<string, string>>
+	 * @return array<int, array<string, string>>
 	 */
 	public static function postedRows( string $name ): array {
 		$raw = isset( $_POST[ $name ] ) && is_array( $_POST[ $name ] ) ? wp_unslash( $_POST[ $name ] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce is checked by the caller; the services validate and sanitise every cell by type.

@@ -19,12 +19,12 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Schedule {
 
-	public const SCAN      = 'estasoft_hp_daily_scan';
-	public const REMINDERS = 'estasoft_hp_daily_reminders';
-	public const RETENTION = 'estasoft_hp_daily_retention';
-	public const DIGEST    = 'estasoft_hp_weekly_digest';
-	public const URLS      = 'estasoft_hp_weekly_urls';
-	public const COPIES    = 'estasoft_hp_monthly_copy';
+	public const SCAN       = 'estasoft_hp_daily_scan';
+	public const REMINDERS  = 'estasoft_hp_daily_reminders';
+	public const RETENTION  = 'estasoft_hp_daily_retention';
+	public const DIGEST     = 'estasoft_hp_weekly_digest';
+	public const URLS       = 'estasoft_hp_weekly_urls';
+	public const COPIES     = 'estasoft_hp_monthly_copy';
 	public const EVENT_SCAN = 'estasoft_hp_event_scan';
 
 	/**

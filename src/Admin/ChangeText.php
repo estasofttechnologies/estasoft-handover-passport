@@ -104,22 +104,31 @@ final class ChangeText {
 				/* translators: %s: rule ID. */
 				return sprintf( __( 'Rule %s switched on', 'estasoft-handover-passport' ), $label );
 			case 'dns_changed':
+				/* translators: %s: domain name. */
 				return sprintf( __( 'DNS records of %s changed between checks', 'estasoft-handover-passport' ), $label );
 			case 'restore_test_logged':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Restore test logged: %s', 'estasoft-handover-passport' ), $label );
 			case 'restore_test_deleted':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Restore test removed: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_added':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Runbook added: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_edited':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Runbook edited: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_reviewed':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Runbook reviewed: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_rehearsed':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Runbook rehearsed: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_deleted':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Runbook deleted: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_restored':
+				/* translators: %s: runbook title. */
 				return sprintf( __( 'Runbook restored: %s', 'estasoft-handover-passport' ), $label );
 			case 'drill_started':
 				/* translators: %s: runbook title. */

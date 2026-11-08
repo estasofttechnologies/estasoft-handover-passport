@@ -90,11 +90,11 @@ final class SnapshotView {
 		echo '<div class="estasoft-hp-card estasoft-hp-snapshot" id="snapshot-' . esc_attr( (string) $id ) . '"><h3>' . esc_html( (string) $row['name'] ) . '</h3>';
 		View::facts(
 			array(
-				__( 'Pack', 'estasoft-handover-passport' )        => null === $profile ? (string) $row['profile_key'] : $profile->label,
-				__( 'Made', 'estasoft-handover-passport' )        => Dates::display( (string) $row['created_at'], true ) . ' UTC' . ( false === $user ? '' : ' · ' . $user->display_name ),
+				__( 'Pack', 'estasoft-handover-passport' ) => null === $profile ? (string) $row['profile_key'] : $profile->label,
+				__( 'Made', 'estasoft-handover-passport' ) => Dates::display( (string) $row['created_at'], true ) . ' UTC' . ( false === $user ? '' : ' · ' . $user->display_name ),
 				__( 'Fingerprint', 'estasoft-handover-passport' ) => (string) $row['hash'],
 				__( 'Plugin version', 'estasoft-handover-passport' ) => (string) $row['plugin_version'],
-				__( 'Note', 'estasoft-handover-passport' )        => (string) $row['note'],
+				__( 'Note', 'estasoft-handover-passport' ) => (string) $row['note'],
 			)
 		);
 		if ( array() === $integrity ) {
@@ -198,7 +198,7 @@ final class SnapshotView {
 	 * Do what a form asked.
 	 */
 	public function handle(): void {
-		$op = Request::post( 'op' );
+		$op    = Request::post( 'op' );
 		$needs = in_array( $op, array( 'delete' ), true ) ? Capabilities::CONFIGURE : Capabilities::EXPORT;
 		if ( ! Capabilities::can( $needs ) ) {
 			wp_die( esc_html__( 'You do not have permission to do that.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
@@ -258,10 +258,10 @@ final class SnapshotView {
 	 * Make the snapshot.
 	 *
 	 * @param array<string, string> $fields Name, pack and note.
-	 * @param list<int>             $ids    Sensitive records the person confirmed.
-	 * @param string                $return Where to go afterwards.
+	 * @param array<int, int>       $ids    Sensitive records the person confirmed.
+	 * @param string                $return_to Where to go afterwards.
 	 */
-	private function create( array $fields, array $ids, string $return ): void {
+	private function create( array $fields, array $ids, string $return_to ): void {
 		$options = new ExportOptions( Capabilities::canSeeSensitive(), $ids, get_current_user_id() );
 		try {
 			$this->plugin->snapshots()->create( (string) ( $fields['pack'] ?? '' ), (string) ( $fields['name'] ?? '' ), (string) ( $fields['note'] ?? '' ), $options );
@@ -273,39 +273,39 @@ final class SnapshotView {
 				__( 'Pack', 'estasoft-handover-passport' ) => 'pack',
 			);
 			FormState::put( $this->plugin->secretGuard(), 'snapshot_create', $fields, array( ( $keys[ $label ] ?? 'name' ) => $e->getMessage() ) );
-			$this->back( $return, 'snapshot_invalid' );
+			$this->back( $return_to, 'snapshot_invalid' );
 		} catch ( ExportRefused $e ) {
 			View::say( $e->getMessage() );
-			$this->back( $return, '' );
+			$this->back( $return_to, '' );
 		}
-		$this->back( $return, 'snapshot_made' );
+		$this->back( $return_to, 'snapshot_made' );
 	}
 
 	/**
 	 * Record an acknowledgement.
 	 *
 	 * @param int    $id     Snapshot ID.
-	 * @param string $return Where to go afterwards.
+	 * @param string $return_to Where to go afterwards.
 	 */
-	private function acknowledge( int $id, string $return ): void {
+	private function acknowledge( int $id, string $return_to ): void {
 		$input = Request::postedFields();
 		try {
 			$this->plugin->snapshots()->acknowledge( $id, $input );
 		} catch ( ValidationError | SecretFound $e ) {
 			$label = $e instanceof ValidationError ? $e->field() : (string) strtok( $e->field(), '.' );
 			$keys  = array(
-				__( 'Name', 'estasoft-handover-passport' )                => 'name',
-				__( 'Date', 'estasoft-handover-passport' )                => 'date',
+				__( 'Name', 'estasoft-handover-passport' ) => 'name',
+				__( 'Date', 'estasoft-handover-passport' ) => 'date',
 				__( 'How it was received', 'estasoft-handover-passport' ) => 'method',
-				__( 'Acknowledgement', 'estasoft-handover-passport' )     => 'note',
+				__( 'Acknowledgement', 'estasoft-handover-passport' ) => 'note',
 			);
 			if ( __( 'Snapshot', 'estasoft-handover-passport' ) === $label ) {
-				$this->back( $return, 'snapshot_gone' );
+				$this->back( $return_to, 'snapshot_gone' );
 			}
 			FormState::put( $this->plugin->secretGuard(), 'snapshot_ack_' . $id, $input, array( ( $keys[ $label ] ?? 'note' ) => $e->getMessage() ) );
-			$this->back( $return, 'ack_invalid' );
+			$this->back( $return_to, 'ack_invalid' );
 		}
-		$this->back( $return, 'snapshot_acked' );
+		$this->back( $return_to, 'snapshot_acked' );
 	}
 
 	/**
@@ -313,18 +313,18 @@ final class SnapshotView {
 	 *
 	 * @param int    $id     Snapshot ID.
 	 * @param string $format Format key or "print".
-	 * @param string $return Where to go when it cannot be made.
+	 * @param string $return_to Where to go when it cannot be made.
 	 */
-	private function download( int $id, string $format, string $return ): void {
+	private function download( int $id, string $format, string $return_to ): void {
 		$options = new ExportOptions( Capabilities::canSeeSensitive(), array(), get_current_user_id() );
 		try {
 			$result = $this->plugin->exports()->makeFromSnapshot( $id, sanitize_key( $format ), $options );
 		} catch ( ValidationError | ExportRefused | RenderFailed $e ) {
 			View::say( $e->getMessage() );
-			$this->back( $return, '' );
+			$this->back( $return_to, '' );
 		} catch ( SecretFound $e ) {
 			View::say( __( 'A value in this snapshot looks like a password or key, so no file was made.', 'estasoft-handover-passport' ) );
-			$this->back( $return, '' );
+			$this->back( $return_to, '' );
 		}
 		Download::send( $result, ExportService::PRINT === $result->format );
 	}
@@ -332,12 +332,12 @@ final class SnapshotView {
 	/**
 	 * Redirect and stop.
 	 *
-	 * @param string               $return URL.
-	 * @param string               $notice Notice key, or an empty string for none.
+	 * @param string                $return_to URL.
+	 * @param string                $notice Notice key, or an empty string for none.
 	 * @param array<string, string> $args   More query arguments.
 	 */
-	private function back( string $return, string $notice, array $args = array() ): never {
-		$url = remove_query_arg( array( 'estasoft_hp_notice', 'estasoft_hp_confirm' ), $return );
+	private function back( string $return_to, string $notice, array $args = array() ): never {
+		$url = remove_query_arg( array( 'estasoft_hp_notice', 'estasoft_hp_confirm' ), $return_to );
 		if ( '' !== $notice ) {
 			$args['estasoft_hp_notice'] = $notice;
 		}

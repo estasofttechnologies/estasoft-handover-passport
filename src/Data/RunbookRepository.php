@@ -18,10 +18,16 @@ defined( 'ABSPATH' ) || exit;
  */
 class RunbookRepository extends Repository {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'runbooks';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'title', 'purpose', 'when_to_use', 'owner_role', 'estimated_minutes', 'current_version', 'status', 'template_key', 'restore_scope', 'critical', 'review_days', 'last_reviewed', 'last_rehearsed', 'created_at', 'updated_at', 'deleted_at' );
 	}
@@ -29,7 +35,7 @@ class RunbookRepository extends Repository {
 	/**
 	 * Live runbooks sorted by title.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function allLive(): array {
 		return $this->query( array( 'deleted_at' => null ), 'title', 'ASC' );
@@ -61,7 +67,7 @@ class RunbookRepository extends Repository {
 	 * @return array<string, mixed>|null
 	 */
 	public function version( int $runbook_id, int $version ): ?array {
-		$rows = $this->versionRows( "runbook_id = %d AND version = %d", array( $runbook_id, $version ) );
+		$rows = $this->versionRows( 'runbook_id = %d AND version = %d', array( $runbook_id, $version ) );
 		return $rows[0] ?? null;
 	}
 
@@ -69,7 +75,7 @@ class RunbookRepository extends Repository {
 	 * Every version of a runbook, newest first.
 	 *
 	 * @param int $runbook_id Runbook ID.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function versions( int $runbook_id ): array {
 		return $this->versionRows( 'runbook_id = %d', array( $runbook_id ), 'version DESC' );
@@ -125,10 +131,10 @@ class RunbookRepository extends Repository {
 	/**
 	 * Select version rows.
 	 *
-	 * @param string      $where  Fragment with placeholders.
-	 * @param list<mixed> $params Values.
-	 * @param string      $order  Fixed ORDER BY text.
-	 * @return list<array<string, mixed>>
+	 * @param string            $where  Fragment with placeholders.
+	 * @param array<int, mixed> $params Values.
+	 * @param string            $order  Fixed ORDER BY text.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function versionRows( string $where, array $params, string $order = 'version DESC' ): array {
 		$table = Tables::name( 'runbook_versions' );

@@ -22,13 +22,13 @@ final class Comparer {
 	/**
 	 * Compare an older content with a newer one.
 	 *
-	 * @param array<string, mixed> $old Older content.
-	 * @param array<string, mixed> $new Newer content.
-	 * @return array{added: list<array<string, string>>, removed: list<array<string, string>>, changed: list<array<string, mixed>>, unchanged: int, notes_changed: bool}
+	 * @param array<string, mixed> $older Older content.
+	 * @param array<string, mixed> $newer Newer content.
+	 * @return array{added: array<int, array<string, string>>, removed: array<int, array<string, string>>, changed: array<int, array<string, mixed>>, unchanged: int, notes_changed: bool}
 	 */
-	public static function diff( array $old, array $new ): array {
-		$before = self::index( $old );
-		$after  = self::index( $new );
+	public static function diff( array $older, array $newer ): array {
+		$before = self::index( $older );
+		$after  = self::index( $newer );
 
 		$added   = array();
 		$removed = array();
@@ -57,7 +57,7 @@ final class Comparer {
 			'removed'       => $removed,
 			'changed'       => $changed,
 			'unchanged'     => $same,
-			'notes_changed' => (string) ( $old['notes'] ?? '' ) !== (string) ( $new['notes'] ?? '' ),
+			'notes_changed' => (string) ( $older['notes'] ?? '' ) !== (string) ( $newer['notes'] ?? '' ),
 		);
 	}
 
@@ -118,21 +118,21 @@ final class Comparer {
 	/**
 	 * Fields whose value differs.
 	 *
-	 * @param array<string, mixed> $old Older item.
-	 * @param array<string, mixed> $new Newer item.
-	 * @return list<array<string, mixed>>
+	 * @param array<string, mixed> $older Older item.
+	 * @param array<string, mixed> $newer Newer item.
+	 * @return array<int, array<string, mixed>>
 	 */
-	private static function changedFields( array $old, array $new ): array {
+	private static function changedFields( array $older, array $newer ): array {
 		$out  = array();
-		$keys = array_unique( array_merge( array_keys( $old['values'] ), array_keys( $new['values'] ) ) );
+		$keys = array_unique( array_merge( array_keys( $older['values'] ), array_keys( $newer['values'] ) ) );
 		foreach ( $keys as $key ) {
-			$a = $old['values'][ $key ] ?? '';
-			$b = $new['values'][ $key ] ?? '';
+			$a = $older['values'][ $key ] ?? '';
+			$b = $newer['values'][ $key ] ?? '';
 			if ( self::same( $a, $b ) ) {
 				continue;
 			}
-			$def    = $new['defs'][ $key ] ?? $old['defs'][ $key ] ?? array( 'key' => $key, 'label' => $key, 'type' => 'text' );
-			$masked = $old['masked'] || $new['masked'] || ! empty( $def['sensitive'] );
+			$def    = $newer['defs'][ $key ] ?? $older['defs'][ $key ] ?? array( 'key' => $key, 'label' => $key, 'type' => 'text' );
+			$masked = $older['masked'] || $newer['masked'] || ! empty( $def['sensitive'] );
 			$out[]  = array(
 				'key'    => (string) $key,
 				'label'  => (string) $def['label'],

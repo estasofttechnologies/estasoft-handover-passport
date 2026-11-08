@@ -122,6 +122,7 @@ class PeopleService {
 	 * @param string               $channel Origin for the log.
 	 * @return array<string, mixed> Hydrated person.
 	 * @throws ValidationError When invalid.
+	 * @throws RuntimeException When the person cannot be stored.
 	 */
 	public function create( array $input, string $channel = 'screen' ): array {
 		$clean = $this->clean( $input, null );
@@ -204,7 +205,7 @@ class PeopleService {
 				'timezone'      => '',
 				'urgent_method' => '',
 				'note'          => '',
-				'left_on'       => $row['left_on'] ?: Clock::today(),
+				'left_on'       => ! empty( $row['left_on'] ) ? $row['left_on'] : Clock::today(),
 				'active'        => 0,
 				'updated_at'    => Clock::sql(),
 			)
@@ -259,7 +260,7 @@ class PeopleService {
 	/**
 	 * Every live person.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function all(): array {
 		$map = $this->roleMap();
@@ -270,7 +271,7 @@ class PeopleService {
 	 * People holding a role, in order (the order matters for emergency contacts, PPL-3).
 	 *
 	 * @param string $role Role key.
-	 * @return list<int>
+	 * @return array<int, int>
 	 */
 	public function inRole( string $role ): array {
 		return $this->links->people( LinkRepository::ROLE_PREFIX . $role, 'passport', self::PASSPORT_ID );
@@ -279,8 +280,8 @@ class PeopleService {
 	/**
 	 * Replace the people who hold one role.
 	 *
-	 * @param string    $role       Role key.
-	 * @param list<int> $person_ids Ordered person IDs.
+	 * @param string          $role       Role key.
+	 * @param array<int, int> $person_ids Ordered person IDs.
 	 */
 	public function setRole( string $role, array $person_ids ): void {
 		if ( ! array_key_exists( $role, self::roles() ) ) {
@@ -295,7 +296,7 @@ class PeopleService {
 	 * Assets a person owns: account holder, payer or administrator.
 	 *
 	 * @param int $person_id Person ID.
-	 * @return list<array{item_id: int, relation: string}>
+	 * @return array<int, array{item_id: int, relation: string}>
 	 */
 	public function assetsFor( int $person_id ): array {
 		$out = array();
@@ -353,7 +354,7 @@ class PeopleService {
 		$row['share_flags'] = $share + self::defaultShare();
 
 		if ( array_key_exists( 'review_days', $input ) ) {
-			$days                = (int) $input['review_days'];
+			$days               = (int) $input['review_days'];
 			$row['review_days'] = $days > 0 ? min( $days, 3650 ) : null;
 		}
 		return $row;
@@ -382,7 +383,7 @@ class PeopleService {
 	/**
 	 * Role keys by person ID.
 	 *
-	 * @return array<int, list<string>>
+	 * @return array<int, array<int, string>>
 	 */
 	private function roleMap(): array {
 		$map = array();
@@ -397,14 +398,14 @@ class PeopleService {
 	/**
 	 * Add roles and freshness to a stored row.
 	 *
-	 * @param array<string, mixed>     $row Stored row.
-	 * @param array<int, list<string>> $map Role keys by person ID.
+	 * @param array<string, mixed>           $row Stored row.
+	 * @param array<int, array<int, string>> $map Role keys by person ID.
 	 * @return array<string, mixed>
 	 */
 	private function hydrate( array $row, array $map ): array {
-		$interval         = (int) ( $row['review_days'] ?: $this->settings->reviewDays( 'people' ) );
-		$row['roles']     = $map[ (int) $row['id'] ] ?? array();
-		$row['freshness'] = Freshness::state(
+		$interval           = (int) ( ! empty( $row['review_days'] ) ? $row['review_days'] : $this->settings->reviewDays( 'people' ) );
+		$row['roles']       = $map[ (int) $row['id'] ] ?? array();
+		$row['freshness']   = Freshness::state(
 			$row['verified_at'] ? (string) $row['verified_at'] : null,
 			(string) $row['created_at'],
 			$interval,

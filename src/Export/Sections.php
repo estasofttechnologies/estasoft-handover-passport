@@ -25,7 +25,7 @@ final class Sections {
 	/**
 	 * Record kinds in each chapter that is made of records.
 	 *
-	 * @var array<string, list<string>>
+	 * @var array<string, array<int, string>>
 	 */
 	private const RECORD_CHAPTERS = array(
 		'domains'           => array( Kinds::DOMAIN ),
@@ -48,7 +48,7 @@ final class Sections {
 	/**
 	 * Fields of the Emergency sheet, per kind, so a page stays one page.
 	 *
-	 * @var array<string, list<string>>
+	 * @var array<string, array<int, string>>
 	 */
 	private const EMERGENCY_FIELDS = array(
 		Kinds::HOST   => array( 'provider', 'plan', 'support_address', 'support_hours', 'control_panel', 'account_holder' ),
@@ -74,7 +74,7 @@ final class Sections {
 	/**
 	 * Notes about what was shortened or left out.
 	 *
-	 * @var list<string>
+	 * @var array<int, string>
 	 */
 	private array $left_out = array();
 
@@ -99,7 +99,7 @@ final class Sections {
 	/**
 	 * Build the chapters the profile lists, in its order.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function build(): array {
 		$out = array();
@@ -115,7 +115,7 @@ final class Sections {
 	/**
 	 * What was shortened or left out.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public function leftOut(): array {
 		return $this->left_out;
@@ -323,7 +323,7 @@ final class Sections {
 			if ( 'published' !== (string) $book['status'] && ! $deep ) {
 				continue;
 			}
-			$values = array(
+			$values  = array(
 				'title'             => (string) $book['title'],
 				'purpose'           => $fill( (string) $book['purpose'] ),
 				'when_to_use'       => $fill( (string) $book['when_to_use'] ),
@@ -347,7 +347,7 @@ final class Sections {
 	 * @param array<int, mixed>     $steps Steps.
 	 * @param array<string, string> $roles Role labels.
 	 * @param callable              $fill  Placeholder filler.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function stepLines( array $steps, array $roles, callable $fill ): array {
 		$out = array();
@@ -391,7 +391,7 @@ final class Sections {
 		}
 		$items = array();
 		foreach ( array_slice( $this->data->tests, 0, 10 ) as $test ) {
-			$values  = array();
+			$values = array();
 			foreach ( $fields as $def ) {
 				$values[ $def['key'] ] = $test[ $def['key'] ] ?? '';
 			}
@@ -416,7 +416,7 @@ final class Sections {
 			$this->def( 'transfer_owner', __( 'Who handles it', 'estasoft-handover-passport' ) ),
 			$this->def( 'transfer_notes', __( 'Notes', 'estasoft-handover-passport' ), 'textarea' ),
 		);
-		$items = array();
+		$items  = array();
 		foreach ( $this->data->records as $record ) {
 			$def = Kinds::get( (string) $record['kind'] );
 			if ( empty( $def['ownership'] ) || ! $this->included( $record ) ) {
@@ -518,8 +518,8 @@ final class Sections {
 		}
 		$section = $this->wrap( $key, $title, $groups );
 		if ( 'emergency_backups' === $key ) {
-			$last                = $this->data->lastPass();
-			$section['facts']    = array( array( 'label' => __( 'Last restore test that passed', 'estasoft-handover-passport' ), 'value' => '' !== $last ? $last : __( 'None recorded', 'estasoft-handover-passport' ) ) );
+			$last             = $this->data->lastPass();
+			$section['facts'] = array( array( 'label' => __( 'Last restore test that passed', 'estasoft-handover-passport' ), 'value' => '' !== $last ? $last : __( 'None recorded', 'estasoft-handover-passport' ) ) );
 		}
 		return $section;
 	}
@@ -527,15 +527,15 @@ final class Sections {
 	/**
 	 * A group for one kind of record.
 	 *
-	 * @param string                $kind    Kind key.
-	 * @param list<array>           $records Records that may go in.
-	 * @param list<string>|null     $only    Field keys to keep, or null for all.
-	 * @param string                $chapter Chapter key, for the item limit.
+	 * @param string                  $kind    Kind key.
+	 * @param array<int, array>       $records Records that may go in.
+	 * @param array<int, string>|null $only    Field keys to keep, or null for all.
+	 * @param string                  $chapter Chapter key, for the item limit.
 	 * @return array<string, mixed>
 	 */
 	private function kindGroup( string $kind, array $records, ?array $only, string $chapter ): array {
-		$def       = (array) Kinds::get( $kind );
-		$any_sens  = false;
+		$def      = (array) Kinds::get( $kind );
+		$any_sens = false;
 		foreach ( $records as $record ) {
 			$any_sens = $any_sens || ! empty( $record['sensitive'] );
 		}
@@ -597,7 +597,7 @@ final class Sections {
 	 * Names of people, following the sharing flags in a Client pack or Emergency sheet.
 	 *
 	 * @param array<int, mixed> $ids Person IDs.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function names( array $ids ): array {
 		$out = array();
@@ -701,10 +701,10 @@ final class Sections {
 	/**
 	 * Cut a list to what fits on the page and say what was left off (EXP-1).
 	 *
-	 * @param string       $chapter Chapter key.
-	 * @param list<array>  $items   Items.
-	 * @param string       $noun    Plural name of what was cut.
-	 * @return list<array>
+	 * @param string            $chapter Chapter key.
+	 * @param array<int, array> $items   Items.
+	 * @param string            $noun    Plural name of what was cut.
+	 * @return array<int, array>
 	 */
 	private function limit( string $chapter, array $items, string $noun ): array {
 		$max = self::EMERGENCY_LIMITS[ $chapter ] ?? 0;
@@ -720,8 +720,8 @@ final class Sections {
 	/**
 	 * Items sorted by title, so the same data always gives the same pack.
 	 *
-	 * @param list<array<string, mixed>> $items Items.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, array<string, mixed>> $items Items.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function sorted( array $items ): array {
 		usort(
@@ -737,9 +737,9 @@ final class Sections {
 	/**
 	 * A chapter around its groups.
 	 *
-	 * @param string                     $key    Chapter key.
-	 * @param string                     $title  Title.
-	 * @param list<array<string, mixed>> $groups Groups.
+	 * @param string                           $key    Chapter key.
+	 * @param string                           $title  Title.
+	 * @param array<int, array<string, mixed>> $groups Groups.
 	 * @return array<string, mixed>
 	 */
 	private function wrap( string $key, string $title, array $groups ): array {
@@ -750,10 +750,10 @@ final class Sections {
 	 * A group of items that share fields. An item holds a value only for a field the group shows, so a value that the
 	 * page leaves out is not in the JSON or in a snapshot either.
 	 *
-	 * @param string                     $key    Group key.
-	 * @param string                     $title  Title.
-	 * @param list<array<string, mixed>> $fields Field definitions.
-	 * @param list<array<string, mixed>> $items  Items.
+	 * @param string                           $key    Group key.
+	 * @param string                           $title  Title.
+	 * @param array<int, array<string, mixed>> $fields Field definitions.
+	 * @param array<int, array<string, mixed>> $items  Items.
 	 * @return array<string, mixed>
 	 */
 	private function group( string $key, string $title, array $fields, array $items ): array {
@@ -787,9 +787,9 @@ final class Sections {
 	/**
 	 * A field definition.
 	 *
-	 * @param string               $key     Key.
-	 * @param string               $label   Label.
-	 * @param string               $type    text, textarea, date, int, lines or select.
+	 * @param string                $key     Key.
+	 * @param string                $label   Label.
+	 * @param string                $type    text, textarea, date, int, lines or select.
 	 * @param array<string, string> $options Choices for a select.
 	 * @return array<string, mixed>
 	 */

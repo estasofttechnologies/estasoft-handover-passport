@@ -352,8 +352,8 @@ final class Plugin {
 	 * Build a service once.
 	 *
 	 * @template T of object
-	 * @param string          $id      Service ID.
-	 * @param callable(): T   $factory Builds the service.
+	 * @param string        $id      Service ID.
+	 * @param callable(): T $factory Builds the service.
 	 * @return T
 	 */
 	private function shared( string $id, callable $factory ): object {

@@ -38,15 +38,17 @@ final class Actions {
 	);
 
 	/**
+	 * Seconds left of a one-a-minute limit that the last action ran into, or 0.
+	 *
+	 * @var int
+	 */
+	private int $wait = 0;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param Plugin $plugin Container.
 	 */
-	/**
-	 * Seconds left of a one-a-minute limit that the last action ran into, or 0.
-	 */
-	private int $wait = 0;
-
 	public function __construct( private Plugin $plugin ) {}
 
 	/**
@@ -85,7 +87,7 @@ final class Actions {
 		} catch ( ValidationError $e ) {
 			$this->reject( $target, $kind, $id, $return, $this->errorKey( $target, $kind, $e->field() ), $e->getMessage() );
 		} catch ( SecretFound $e ) {
-			$this->reject( $target, $kind, $id, $return, $this->errorKey( $target, $kind, strtok( $e->field(), '.' ) ?: '' ), $e->getMessage() );
+			$this->reject( $target, $kind, $id, $return, $this->errorKey( $target, $kind, (string) strtok( $e->field(), '.' ) ), $e->getMessage() );
 		}
 
 		$args = array( 'estasoft_hp_notice' => $notice );
@@ -351,11 +353,11 @@ final class Actions {
 	 * @param string $target  item or person.
 	 * @param string $kind    Kind key.
 	 * @param int    $id      Record ID.
-	 * @param string $return  Return address.
+	 * @param string $return_to  Return address.
 	 * @param string $key     Field key with the problem, or ''.
 	 * @param string $message Error text.
 	 */
-	private function reject( string $target, string $kind, int $id, string $return, string $key, string $message ): void {
+	private function reject( string $target, string $kind, int $id, string $return_to, string $key, string $message ): void {
 		$input  = Request::postedFields();
 		$input += array(
 			'vis_client'    => Request::post( 'vis_client' ),
@@ -370,7 +372,7 @@ final class Actions {
 		if ( 'item' === $target ) {
 			$args['kind'] = $kind;
 		}
-		wp_safe_redirect( add_query_arg( $args, $return ) );
+		wp_safe_redirect( add_query_arg( $args, $return_to ) );
 		exit;
 	}
 

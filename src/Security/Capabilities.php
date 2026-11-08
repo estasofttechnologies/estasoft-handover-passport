@@ -53,7 +53,7 @@ final class Capabilities {
 	/**
 	 * Apply the grants chosen in Settings (CAP-2). The Administrator role always keeps all five.
 	 *
-	 * @param array<string, list<string>> $grants Capabilities by role slug.
+	 * @param array<string, array<int, string>> $grants Capabilities by role slug.
 	 */
 	public static function applyGrants( array $grants ): void {
 		$known = array_keys( self::all() );

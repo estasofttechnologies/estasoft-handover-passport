@@ -51,8 +51,9 @@ final class Fonts {
 		if ( '' === $dir || ! is_dir( $dir ) ) {
 			return array();
 		}
-		$out = array();
-		foreach ( glob( $dir . '/*.[tT][tT][fF]' ) ?: array() as $path ) {
+		$out   = array();
+		$found = glob( $dir . '/*.[tT][tT][fF]' );
+		foreach ( false === $found ? array() : $found as $path ) {
 			$name = basename( $path );
 			$key  = 'extra' . strtolower( (string) preg_replace( '/[^A-Za-z0-9]+/', '', pathinfo( $name, PATHINFO_FILENAME ) ) );
 			if ( 'extra' !== $key && ! isset( $out[ $key ] ) ) {
@@ -82,7 +83,7 @@ final class Fonts {
 	/**
 	 * The font settings for the library.
 	 *
-	 * @return array{dirs: list<string>, fontdata: array<string, array<string, mixed>>, backups: list<string>}
+	 * @return array{dirs: array<int, string>, fontdata: array<string, array<string, mixed>>, backups: array<int, string>}
 	 */
 	public static function settings(): array {
 		$fontdata = array( 'dejavusans' => array( 'R' => 'DejaVuSans.ttf', 'B' => 'DejaVuSans-Bold.ttf', 'useOTL' => 0xFF, 'useKashida' => 75 ) );

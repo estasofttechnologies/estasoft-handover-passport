@@ -23,7 +23,7 @@ final class Level {
 	/**
 	 * Levels in order of urgency.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function all(): array {
 		return array( self::NEEDS, self::WORTH, self::INFO );

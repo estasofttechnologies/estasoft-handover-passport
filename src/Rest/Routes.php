@@ -45,7 +45,7 @@ final class Routes {
 	/**
 	 * Every controller.
 	 *
-	 * @return list<BaseController>
+	 * @return array<int, BaseController>
 	 */
 	private function controllers(): array {
 		return array(
@@ -75,7 +75,7 @@ final class Routes {
 		if ( ! $response instanceof WP_Error || 0 !== strpos( $request->get_route(), '/' . self::NAMESPACE . '/' ) ) {
 			return $response;
 		}
-		$map = array(
+		$map  = array(
 			'rest_invalid_param'          => 'estasoft_hp_invalid',
 			'rest_missing_callback_param' => 'estasoft_hp_missing',
 		);

@@ -42,7 +42,7 @@ final class SnapshotIntegrity {
 	 * Snapshots that do not match, using stored results for those already checked.
 	 *
 	 * @param bool $force Check every snapshot again (the daily task).
-	 * @return list<array{id: int, name: string}>
+	 * @return array<int, array{id: int, name: string}>
 	 */
 	public function mismatches( bool $force = false ): array {
 		$known  = $force ? array() : (array) get_option( self::OPTION, array() );

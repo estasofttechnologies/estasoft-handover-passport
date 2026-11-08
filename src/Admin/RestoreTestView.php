@@ -114,9 +114,9 @@ final class RestoreTestView {
 			wp_die( esc_html__( 'You do not have permission to change records.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
 		}
 		check_admin_referer( self::ACTION );
-		$op     = Request::post( 'op' );
-		$raw    = Request::postedUrl( 'return' );
-		$return = ( '' !== $raw && 0 === strpos( $raw, admin_url( 'admin.php' ) ) ) ? $raw : add_query_arg( array( 'page' => SafetyScreen::SLUG, 'tab' => 'tests' ), admin_url( 'admin.php' ) );
+		$op      = Request::post( 'op' );
+		$raw     = Request::postedUrl( 'return' );
+		$return  = ( '' !== $raw && 0 === strpos( $raw, admin_url( 'admin.php' ) ) ) ? $raw : add_query_arg( array( 'page' => SafetyScreen::SLUG, 'tab' => 'tests' ), admin_url( 'admin.php' ) );
 		$service = $this->plugin->restoreTests();
 		try {
 			if ( 'delete' === $op ) {
@@ -145,7 +145,7 @@ final class RestoreTestView {
 		$state  = FormState::take( 'restore_test' );
 		$input  = null === $state ? array() : $state['input'];
 		$errors = null === $state ? array() : $state['errors'];
-		$value  = static fn( string $key, string $default = '' ) => $input[ $key ] ?? $default;
+		$value  = static fn( string $key, string $fallback = '' ) => $input[ $key ] ?? $fallback;
 
 		$backups = array();
 		foreach ( $this->plugin->records()->listKind( Kinds::BACKUP, Capabilities::canSeeSensitive() ) as $backup ) {
@@ -193,11 +193,11 @@ final class RestoreTestView {
 	 */
 	private function errorKey( string $label ): string {
 		$map = array(
-			__( 'Date of the test', 'estasoft-handover-passport' )        => 'test_date',
-			__( 'Result', 'estasoft-handover-passport' )                  => 'result',
+			__( 'Date of the test', 'estasoft-handover-passport' ) => 'test_date',
+			__( 'Result', 'estasoft-handover-passport' ) => 'result',
 			__( 'Date of the backup used', 'estasoft-handover-passport' ) => 'backup_date',
-			__( 'Who did it', 'estasoft-handover-passport' )              => 'who',
-			__( 'Problems found', 'estasoft-handover-passport' )          => 'problems',
+			__( 'Who did it', 'estasoft-handover-passport' ) => 'who',
+			__( 'Problems found', 'estasoft-handover-passport' ) => 'problems',
 		);
 		return $map[ $label ] ?? 'problems';
 	}

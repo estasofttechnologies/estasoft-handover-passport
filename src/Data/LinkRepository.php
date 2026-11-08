@@ -22,10 +22,16 @@ class LinkRepository extends Repository {
 	public const ADMIN       = 'administrator';
 	public const ACCESS      = 'has_access';
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'links';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'from_type', 'from_id', 'to_type', 'to_id', 'relation', 'position' );
 	}
@@ -36,7 +42,7 @@ class LinkRepository extends Repository {
 	 * @param string $relation Relation name.
 	 * @param string $to_type  Target type, for example "item" or "passport".
 	 * @param int    $to_id    Target ID.
-	 * @return list<int> Person IDs.
+	 * @return array<int, int> Person IDs.
 	 */
 	public function people( string $relation, string $to_type, int $to_id ): array {
 		$rows = $this->query(
@@ -54,10 +60,10 @@ class LinkRepository extends Repository {
 	/**
 	 * Replace the people linked to a target by one relation.
 	 *
-	 * @param string    $relation   Relation name.
-	 * @param string    $to_type    Target type.
-	 * @param int       $to_id      Target ID.
-	 * @param list<int> $person_ids Person IDs in order.
+	 * @param string          $relation   Relation name.
+	 * @param string          $to_type    Target type.
+	 * @param int             $to_id      Target ID.
+	 * @param array<int, int> $person_ids Person IDs in order.
 	 */
 	public function setPeople( string $relation, string $to_type, int $to_id, array $person_ids ): void {
 		foreach ( $this->query( array( 'relation' => $relation, 'to_type' => $to_type, 'to_id' => $to_id ) ) as $row ) {
@@ -84,7 +90,7 @@ class LinkRepository extends Repository {
 	 * Every link from one person.
 	 *
 	 * @param int $person_id Person ID.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function forPerson( int $person_id ): array {
 		return $this->query( array( 'from_type' => 'person', 'from_id' => $person_id ), 'position', 'ASC' );
@@ -94,7 +100,7 @@ class LinkRepository extends Repository {
 	 * Every link with a relation.
 	 *
 	 * @param string $relation Relation name.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function byRelation( string $relation ): array {
 		return $this->query( array( 'relation' => $relation ), 'position', 'ASC' );
@@ -103,7 +109,7 @@ class LinkRepository extends Repository {
 	/**
 	 * Every link, for building maps in memory.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function everything(): array {
 		return $this->query( array(), 'id', 'ASC' );

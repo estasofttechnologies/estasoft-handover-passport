@@ -77,7 +77,7 @@ final class RestoreTestService {
 	/**
 	 * Restore tests, newest first.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function all(): array {
 		return $this->tests->restoreTests();
@@ -99,6 +99,7 @@ final class RestoreTestService {
 	 * @return array<string, mixed> The stored row.
 	 * @throws ValidationError            When a value is invalid.
 	 * @throws \Estasoft\HandoverPassport\Security\SecretFound When a value looks like a secret.
+	 * @throws \RuntimeException                                 When the test cannot be stored.
 	 */
 	public function log( array $input, string $channel = 'screen', array $trusted = array() ): array {
 		$str = static fn( string $key, int $max ): string => mb_substr( trim( sanitize_text_field( is_scalar( $input[ $key ] ?? null ) ? (string) $input[ $key ] : '' ) ), 0, $max );
@@ -114,8 +115,8 @@ final class RestoreTestService {
 		if ( ! array_key_exists( $result, self::results() ) ) {
 			throw new ValidationError( __( 'Result', 'estasoft-handover-passport' ), __( 'Choose Pass, Partial or Fail.', 'estasoft-handover-passport' ) );
 		}
-		$scope = $str( 'scope', 10 );
-		$place = $str( 'place', 20 );
+		$scope       = $str( 'scope', 10 );
+		$place       = $str( 'place', 20 );
 		$backup_date = $str( 'backup_date', 10 );
 		if ( '' !== $backup_date && ! Dates::isDate( $backup_date ) ) {
 			throw new ValidationError( __( 'Date of the backup used', 'estasoft-handover-passport' ), __( 'Enter a date or leave it empty.', 'estasoft-handover-passport' ) );

@@ -73,11 +73,11 @@ final class PeopleScreen extends Screen {
 	 * Who owns, holds and pays for each asset (OWN-1, OWN-2).
 	 */
 	private function ownership(): void {
-		$people  = array();
+		$people = array();
 		foreach ( $this->plugin->people()->all() as $person ) {
 			$people[ (int) $person['id'] ] = (string) $person['name'];
 		}
-		$names = static fn( array $ids ): string => implode( ', ', array_map( static fn( $id ): string => $people[ (int) $id ] ?? '', $ids ) );
+		$names  = static fn( array $ids ): string => implode( ', ', array_map( static fn( $id ): string => $people[ (int) $id ] ?? '', $ids ) );
 		$owners = Kinds::owners();
 		$see    = Capabilities::canSeeSensitive();
 

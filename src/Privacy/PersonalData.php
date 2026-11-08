@@ -67,7 +67,7 @@ final class PersonalData {
 	 * @return array<string, mixed>
 	 */
 	public function exporters( $exporters ): array {
-		$exporters   = is_array( $exporters ) ? $exporters : array();
+		$exporters                                       = is_array( $exporters ) ? $exporters : array();
 		$exporters['estasoft-handover-passport']         = array(
 			'exporter_friendly_name' => __( 'Estasoft Handover Passport: directory', 'estasoft-handover-passport' ),
 			'callback'               => array( $this, 'export' ),
@@ -99,7 +99,7 @@ final class PersonalData {
 	 *
 	 * @param string $email Email address of the person.
 	 * @param int    $page  Page, always 1 here.
-	 * @return array{data: list<array<string, mixed>>, done: bool}
+	 * @return array{data: array<int, array<string, mixed>>, done: bool}
 	 */
 	public function export( $email, $page = 1 ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- The page is part of the WordPress callback signature.
 		$email = $this->address( $email );
@@ -122,7 +122,7 @@ final class PersonalData {
 	 *
 	 * @param string $email Email address of the person.
 	 * @param int    $page  Page number from 1.
-	 * @return array{data: list<array<string, mixed>>, done: bool}
+	 * @return array{data: array<int, array<string, mixed>>, done: bool}
 	 */
 	public function exportChanges( $email, $page = 1 ): array {
 		$email    = $this->address( $email );
@@ -158,7 +158,7 @@ final class PersonalData {
 	 *
 	 * @param string $email Email address of the person.
 	 * @param int    $page  Page, always 1 here.
-	 * @return array{items_removed: bool, items_retained: bool, messages: list<string>, done: bool}
+	 * @return array{items_removed: bool, items_retained: bool, messages: array<int, string>, done: bool}
 	 */
 	public function erase( $email, $page = 1 ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- The page is part of the WordPress callback signature.
 		$email  = $this->address( $email );
@@ -170,10 +170,10 @@ final class PersonalData {
 		$names    = $this->namesOf( $people );
 		$identity = $this->identity( $email );
 		$counts   = array(
-			'people'          => 0,
+			'people'           => 0,
 			'acknowledgements' => 0,
-			'scans'           => 0,
-			'changes'         => 0,
+			'scans'            => 0,
+			'changes'          => 0,
 		);
 
 		foreach ( $people as $person ) {
@@ -215,7 +215,7 @@ final class PersonalData {
 	 * Directory rows for an address, deleted ones included, because a deleted person is still stored for 30 days.
 	 *
 	 * @param string $email Lower-case address.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function peopleFor( string $email ): array {
 		return $this->plugin->people()->repo()->byEmail( $email );
@@ -224,8 +224,8 @@ final class PersonalData {
 	/**
 	 * Names and organisations of the people found, for matching acknowledgements.
 	 *
-	 * @param list<array<string, mixed>> $people Directory rows.
-	 * @return list<array{name: string, organisation: string}>
+	 * @param array<int, array<string, mixed>> $people Directory rows.
+	 * @return array<int, array{name: string, organisation: string}>
 	 */
 	private function namesOf( array $people ): array {
 		$out = array();
@@ -243,8 +243,8 @@ final class PersonalData {
 	 * Whether an acknowledgement belongs to one of the people. It holds a name and sometimes an organisation, never
 	 * an address, so the names must match, and the organisations too when both are filled in.
 	 *
-	 * @param array<string, mixed>                              $ack   Acknowledgement.
-	 * @param list<array{name: string, organisation: string}>   $names People found.
+	 * @param array<string, mixed>                                  $ack   Acknowledgement.
+	 * @param array<int, array{name: string, organisation: string}> $names People found.
 	 */
 	private function matches( array $ack, array $names ): bool {
 		$name = trim( (string) ( $ack['name'] ?? '' ) );
@@ -268,7 +268,7 @@ final class PersonalData {
 	 * scans hold for administrators with that address, which stay after an account is deleted.
 	 *
 	 * @param string $email Lower-case address.
-	 * @return array{ids: list<int>, names: list<string>, account: ?\WP_User}
+	 * @return array{ids: array<int, int>, names: array<int, string>, account: ?\WP_User}
 	 */
 	private function identity( string $email ): array {
 		$ids     = array();
@@ -296,14 +296,14 @@ final class PersonalData {
 	/**
 	 * Directory groups (PRV-3).
 	 *
-	 * @param list<array<string, mixed>> $people Directory rows.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, array<string, mixed>> $people Directory rows.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function directoryGroups( array $people ): array {
 		$groups = array();
 		foreach ( $people as $person ) {
-			$id      = (int) $person['id'];
-			$roles   = array();
+			$id    = (int) $person['id'];
+			$roles = array();
 			foreach ( PeopleService::roles() as $key => $label ) {
 				if ( in_array( $id, $this->plugin->people()->inRole( $key ), true ) ) {
 					$roles[] = $label;
@@ -315,7 +315,7 @@ final class PersonalData {
 					$shared[] = (string) $flag;
 				}
 			}
-			$kinds   = PeopleService::kinds();
+			$kinds    = PeopleService::kinds();
 			$groups[] = array(
 				'group_id'          => 'estasoft-hp-directory',
 				'group_label'       => __( 'Passport directory', 'estasoft-handover-passport' ),
@@ -350,8 +350,8 @@ final class PersonalData {
 	 * Records that name the person as account holder, payer, administrator or someone with access. A Sensitive record
 	 * is named only by its kind.
 	 *
-	 * @param list<array<string, mixed>> $people Directory rows.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, array<string, mixed>> $people Directory rows.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function linkGroups( array $people ): array {
 		$relations = array(
@@ -360,8 +360,8 @@ final class PersonalData {
 			LinkRepository::ADMIN  => __( 'Administrator', 'estasoft-handover-passport' ),
 			LinkRepository::ACCESS => __( 'Has access', 'estasoft-handover-passport' ),
 		);
-		$items  = new ItemRepository();
-		$groups = array();
+		$items     = new ItemRepository();
+		$groups    = array();
 		foreach ( $people as $person ) {
 			foreach ( $this->plugin->people()->assetsFor( (int) $person['id'] ) as $link ) {
 				$item = $items->find( $link['item_id'] );
@@ -388,8 +388,8 @@ final class PersonalData {
 	/**
 	 * Snapshot acknowledgements that name the person.
 	 *
-	 * @param list<array{name: string, organisation: string}> $names People found.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, array{name: string, organisation: string}> $names People found.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function acknowledgementGroups( array $names ): array {
 		if ( array() === $names ) {
@@ -430,7 +430,7 @@ final class PersonalData {
 	 * The administrator entry in the latest scan, when its address matches.
 	 *
 	 * @param string $email Lower-case address.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function administratorGroups( string $email ): array {
 		$groups = array();
@@ -460,7 +460,7 @@ final class PersonalData {
 	 * Records that contain the address in their text.
 	 *
 	 * @param string $email Lower-case address.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function mentionGroups( string $email ): array {
 		$groups = array();
@@ -480,7 +480,7 @@ final class PersonalData {
 	 * Blank the details in acknowledgements that name one of the people. The date, the way it was received and who
 	 * recorded it stay, so the snapshot still shows that it was received.
 	 *
-	 * @param list<array{name: string, organisation: string}> $names People found.
+	 * @param array<int, array{name: string, organisation: string}> $names People found.
 	 * @return int Acknowledgements changed.
 	 */
 	private function anonymiseAcknowledgements( array $names ): int {
@@ -511,7 +511,7 @@ final class PersonalData {
 	/**
 	 * Blank the receiver's name in the change-log entries about acknowledgements.
 	 *
-	 * @param list<array{name: string, organisation: string}> $names People found.
+	 * @param array<int, array{name: string, organisation: string}> $names People found.
 	 * @return int Entries changed.
 	 */
 	private function anonymiseReceivedBy( array $names ): int {
@@ -549,7 +549,7 @@ final class PersonalData {
 				if ( 0 === strcasecmp( trim( (string) ( $admin['email'] ?? '' ) ), $email ) ) {
 					$facts['users']['admins'][ $index ]['name']  = self::FORMER_USER;
 					$facts['users']['admins'][ $index ]['email'] = '';
-					$hit                                         = true;
+					$hit = true;
 				}
 			}
 			if ( $hit ) {
@@ -563,10 +563,10 @@ final class PersonalData {
 	/**
 	 * What an erase cannot change, as plain sentences.
 	 *
-	 * @param string                                          $email   Lower-case address.
-	 * @param list<array{name: string, organisation: string}> $names   People found.
-	 * @param \WP_User|null                                   $account The WordPress account with this address, if it exists.
-	 * @return list<string>
+	 * @param string                                                $email   Lower-case address.
+	 * @param array<int, array{name: string, organisation: string}> $names   People found.
+	 * @param \WP_User|null                                         $account The WordPress account with this address, if it exists.
+	 * @return array<int, string>
 	 */
 	private function retained( string $email, array $names, ?\WP_User $account ): array {
 		$out = array();
@@ -624,7 +624,7 @@ final class PersonalData {
 	 * Name and value pairs for WordPress, leaving out empty values.
 	 *
 	 * @param array<string, string> $map Label => value.
-	 * @return list<array{name: string, value: string}>
+	 * @return array<int, array{name: string, value: string}>
 	 */
 	private function pairs( array $map ): array {
 		$out = array();

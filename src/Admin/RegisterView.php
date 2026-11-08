@@ -35,8 +35,8 @@ final class RegisterView {
 	/**
 	 * Print the register for a kind.
 	 *
-	 * @param string               $kind  Kind key.
-	 * @param string               $page  Menu slug.
+	 * @param string                $kind  Kind key.
+	 * @param string                $page  Menu slug.
 	 * @param array<string, string> $query Extra query arguments that keep the tab, for example tab=licences.
 	 */
 	public function render( string $kind, string $page, array $query = array() ): void {
@@ -220,11 +220,11 @@ final class RegisterView {
 			return;
 		}
 
-		$state  = FormState::take( 'item:' . $kind . ':' . $id );
-		$input  = null === $state ? array() : $state['input'];
-		$errors = null === $state ? array() : $state['errors'];
-		$people = $this->peopleNames();
-		$see    = Capabilities::canSeeSensitive();
+		$state   = FormState::take( 'item:' . $kind . ':' . $id );
+		$input   = null === $state ? array() : $state['input'];
+		$errors  = null === $state ? array() : $state['errors'];
+		$people  = $this->peopleNames();
+		$see     = Capabilities::canSeeSensitive();
 		$initial = array();
 		if ( null === $record ) {
 			if ( '' !== Request::text( 'prefill' ) ) {
@@ -237,11 +237,13 @@ final class RegisterView {
 			}
 		}
 
-		echo '<div class="estasoft-hp-form"><h2>' . esc_html( null === $record ? sprintf(
+		echo '<div class="estasoft-hp-form"><h2>' . esc_html(
+			null === $record ? sprintf(
 			/* translators: %s: kind label. */
-			__( 'Add %s', 'estasoft-handover-passport' ),
-			mb_strtolower( (string) $def['label'] )
-		) : (string) $record['title'] ) . '</h2>';
+				__( 'Add %s', 'estasoft-handover-passport' ),
+				mb_strtolower( (string) $def['label'] )
+			) : (string) $record['title']
+		) . '</h2>';
 
 		if ( array() !== $errors ) {
 			echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html__( 'The record was not saved. Fix the fields below and try again.', 'estasoft-handover-passport' ) . '</p></div>';
@@ -341,15 +343,15 @@ final class RegisterView {
 	/**
 	 * Print a group of fields.
 	 *
-	 * @param string                $legend Group title.
-	 * @param array<string, mixed>  $fields Field definitions.
-	 * @param string                $kind   Kind.
+	 * @param string                    $legend Group title.
+	 * @param array<string, mixed>      $fields Field definitions.
+	 * @param string                    $kind   Kind.
 	 * @param array<string, mixed>|null $record Record or null.
-	 * @param array<string, mixed>  $input  Rejected input, if any.
-	 * @param array<string, string> $errors Errors by key.
-	 * @param array<int, string>    $people Person names by ID.
-	 * @param bool                  $see    Whether the viewer may see Sensitive values.
-	 * @param array<string, mixed>  $initial Starting values for a new record.
+	 * @param array<string, mixed>      $input  Rejected input, if any.
+	 * @param array<string, string>     $errors Errors by key.
+	 * @param array<int, string>        $people Person names by ID.
+	 * @param bool                      $see    Whether the viewer may see Sensitive values.
+	 * @param array<string, mixed>      $initial Starting values for a new record.
 	 */
 	private function fieldset( string $legend, array $fields, string $kind, ?array $record, array $input, array $errors, array $people, bool $see, array $initial ): void {
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html( $legend ) . '</legend>';
@@ -410,16 +412,16 @@ final class RegisterView {
 	 * @param string $op     save, delete, undelete or verify.
 	 * @param string $target item or person.
 	 * @param int    $id     Record ID.
-	 * @param string $return Address to return to.
+	 * @param string $return_to Address to return to.
 	 * @param string $kind   Kind key for items.
 	 */
-	public function hidden( string $op, string $target, int $id, string $return, string $kind = '' ): void {
+	public function hidden( string $op, string $target, int $id, string $return_to, string $kind = '' ): void {
 		echo '<input type="hidden" name="action" value="' . esc_attr( Actions::ACTION ) . '">';
 		echo '<input type="hidden" name="op" value="' . esc_attr( $op ) . '">';
 		echo '<input type="hidden" name="target" value="' . esc_attr( $target ) . '">';
 		echo '<input type="hidden" name="id" value="' . esc_attr( (string) $id ) . '">';
 		echo '<input type="hidden" name="kind" value="' . esc_attr( $kind ) . '">';
-		echo '<input type="hidden" name="return" value="' . esc_url( $return ) . '">';
+		echo '<input type="hidden" name="return" value="' . esc_url( $return_to ) . '">';
 		Form::nonce( Actions::ACTION, false );
 	}
 
@@ -438,9 +440,9 @@ final class RegisterView {
 	/**
 	 * Suggested records from detected plugins that are not yet recorded (SCN-5, BKP-2).
 	 *
-	 * @param string                     $kind    Kind key.
-	 * @param list<array<string, mixed>> $records Existing records.
-	 * @param string                     $base    Screen URL.
+	 * @param string                           $kind    Kind key.
+	 * @param array<int, array<string, mixed>> $records Existing records.
+	 * @param string                           $base    Screen URL.
 	 */
 	private function suggestions( string $kind, array $records, string $base ): void {
 		if ( ! in_array( $kind, array( Kinds::SERVICE, Kinds::BACKUP ), true ) || ! Capabilities::can( Capabilities::EDIT ) ) {
@@ -612,13 +614,13 @@ final class RegisterView {
 	 * @param array<string, mixed>      $input   Rejected input.
 	 * @param array<string, mixed>|null $record  Stored record.
 	 * @param string                    $key     Flag key.
-	 * @param int                       $default Default.
+	 * @param int                       $fallback Default.
 	 */
-	private function flag( array $input, ?array $record, string $key, int $default ): bool {
+	private function flag( array $input, ?array $record, string $key, int $fallback ): bool {
 		if ( array() !== $input ) {
 			return ! empty( $input[ $key ] );
 		}
-		return null !== $record ? ! empty( $record[ $key ] ) : (bool) $default;
+		return null !== $record ? ! empty( $record[ $key ] ) : (bool) $fallback;
 	}
 
 	/**

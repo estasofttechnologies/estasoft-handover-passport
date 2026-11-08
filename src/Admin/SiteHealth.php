@@ -54,7 +54,7 @@ final class SiteHealth {
 	 * @return array<string, mixed>
 	 */
 	public function tests( $tests ): array {
-		$tests                                = is_array( $tests ) ? $tests : array();
+		$tests                                 = is_array( $tests ) ? $tests : array();
 		$tests['direct']['estasoft_hp_review'] = array(
 			'label' => __( 'The Passport has been reviewed', 'estasoft-handover-passport' ),
 			'test'  => array( $this, 'reviewTest' ),
@@ -153,7 +153,7 @@ final class SiteHealth {
 			),
 		);
 		foreach ( Tables::all() as $key => $table ) {
-			$count = $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed table names.
+			$count                    = $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed table names.
 			$fields[ 'rows_' . $key ] = array(
 				/* translators: %s: table key, for example items. */
 				'label' => sprintf( __( 'Rows in %s', 'estasoft-handover-passport' ), $key ),
@@ -161,7 +161,7 @@ final class SiteHealth {
 			);
 		}
 
-		$latest = $this->plugin->scanService()->latest();
+		$latest                     = $this->plugin->scanService()->latest();
 		$fields['last_scan']        = array(
 			'label' => __( 'Last scan', 'estasoft-handover-passport' ),
 			'value' => null === $latest ? __( 'None yet', 'estasoft-handover-passport' ) : (string) $latest['started_at'] . ' UTC',
@@ -171,8 +171,8 @@ final class SiteHealth {
 			'value' => null === $latest ? '-' : (string) $latest['status'],
 		);
 
-		$cron_off = defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON;
-		$next     = wp_next_scheduled( Schedule::SCAN );
+		$cron_off            = defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON;
+		$next                = wp_next_scheduled( Schedule::SCAN );
 		$fields['cron']      = array(
 			'label' => __( 'WordPress cron', 'estasoft-handover-passport' ),
 			'value' => $cron_off ? __( 'Switched off (DISABLE_WP_CRON)', 'estasoft-handover-passport' ) : __( 'On', 'estasoft-handover-passport' ),

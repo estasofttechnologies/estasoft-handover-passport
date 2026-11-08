@@ -178,16 +178,16 @@ class ChangeCapture {
 	/**
 	 * A user's role changed. Only a change to administrator is logged.
 	 *
-	 * @param int          $user_id   User ID.
-	 * @param string       $role      New role.
-	 * @param list<string> $old_roles Previous roles.
+	 * @param int                $user_id   User ID.
+	 * @param string             $role      New role.
+	 * @param array<int, string> $old_roles Previous roles.
 	 */
 	public function roleSet( $user_id, $role, $old_roles = array() ): void {
 		if ( 'administrator' !== $role || in_array( 'administrator', (array) $old_roles, true ) || ! empty( $this->admins_logged[ (int) $user_id ] ) ) {
 			return;
 		}
 		$this->admins_logged[ (int) $user_id ] = true;
-		$user = get_userdata( (int) $user_id );
+		$user                                  = get_userdata( (int) $user_id );
 		if ( $user instanceof \WP_User ) {
 			$this->log->add( 'administrator_added', 'user', (int) $user->ID, (string) $user->display_name, array( 'roles' => array_values( (array) $old_roles ) ), array( 'roles' => array( 'administrator' ) ) );
 			Schedule::queueScan();
@@ -197,22 +197,22 @@ class ChangeCapture {
 	/**
 	 * The WordPress address changed.
 	 *
-	 * @param mixed $old Old value.
-	 * @param mixed $new New value.
+	 * @param mixed $older Old value.
+	 * @param mixed $newer New value.
 	 */
-	public function siteAddressChanged( $old, $new ): void {
-		$this->log->add( 'site_address_changed', 'core', 0, 'Site address', array( 'value' => (string) $old ), array( 'value' => (string) $new ) );
+	public function siteAddressChanged( $older, $newer ): void {
+		$this->log->add( 'site_address_changed', 'core', 0, 'Site address', array( 'value' => (string) $older ), array( 'value' => (string) $newer ) );
 		Schedule::queueScan();
 	}
 
 	/**
 	 * The site address changed.
 	 *
-	 * @param mixed $old Old value.
-	 * @param mixed $new New value.
+	 * @param mixed $older Old value.
+	 * @param mixed $newer New value.
 	 */
-	public function homeAddressChanged( $old, $new ): void {
-		$this->log->add( 'site_address_changed', 'core', 0, 'Home address', array( 'value' => (string) $old ), array( 'value' => (string) $new ) );
+	public function homeAddressChanged( $older, $newer ): void {
+		$this->log->add( 'site_address_changed', 'core', 0, 'Home address', array( 'value' => (string) $older ), array( 'value' => (string) $newer ) );
 		Schedule::queueScan();
 	}
 

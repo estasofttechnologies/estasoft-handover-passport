@@ -176,7 +176,7 @@ final class Fields {
 	 * @param array<string, mixed> $def   Field definition.
 	 * @param mixed                $value Array or multi-line text.
 	 * @param bool                 $urls  Whether each line must be a web address.
-	 * @return list<string>
+	 * @return array<int, string>
 	 * @throws ValidationError When a line is invalid or there are too many.
 	 */
 	private static function lines( array $def, $value, bool $urls ): array {
@@ -213,7 +213,7 @@ final class Fields {
 	 *
 	 * @param array<string, mixed> $def   Field definition.
 	 * @param mixed                $value Raw value.
-	 * @return list<int>
+	 * @return array<int, int>
 	 * @throws ValidationError When there are too many.
 	 */
 	private static function ids( array $def, $value ): array {

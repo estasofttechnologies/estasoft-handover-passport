@@ -1,6 +1,6 @@
 <?php
 /**
- * iCalendar pack: dated items only (EXP-6).
+ * Calendar pack in iCalendar format: dated items only (EXP-6).
  *
  * @package Estasoft\HandoverPassport
  */
@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Export\Render;
 
 use Estasoft\HandoverPassport\Support\Dates;
+use Estasoft\HandoverPassport\Support\Str;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,24 +20,36 @@ defined( 'ABSPATH' ) || exit;
  */
 final class IcsRenderer implements Renderer {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function key(): string {
 		return 'ics';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function extension(): string {
 		return 'ics';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function mime(): string {
 		return 'text/calendar; charset=utf-8';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function render( array $content, PackStyle $style, string $hash, string $label ): string {
-		$host   = (string) wp_parse_url( (string) ( $content['site']['url'] ?? '' ), PHP_URL_HOST );
-		$host   = '' === $host ? 'estasoft-handover-passport.invalid' : $host;
-		$stamp  = $this->stamp( (string) ( $content['generated_at'] ?? '' ) );
-		$site   = (string) ( $content['site']['name'] ?? '' );
-		$lines  = array(
+		$host  = (string) wp_parse_url( (string) ( $content['site']['url'] ?? '' ), PHP_URL_HOST );
+		$host  = '' === $host ? 'estasoft-handover-passport.invalid' : $host;
+		$stamp = $this->stamp( (string) ( $content['generated_at'] ?? '' ) );
+		$site  = (string) ( $content['site']['name'] ?? '' );
+		$lines = array(
 			'BEGIN:VCALENDAR',
 			'VERSION:2.0',
 			'PRODID:-//ESTASOFT TECHNOLOGIES//Estasoft Handover Passport//EN',
@@ -100,7 +113,7 @@ final class IcsRenderer implements Renderer {
 		$out   = '';
 		$chunk = '';
 		$limit = 75;
-		foreach ( preg_split( '//u', $line, -1, PREG_SPLIT_NO_EMPTY ) ?: array() as $char ) {
+		foreach ( Str::split( '//u', $line, PREG_SPLIT_NO_EMPTY ) as $char ) {
 			if ( strlen( $chunk ) + strlen( $char ) > $limit ) {
 				$out  .= $chunk . "\r\n ";
 				$chunk = '';

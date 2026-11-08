@@ -36,7 +36,7 @@ final class HandoverChecklist {
 	/**
 	 * Every item, in the order: rules, transfers, restore test, custom items.
 	 *
-	 * @return list<array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
+	 * @return array<int, array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
 	 */
 	public function items(): array {
 		return array_merge( $this->ruleItems(), $this->transferItems(), $this->restoreItem(), $this->customItems() );
@@ -128,7 +128,7 @@ final class HandoverChecklist {
 	/**
 	 * Items from the rules marked Handover.
 	 *
-	 * @return list<array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
+	 * @return array<int, array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
 	 */
 	private function ruleItems(): array {
 		$readiness = $this->plugin->findings()->readiness();
@@ -152,7 +152,7 @@ final class HandoverChecklist {
 	/**
 	 * Items from the transfer tracker (OWN-3).
 	 *
-	 * @return list<array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
+	 * @return array<int, array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
 	 */
 	private function transferItems(): array {
 		$out    = array();
@@ -177,7 +177,7 @@ final class HandoverChecklist {
 	/**
 	 * The latest restore test (BKP-5): Done when one passed recently enough.
 	 *
-	 * @return list<array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
+	 * @return array<int, array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
 	 */
 	private function restoreItem(): array {
 		$tests = $this->plugin->restoreTests()->all();
@@ -200,7 +200,7 @@ final class HandoverChecklist {
 	/**
 	 * Custom items.
 	 *
-	 * @return list<array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
+	 * @return array<int, array{key: string, group: string, label: string, state: string, who: string, when: string, detail: string, id: int}>
 	 */
 	private function customItems(): array {
 		$out = array();

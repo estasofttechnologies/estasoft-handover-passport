@@ -51,7 +51,7 @@ final class OverviewScreen {
 
 		View::open( (string) ( '' !== $passport['site_name'] ? $passport['site_name'] : __( 'Passport', 'estasoft-handover-passport' ) ) );
 
-		echo '<p class="estasoft-hp-lede">' . View::badge( (string) $passport['status'], $this->plugin->passport()->statusLabel() );
+		echo '<p class="estasoft-hp-lede">' . View::badge( (string) $passport['status'], $this->plugin->passport()->statusLabel() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 		if ( '' !== (string) $passport['client_name'] ) {
 			echo ' ' . esc_html(
 				sprintf(
@@ -321,15 +321,15 @@ final class OverviewScreen {
 		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Stack', 'estasoft-handover-passport' ) . '</h2>';
 		View::facts(
 			array(
-				__( 'WordPress', 'estasoft-handover-passport' )      => (string) ( $core['wp_version'] ?? '' ),
-				__( 'PHP', 'estasoft-handover-passport' )            => (string) ( $core['php_version'] ?? '' ),
-				__( 'Database', 'estasoft-handover-passport' )       => trim( (string) ( $core['db_engine'] ?? '' ) . ' ' . (string) ( $core['db_version'] ?? '' ) ),
-				__( 'Web server', 'estasoft-handover-passport' )     => (string) ( $core['web_server'] ?? '' ),
-				__( 'Environment', 'estasoft-handover-passport' )    => (string) ( $core['environment'] ?? '' ),
-				__( 'Site address', 'estasoft-handover-passport' )   => (string) ( $core['site_url'] ?? '' ),
-				__( 'HTTPS', 'estasoft-handover-passport' )          => View::yesNo( ! empty( $core['https'] ) ),
-				__( 'Active theme', 'estasoft-handover-passport' )   => $theme,
-				__( 'Plugins', 'estasoft-handover-passport' )        => sprintf(
+				__( 'WordPress', 'estasoft-handover-passport' ) => (string) ( $core['wp_version'] ?? '' ),
+				__( 'PHP', 'estasoft-handover-passport' ) => (string) ( $core['php_version'] ?? '' ),
+				__( 'Database', 'estasoft-handover-passport' ) => trim( (string) ( $core['db_engine'] ?? '' ) . ' ' . (string) ( $core['db_version'] ?? '' ) ),
+				__( 'Web server', 'estasoft-handover-passport' ) => (string) ( $core['web_server'] ?? '' ),
+				__( 'Environment', 'estasoft-handover-passport' ) => (string) ( $core['environment'] ?? '' ),
+				__( 'Site address', 'estasoft-handover-passport' ) => (string) ( $core['site_url'] ?? '' ),
+				__( 'HTTPS', 'estasoft-handover-passport' ) => View::yesNo( ! empty( $core['https'] ) ),
+				__( 'Active theme', 'estasoft-handover-passport' ) => $theme,
+				__( 'Plugins', 'estasoft-handover-passport' ) => sprintf(
 					/* translators: 1: number active, 2: number installed. */
 					__( '%1$d active of %2$d installed', 'estasoft-handover-passport' ),
 					$active,

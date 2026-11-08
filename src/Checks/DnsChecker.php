@@ -27,7 +27,7 @@ final class DnsChecker {
 	/**
 	 * Resolver: takes a host and a type name (A, AAAA, NS, MX, TXT, CNAME, CAA) and returns the PHP record arrays, or false on failure.
 	 *
-	 * @var Closure(string, string): (list<array<string, mixed>>|false)
+	 * @var Closure(string, string): (array<int, array<string, mixed>>|false)
 	 */
 	private Closure $resolve;
 
@@ -68,15 +68,21 @@ final class DnsChecker {
 			return $rows;
 		};
 
-		$a    = $this->values( $read( $domain, 'A' ), 'ip' );
-		$aaaa = $this->values( $read( $domain, 'AAAA' ), 'ipv6' );
-		$ns   = $this->values( $read( $domain, 'NS' ), 'target' );
+		$a       = $this->values( $read( $domain, 'A' ), 'ip' );
+		$aaaa    = $this->values( $read( $domain, 'AAAA' ), 'ipv6' );
+		$ns      = $this->values( $read( $domain, 'NS' ), 'target' );
 		$mx_rows = array();
 		foreach ( $read( $domain, 'MX' ) as $row ) {
 			$mx_rows[] = array( (int) ( $row['pri'] ?? 0 ), strtolower( rtrim( (string) ( $row['target'] ?? '' ), '.' ) ) );
 		}
-		usort( $mx_rows, static fn( array $a, array $b ): int => $a[0] <=> $b[0] ?: strcmp( $a[1], $b[1] ) );
-		$mx = array_values( array_unique( array_map( static fn( array $row ): string => $row[0] . ' ' . $row[1], $mx_rows ) ) );
+		usort(
+			$mx_rows,
+			static function ( array $a, array $b ): int {
+				$order = $a[0] <=> $b[0];
+				return 0 !== $order ? $order : strcmp( $a[1], $b[1] );
+			}
+		);
+		$mx  = array_values( array_unique( array_map( static fn( array $row ): string => $row[0] . ' ' . $row[1], $mx_rows ) ) );
 		$txt = $this->txt( $read( $domain, 'TXT' ) );
 		$caa = array();
 		foreach ( $read( $domain, 'CAA' ) as $row ) {
@@ -120,7 +126,7 @@ final class DnsChecker {
 	 *
 	 * @param array<string, mixed> $before Earlier snapshot fields.
 	 * @param array<string, mixed> $after  Later snapshot fields.
-	 * @return array<string, array{added: list<string>, removed: list<string>}>
+	 * @return array<string, array{added: array<int, string>, removed: array<int, string>}>
 	 */
 	public static function changes( array $before, array $after ): array {
 		$out    = array();
@@ -166,7 +172,7 @@ final class DnsChecker {
 	 * Normalise a value to a list of strings.
 	 *
 	 * @param mixed $value Value.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private static function asList( $value ): array {
 		if ( is_string( $value ) ) {
@@ -178,9 +184,9 @@ final class DnsChecker {
 	/**
 	 * Sorted unique values of one key.
 	 *
-	 * @param list<array<string, mixed>> $rows Record rows.
-	 * @param string                     $key  Key.
-	 * @return list<string>
+	 * @param array<int, array<string, mixed>> $rows Record rows.
+	 * @param string                           $key  Key.
+	 * @return array<int, string>
 	 */
 	private function values( array $rows, string $key ): array {
 		$out = array();
@@ -198,8 +204,8 @@ final class DnsChecker {
 	/**
 	 * Text records, with split strings joined.
 	 *
-	 * @param list<array<string, mixed>> $rows Record rows.
-	 * @return list<string>
+	 * @param array<int, array<string, mixed>> $rows Record rows.
+	 * @return array<int, string>
 	 */
 	private function txt( array $rows ): array {
 		$out = array();
@@ -220,7 +226,7 @@ final class DnsChecker {
 	 *
 	 * @param string $host Host.
 	 * @param string $type Record type name.
-	 * @return list<array<string, mixed>>|false
+	 * @return array<int, array<string, mixed>>|false
 	 */
 	private static function systemResolve( string $host, string $type ) {
 		if ( ! function_exists( 'dns_get_record' ) ) {

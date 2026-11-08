@@ -24,12 +24,12 @@ final class Profile {
 	/**
 	 * Constructor.
 	 *
-	 * @param string       $key         Stable key, such as "client".
-	 * @param string       $label       Name shown to people.
-	 * @param string       $description What the pack is for.
-	 * @param list<string> $sections    Chapter keys in order.
-	 * @param string       $audience    Which rules decide what is shown: client, emergency, technical or full.
-	 * @param bool         $builtin     False for a copy made in Settings.
+	 * @param string             $key         Stable key, such as "client".
+	 * @param string             $label       Name shown to people.
+	 * @param string             $description What the pack is for.
+	 * @param array<int, string> $sections    Chapter keys in order.
+	 * @param string             $audience    Which rules decide what is shown: client, emergency, technical or full.
+	 * @param bool               $builtin     False for a copy made in Settings.
 	 */
 	public function __construct(
 		public readonly string $key,

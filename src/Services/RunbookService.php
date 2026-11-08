@@ -61,7 +61,7 @@ final class RunbookService {
 	/**
 	 * Live runbooks with their current content.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function all(): array {
 		return array_map( fn( array $row ): array => $this->hydrate( $row ), $this->runbooks->allLive() );
@@ -85,7 +85,7 @@ final class RunbookService {
 	/**
 	 * Runbooks deleted within the retention window.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function deleted(): array {
 		return $this->runbooks->query( array(), 'title', 'ASC', 0, 0, 'deleted_at IS NOT NULL' );
@@ -95,7 +95,7 @@ final class RunbookService {
 	 * Earlier versions of a runbook, newest first.
 	 *
 	 * @param int $id Runbook ID.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function versions( int $id ): array {
 		return $this->runbooks->versions( $id );
@@ -113,10 +113,10 @@ final class RunbookService {
 		if ( null === $template ) {
 			throw new ValidationError( __( 'Template', 'estasoft-handover-passport' ), __( 'That template does not exist.', 'estasoft-handover-passport' ) );
 		}
-		$input                = $template;
-		$input['template_key'] = $key;
-		$input['status']       = 'draft';
-		$input['steps']        = array_map(
+		$input                  = $template;
+		$input['template_key']  = $key;
+		$input['status']        = 'draft';
+		$input['steps']         = array_map(
 			static fn( array $step ): array => $step + array( 'remove' => false, 'duplicate' => false ),
 			(array) $template['steps']
 		);

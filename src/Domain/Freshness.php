@@ -33,10 +33,10 @@ final class Freshness {
 	 * @param string      $now         UTC date-time now.
 	 */
 	public static function state( ?string $verified_at, string $created_at, int $interval, int $due_days, string $now ): string {
-		$base = new DateTimeImmutable( $verified_at ?: $created_at, new DateTimeZone( 'UTC' ) );
-		$due  = $base->modify( sprintf( '+%d days', max( 1, $interval ) ) );
+		$base  = new DateTimeImmutable( ! empty( $verified_at ) ? $verified_at : $created_at, new DateTimeZone( 'UTC' ) );
+		$due   = $base->modify( sprintf( '+%d days', max( 1, $interval ) ) );
 		$stale = $due->modify( sprintf( '+%d days', max( 0, $due_days ) ) );
-		$at   = new DateTimeImmutable( $now, new DateTimeZone( 'UTC' ) );
+		$at    = new DateTimeImmutable( $now, new DateTimeZone( 'UTC' ) );
 
 		if ( $at < $due ) {
 			return self::VERIFIED;

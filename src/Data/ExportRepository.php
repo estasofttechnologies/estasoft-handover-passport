@@ -16,10 +16,16 @@ defined( 'ABSPATH' ) || exit;
  */
 class ExportRepository extends Repository {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'exports';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'exported_at', 'user_id', 'snapshot_id', 'profile', 'format', 'size', 'hash', 'emailed' );
 	}

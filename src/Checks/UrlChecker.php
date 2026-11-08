@@ -83,7 +83,7 @@ final class UrlChecker {
 			$body   = (string) ( $response['body'] ?? '' );
 			if ( $status >= 300 && $status < 400 && '' !== (string) ( $response['location'] ?? '' ) ) {
 				$next = OutboundGuard::absolute( $current, (string) $response['location'] );
-				if ( $hop === self::MAX_REDIRECTS ) {
+				if ( self::MAX_REDIRECTS === $hop ) {
 					return $result + array(
 						'ok'      => false,
 						'status'  => $status,

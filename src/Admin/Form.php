@@ -28,10 +28,10 @@ final class Form {
 	 * @param array<int, string>   $people Person ID => name, for people fields.
 	 */
 	public static function row( string $name, array $def, $value, string $error = '', array $people = array() ): void {
-		$id       = 'estasoft-hp-f-' . $name;
-		$help_id  = $id . '-help';
-		$error_id = $id . '-error';
-		$type     = (string) $def['type'];
+		$id        = 'estasoft-hp-f-' . $name;
+		$help_id   = $id . '-help';
+		$error_id  = $id . '-error';
+		$type      = (string) $def['type'];
 		$described = array();
 		if ( ! empty( $def['help'] ) ) {
 			$described[] = $help_id;
@@ -39,7 +39,7 @@ final class Form {
 		if ( '' !== $error ) {
 			$described[] = $error_id;
 		}
-		$aria = array() === $described ? '' : ' aria-describedby="' . esc_attr( implode( ' ', $described ) ) . '"';
+		$aria  = array() === $described ? '' : ' aria-describedby="' . esc_attr( implode( ' ', $described ) ) . '"';
 		$aria .= '' !== $error ? ' aria-invalid="true"' : '';
 		$req   = ! empty( $def['required'] ) ? ' required aria-required="true"' : '';
 

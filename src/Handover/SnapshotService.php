@@ -58,7 +58,7 @@ final class SnapshotService {
 	/**
 	 * Snapshots, newest first, without their content.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function all(): array {
 		return $this->snapshots->listAll();
@@ -152,10 +152,10 @@ final class SnapshotService {
 		if ( null === $row ) {
 			return null;
 		}
-		$found   = hash( 'sha256', (string) $row['content'] );
-		$ok      = SnapshotIntegrity::matches( (string) $row['content'], (string) $row['hash'] );
-		$now     = Clock::sql();
-		$results = (array) get_option( SnapshotIntegrity::OPTION, array() );
+		$found          = hash( 'sha256', (string) $row['content'] );
+		$ok             = SnapshotIntegrity::matches( (string) $row['content'], (string) $row['hash'] );
+		$now            = Clock::sql();
+		$results        = (array) get_option( SnapshotIntegrity::OPTION, array() );
 		$results[ $id ] = array( 'ok' => $ok, 'at' => $now );
 		update_option( SnapshotIntegrity::OPTION, $results, false );
 		$this->plugin->findings()->queue();
@@ -165,9 +165,9 @@ final class SnapshotService {
 	/**
 	 * Compare a snapshot with another snapshot or with the live Passport (HND-6).
 	 *
-	 * @param int            $a       Snapshot ID.
-	 * @param int|string     $b       Snapshot ID, or "live".
-	 * @param ExportOptions  $options Rights of the person.
+	 * @param int           $a       Snapshot ID.
+	 * @param int|string    $b       Snapshot ID, or "live".
+	 * @param ExportOptions $options Rights of the person.
 	 * @return array<string, mixed>|null Null when a snapshot does not exist.
 	 * @throws ExportRefused When the live Passport cannot be built for this person.
 	 */

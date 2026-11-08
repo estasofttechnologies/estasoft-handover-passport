@@ -98,12 +98,19 @@ function estasoft_hp_uninstall_site(): void {
 	}
 }
 
-if ( is_multisite() ) {
-	foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $site_id ) {
-		switch_to_blog( (int) $site_id );
+/**
+ * Remove the data of every site on a network, or of the one site.
+ */
+function estasoft_hp_uninstall(): void {
+	if ( ! is_multisite() ) {
+		estasoft_hp_uninstall_site();
+		return;
+	}
+	foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $estasoft_hp_site_id ) {
+		switch_to_blog( (int) $estasoft_hp_site_id );
 		estasoft_hp_uninstall_site();
 		restore_current_blog();
 	}
-} else {
-	estasoft_hp_uninstall_site();
 }
+
+estasoft_hp_uninstall();

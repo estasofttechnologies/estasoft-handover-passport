@@ -50,7 +50,7 @@ final class RemindersCommand {
 	 *     wp estasoft-passport reminders run --dry-run
 	 *     wp estasoft-passport reminders run
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function run( $args, $assoc_args ): void {
@@ -112,7 +112,7 @@ final class RemindersCommand {
 	 *
 	 *     wp estasoft-passport reminders digest --dry-run
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function digest( $args, $assoc_args ): void {
@@ -144,7 +144,7 @@ final class RemindersCommand {
 	 *
 	 *     wp estasoft-passport reminders test --to=ops@example.com
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function test( $args, $assoc_args ): void {

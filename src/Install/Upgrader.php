@@ -19,8 +19,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Upgrader {
 
-	public const LOCK_OPTION  = 'estasoft_hp_upgrade_lock';
-	public const ERROR_OPTION = 'estasoft_hp_upgrade_error';
+	public const LOCK_OPTION   = 'estasoft_hp_upgrade_lock';
+	public const ERROR_OPTION  = 'estasoft_hp_upgrade_error';
 	private const LOCK_SECONDS = 120;
 
 	/**

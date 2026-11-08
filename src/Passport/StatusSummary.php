@@ -41,7 +41,7 @@ final class StatusSummary {
 		$findings  = $this->plugin->findings();
 		$readiness = $findings->readiness();
 
-		$fresh = array(
+		$fresh   = array(
 			Freshness::VERIFIED => 0,
 			Freshness::DUE      => 0,
 			Freshness::STALE    => 0,
@@ -90,7 +90,7 @@ final class StatusSummary {
 	 *
 	 * @param bool $with_sensitive Whether Sensitive records are listed.
 	 * @param int  $days           How many days ahead.
-	 * @return list<array{id: int, kind: string, kind_label: string, title: string, date: string, sensitive: bool, certificate: bool}>
+	 * @return array<int, array{id: int, kind: string, kind_label: string, title: string, date: string, sensitive: bool, certificate: bool}>
 	 */
 	public function upcoming( bool $with_sensitive, int $days ): array {
 		$today = Clock::today();

@@ -73,7 +73,7 @@ final class SslChecker {
 	 * Turn a parsed certificate into the stored fields.
 	 *
 	 * @param array<string, mixed> $cert Parsed certificate: validFrom_time_t, validTo_time_t, issuer, subject, extensions, key_type, key_bits.
-	 * @return array{valid_to: string, valid_from: string, issuer: string, names: list<string>, key_type: string}
+	 * @return array{valid_to: string, valid_from: string, issuer: string, names: array<int, string>, key_type: string}
 	 */
 	public static function summarise( array $cert ): array {
 		$issuer = (array) ( $cert['issuer'] ?? array() );
@@ -128,9 +128,9 @@ final class SslChecker {
 				),
 			)
 		);
-		$errno  = 0;
-		$errstr = '';
-		$stream = @stream_socket_client( 'ssl://' . $host . ':' . $port, $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Failure is handled below.
+		$errno   = 0;
+		$errstr  = '';
+		$stream  = @stream_socket_client( 'ssl://' . $host . ':' . $port, $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Failure is handled below.
 		if ( ! is_resource( $stream ) ) {
 			return array( 'error' => '' !== $errstr ? $errstr : __( 'The connection failed.', 'estasoft-handover-passport' ) );
 		}
@@ -148,9 +148,9 @@ final class SslChecker {
 		if ( false !== $key ) {
 			$details = openssl_pkey_get_details( $key );
 			if ( is_array( $details ) ) {
-				$types                = array( OPENSSL_KEYTYPE_RSA => 'RSA', OPENSSL_KEYTYPE_EC => 'EC', OPENSSL_KEYTYPE_DSA => 'DSA' );
-				$parsed['key_type']   = $types[ $details['type'] ?? -1 ] ?? '';
-				$parsed['key_bits']   = (int) ( $details['bits'] ?? 0 );
+				$types              = array( OPENSSL_KEYTYPE_RSA => 'RSA', OPENSSL_KEYTYPE_EC => 'EC', OPENSSL_KEYTYPE_DSA => 'DSA' );
+				$parsed['key_type'] = $types[ $details['type'] ?? -1 ] ?? '';
+				$parsed['key_bits'] = (int) ( $details['bits'] ?? 0 );
 			}
 		}
 		return $parsed;

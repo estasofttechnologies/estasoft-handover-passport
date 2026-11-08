@@ -25,9 +25,9 @@ final class StatusService {
 	 * Constructor.
 	 *
 	 * @param Passport  $passport  Passport record.
-	 * @param ChangeLog $changeLog Change log.
+	 * @param ChangeLog $change_log Change log.
 	 */
-	public function __construct( private Passport $passport, private ChangeLog $changeLog ) {}
+	public function __construct( private Passport $passport, private ChangeLog $change_log ) {}
 
 	/**
 	 * Set the status.
@@ -46,7 +46,7 @@ final class StatusService {
 			return;
 		}
 		$this->passport->update( array( 'status' => $status ) );
-		$this->changeLog->add( 'status_changed', 'passport', 0, $labels[ $status ], array( 'status' => $labels[ $before ] ?? $before ), array( 'status' => $labels[ $status ] ), $note );
+		$this->change_log->add( 'status_changed', 'passport', 0, $labels[ $status ], array( 'status' => $labels[ $before ] ?? $before ), array( 'status' => $labels[ $status ] ), $note );
 	}
 
 	/**

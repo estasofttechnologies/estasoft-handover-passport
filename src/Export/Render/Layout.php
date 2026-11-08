@@ -34,7 +34,7 @@ final class Layout {
 	 * the title of every item.
 	 *
 	 * @param array<string, mixed> $group Group.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public static function columns( array $group ): array {
 		$out = array();
@@ -60,7 +60,7 @@ final class Layout {
 	/**
 	 * Whether a group is shown as a table.
 	 *
-	 * @param list<array<string, mixed>> $columns Columns from columns().
+	 * @param array<int, array<string, mixed>> $columns Columns from columns().
 	 */
 	public static function asTable( array $columns ): bool {
 		if ( count( $columns ) > self::MAX_TABLE_COLUMNS ) {
@@ -93,7 +93,7 @@ final class Layout {
 	 *
 	 * @param array<string, mixed> $def   Field definition.
 	 * @param mixed                $value Value.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function lines( array $def, $value ): array {
 		return Display::lines( $def, $value );
@@ -124,7 +124,7 @@ final class Layout {
 	 * The sections that have something to show.
 	 *
 	 * @param array<string, mixed> $content Pack content.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public static function sections( array $content ): array {
 		return array_values( (array) ( $content['sections'] ?? array() ) );

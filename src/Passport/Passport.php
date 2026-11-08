@@ -18,9 +18,9 @@ class Passport {
 
 	public const OPTION = 'estasoft_hp_passport';
 
-	public const STATUS_DRAFT   = 'draft';
-	public const STATUS_ACTIVE  = 'active';
-	public const STATUS_HANDED  = 'handed_over';
+	public const STATUS_DRAFT  = 'draft';
+	public const STATUS_ACTIVE = 'active';
+	public const STATUS_HANDED = 'handed_over';
 
 	/**
 	 * Cached values.
@@ -69,12 +69,12 @@ class Passport {
 	 * One value.
 	 *
 	 * @param string $key     Field name.
-	 * @param mixed  $default Fallback.
+	 * @param mixed  $fallback Fallback.
 	 * @return mixed
 	 */
-	public function get( string $key, $default = null ) {
+	public function get( string $key, $fallback = null ) {
 		$all = $this->all();
-		return $all[ $key ] ?? $default;
+		return $all[ $key ] ?? $fallback;
 	}
 
 	/**

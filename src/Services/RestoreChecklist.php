@@ -36,7 +36,7 @@ final class RestoreChecklist {
 	/**
 	 * The checks a person makes by hand when nothing else has been set.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function defaults(): array {
 		return array(
@@ -53,7 +53,7 @@ final class RestoreChecklist {
 	/**
 	 * The checks made by hand: the saved list, or the shipped one.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public function manual(): array {
 		$saved = $this->plugin->settings()->get( self::SETTING, array() );
@@ -99,7 +99,7 @@ final class RestoreChecklist {
 	/**
 	 * Everything to check, addresses first. A Sensitive record never appears.
 	 *
-	 * @return list<array{kind: string, label: string, detail: string}>
+	 * @return array<int, array{kind: string, label: string, detail: string}>
 	 */
 	public function items(): array {
 		$items = array();
@@ -107,13 +107,13 @@ final class RestoreChecklist {
 			if ( ! empty( $record['hidden'] ) ) {
 				continue;
 			}
-			$fields = (array) $record['fields'];
-			$status = (int) ( $fields['expected_status'] ?? 200 );
-			$status = $status > 0 ? $status : 200;
-			$text   = trim( (string) ( $fields['expected_text'] ?? '' ) );
-			$detail = (string) ( $fields['address'] ?? '' ) . '  ·  ' . sprintf( /* translators: %d: HTTP status such as 200. */ __( 'Expect status %d', 'estasoft-handover-passport' ), $status )
+			$fields  = (array) $record['fields'];
+			$status  = (int) ( $fields['expected_status'] ?? 200 );
+			$status  = $status > 0 ? $status : 200;
+			$text    = trim( (string) ( $fields['expected_text'] ?? '' ) );
+			$detail  = (string) ( $fields['address'] ?? '' ) . '  ·  ' . sprintf( /* translators: %d: HTTP status such as 200. */ __( 'Expect status %d', 'estasoft-handover-passport' ), $status )
 				. ( '' !== $text ? ' ' . sprintf( /* translators: %s: words that must appear on the page. */ __( 'and the words "%s"', 'estasoft-handover-passport' ), $text ) : '' );
-			$why = trim( (string) ( $fields['why'] ?? '' ) );
+			$why     = trim( (string) ( $fields['why'] ?? '' ) );
 			$items[] = array(
 				'kind'   => 'url',
 				/* translators: %s: name of a critical address such as Home page. */

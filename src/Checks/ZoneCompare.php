@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Checks;
 
+use Estasoft\HandoverPassport\Support\Str;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -28,11 +30,11 @@ final class ZoneCompare {
 	 * Read rows from pasted text: "TYPE, name, value, ttl, purpose" lines or BIND-style lines.
 	 *
 	 * @param string $text Zone text.
-	 * @return list<array{type: string, name: string, value: string, ttl: string, purpose: string}>
+	 * @return array<int, array{type: string, name: string, value: string, ttl: string, purpose: string}>
 	 */
 	public static function parse( string $text ): array {
 		$rows = array();
-		foreach ( preg_split( '/\R/', $text ) ?: array() as $line ) {
+		foreach ( Str::split( '/\R/', $text ) as $line ) {
 			$line = trim( $line );
 			if ( '' === $line || ';' === $line[0] || '#' === $line[0] ) {
 				continue;
@@ -48,10 +50,10 @@ final class ZoneCompare {
 	/**
 	 * Compare rows with one snapshot.
 	 *
-	 * @param string                                                                          $domain   Domain the zone belongs to.
-	 * @param list<array{type: string, name: string, value: string, ttl: string, purpose: string}> $rows     Parsed rows.
-	 * @param array<string, mixed>                                                            $snapshot Snapshot data.
-	 * @return list<array{type: string, scope: string, status: string, expected: list<string>, seen: list<string>}>
+	 * @param string                                                                                     $domain   Domain the zone belongs to.
+	 * @param array<int, array{type: string, name: string, value: string, ttl: string, purpose: string}> $rows     Parsed rows.
+	 * @param array<string, mixed>                                                                       $snapshot Snapshot data.
+	 * @return array<int, array{type: string, scope: string, status: string, expected: array<int, string>, seen: array<int, string>}>
 	 */
 	public static function compare( string $domain, array $rows, array $snapshot ): array {
 		$groups = array();
@@ -90,7 +92,7 @@ final class ZoneCompare {
 	/**
 	 * Counts by status.
 	 *
-	 * @param list<array{status: string}> $results Output of compare().
+	 * @param array<int, array{status: string}> $results Output of compare().
 	 * @return array{matches: int, differs: int, missing: int, skipped: int}
 	 */
 	public static function summary( array $results ): array {
@@ -108,7 +110,7 @@ final class ZoneCompare {
 	 * @return array{type: string, name: string, value: string, ttl: string, purpose: string}|null
 	 */
 	private static function fromDelimited( string $line ): ?array {
-		$parts = array_map( 'trim', preg_split( '/[,\t|]/', $line ) ?: array() );
+		$parts = array_map( 'trim', Str::split( '/[,\t|]/', $line ) );
 		$type  = strtoupper( (string) ( $parts[0] ?? '' ) );
 		if ( ! in_array( $type, self::TYPES, true ) ) {
 			return null;
@@ -129,7 +131,7 @@ final class ZoneCompare {
 	 * @return array{type: string, name: string, value: string, ttl: string, purpose: string}|null
 	 */
 	private static function fromBind( string $line ): ?array {
-		$tokens = preg_split( '/\s+/', $line ) ?: array();
+		$tokens = Str::split( '/\s+/', $line );
 		foreach ( $tokens as $index => $token ) {
 			if ( ! in_array( strtoupper( $token ), self::TYPES, true ) ) {
 				continue;
@@ -182,7 +184,7 @@ final class ZoneCompare {
 	 * @param string               $scope    Scope.
 	 * @param string               $type     Record type.
 	 * @param array<string, mixed> $snapshot Snapshot data.
-	 * @return list<string>|null
+	 * @return array<int, string>|null
 	 */
 	private static function seen( string $scope, string $type, array $snapshot ): ?array {
 		$list = static fn( string $key ): array => array_values( array_filter( array_map( 'strval', (array) ( $snapshot[ $key ] ?? array() ) ), static fn( string $v ): bool => '' !== $v ) );

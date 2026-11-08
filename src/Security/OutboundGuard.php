@@ -29,7 +29,7 @@ final class OutboundGuard {
 	/**
 	 * Hosts that belong to this site, lower case.
 	 *
-	 * @var list<string>
+	 * @var array<int, string>
 	 */
 	private array $site_hosts;
 
@@ -43,16 +43,16 @@ final class OutboundGuard {
 	/**
 	 * Resolver returning the addresses of a host name.
 	 *
-	 * @var callable(string): list<string>
+	 * @var callable(string): array<int, string>
 	 */
 	private $resolver;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param list<string>                   $site_hosts    Host names of the site.
-	 * @param callable(string): list<string> $resolver      Maps a host to its IP addresses.
-	 * @param bool|null                      $site_is_local Override the local-site detection.
+	 * @param array<int, string> $site_hosts    Host names of the site.
+	 * @param callable           $resolver      Takes a host name and returns a list of its IP addresses.
+	 * @param bool|null          $site_is_local Override the local-site detection.
 	 */
 	public function __construct( array $site_hosts, callable $resolver, ?bool $site_is_local = null ) {
 		$this->site_hosts = array_values( array_unique( array_map( 'strtolower', array_filter( $site_hosts ) ) ) );
@@ -73,7 +73,7 @@ final class OutboundGuard {
 	 * Validate an address and return its parts plus the checked IP addresses.
 	 *
 	 * @param string $url Address to check.
-	 * @return array{scheme: string, host: string, port: int, path: string, ips: list<string>}
+	 * @return array{scheme: string, host: string, port: int, path: string, ips: array<int, string>}
 	 * @throws OutboundRefused When the address is not allowed.
 	 */
 	public function validate( string $url ): array {
@@ -124,7 +124,7 @@ final class OutboundGuard {
 	 *
 	 * @param string $current  Address that answered with a redirect.
 	 * @param string $location Value of the Location header.
-	 * @return array{scheme: string, host: string, port: int, path: string, ips: list<string>}
+	 * @return array{scheme: string, host: string, port: int, path: string, ips: array<int, string>}
 	 * @throws OutboundRefused When the target leaves the site.
 	 */
 	public function validateRedirect( string $current, string $location ): array {
@@ -173,8 +173,8 @@ final class OutboundGuard {
 			}
 			$first = ord( $packed[0] );
 			$sec   = ord( $packed[1] );
-			return $packed === str_repeat( "\0", 16 )
-				|| $packed === str_repeat( "\0", 15 ) . "\1"
+			return str_repeat( "\0", 16 ) === $packed
+				|| str_repeat( "\0", 15 ) . "\1" === $packed
 				|| ( $first & 0xfe ) === 0xfc                  // fc00::/7 unique local.
 				|| ( 0xfe === $first && ( $sec & 0xc0 ) === 0x80 ); // fe80::/10 link local.
 		}
@@ -226,7 +226,7 @@ final class OutboundGuard {
 	 * Resolve a host to addresses, accepting a literal IP address as is.
 	 *
 	 * @param string $host Host name.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function addresses( string $host ): array {
 		if ( false !== filter_var( $host, FILTER_VALIDATE_IP ) ) {

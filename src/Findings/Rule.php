@@ -30,7 +30,7 @@ final class Rule {
 	 * @param bool        $handover  Whether the rule counts in the readiness and handover checklists.
 	 * @param string      $title     Short plain name for the rules list.
 	 * @param array       $screen    Screen that fixes it: page slug and tab.
-	 * @param Closure     $check     fn( Context ): ?list<Candidate>.
+	 * @param Closure     $check     fn( Context ): ?array<int, Candidate>.
 	 * @param Closure     $message   fn( array $values ): string.
 	 * @param string|null $threshold Settings key under "thresholds" that the rule reads, or null.
 	 */
@@ -50,7 +50,7 @@ final class Rule {
 	 * Run the check.
 	 *
 	 * @param Context $context Read-only view of the Passport.
-	 * @return list<Candidate>|null Null when the rule cannot run.
+	 * @return array<int, Candidate>|null Null when the rule cannot run.
 	 */
 	public function evaluate( Context $context ): ?array {
 		$result = ( $this->check )( $context );

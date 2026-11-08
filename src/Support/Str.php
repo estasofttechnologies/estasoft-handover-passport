@@ -20,7 +20,7 @@ final class Str {
 	 * Split text into trimmed, non-empty lines.
 	 *
 	 * @param string $text Multi-line text.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function lines( string $text ): array {
 		$lines = preg_split( '/\R/u', $text );
@@ -28,6 +28,19 @@ final class Str {
 			return array();
 		}
 		return array_values( array_filter( array_map( 'trim', $lines ), static fn( string $line ): bool => '' !== $line ) );
+	}
+
+	/**
+	 * Split text on a pattern; an empty list when the pattern cannot be applied.
+	 *
+	 * @param string $pattern Regular expression.
+	 * @param string $text    Text to split.
+	 * @param int    $flags   PREG_SPLIT_* flags.
+	 * @return array<int, string>
+	 */
+	public static function split( string $pattern, string $text, int $flags = 0 ): array {
+		$parts = preg_split( $pattern, $text, -1, $flags );
+		return false === $parts ? array() : $parts;
 	}
 
 	/**
@@ -78,5 +91,20 @@ final class Str {
 			return "'" . $value;
 		}
 		return $value;
+	}
+
+	/**
+	 * One CSV line ending in CRLF. A cell is wrapped in quotes when it holds a comma, a quote, a line break, a tab or a
+	 * space, and a quote inside it is doubled; this is what PHP's fputcsv() writes, without needing a stream.
+	 *
+	 * @param array<int, string> $cells Cell texts, already made safe for a spreadsheet with csvCell().
+	 */
+	public static function csvLine( array $cells ): string {
+		$out = array();
+		foreach ( $cells as $cell ) {
+			$cell  = (string) $cell;
+			$out[] = 1 === preg_match( '/[,"\r\n\t ]/', $cell ) ? '"' . str_replace( '"', '""', $cell ) . '"' : $cell;
+		}
+		return implode( ',', $out ) . "\r\n";
 	}
 }

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Export\Render;
 
+use Estasoft\HandoverPassport\Support\Str;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -24,7 +26,7 @@ final class SmallMarkdown {
 	 */
 	public static function toHtml( string $text ): string {
 		$text   = str_replace( array( "\r\n", "\r" ), "\n", trim( $text ) );
-		$blocks = preg_split( '/\n{2,}/', $text ) ?: array();
+		$blocks = Str::split( '/\n{2,}/', $text );
 		$out    = '';
 		foreach ( $blocks as $block ) {
 			$lines = explode( "\n", trim( $block ) );

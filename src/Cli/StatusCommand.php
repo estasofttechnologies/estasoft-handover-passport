@@ -31,7 +31,7 @@ final class StatusCommand {
 	 * Print how the Passport stands: open findings, readiness, how current the records are and the next dates.
 	 *
 	 * Only counts and dates are printed, never the name of a record, so the output is safe to keep in a build log. Sensitive
- * records are not counted unless --user names someone who may see them.
+	 * records are not counted unless --user names someone who may see them.
 	 * With --fail-on the command exits with status 1 when findings at that level or above are open.
 	 *
 	 * ## OPTIONS
@@ -59,7 +59,7 @@ final class StatusCommand {
 	 *     wp estasoft-passport status --fail-on=needs-fixing
 	 *     wp estasoft-passport status --format=json
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function __invoke( $args, $assoc_args ): void {

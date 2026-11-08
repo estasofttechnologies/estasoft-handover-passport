@@ -76,7 +76,7 @@ final class FindingsCommand {
 	 *
 	 * @subcommand list
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function list_( $args, $assoc_args ): void {
@@ -132,7 +132,7 @@ final class FindingsCommand {
 	 *
 	 *     wp estasoft-passport findings snooze 12 --days=30 --user=admin
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function snooze( $args, $assoc_args ): void {
@@ -160,7 +160,7 @@ final class FindingsCommand {
 	 *
 	 *     wp estasoft-passport findings accept 12 --reason="The client renews this by hand" --user=admin
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function accept( $args, $assoc_args ): void {
@@ -183,7 +183,7 @@ final class FindingsCommand {
 	 *
 	 *     wp estasoft-passport findings reopen 12 --user=admin
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function reopen( $args, $assoc_args ): void {
@@ -196,7 +196,7 @@ final class FindingsCommand {
 	/**
 	 * The number given as the first argument.
 	 *
-	 * @param list<string> $args Positional arguments.
+	 * @param array<int, string> $args Positional arguments.
 	 */
 	private function id( array $args ): int {
 		$id = isset( $args[0] ) && ctype_digit( (string) $args[0] ) ? (int) $args[0] : 0;

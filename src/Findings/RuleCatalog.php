@@ -27,7 +27,7 @@ final class RuleCatalog {
 	/**
 	 * The shipped rules, before any filter.
 	 *
-	 * @return list<Rule>
+	 * @return array<int, Rule>
 	 */
 	public static function shipped(): array {
 		return array_merge(
@@ -51,7 +51,7 @@ final class RuleCatalog {
 		 * Filters the list of rules. Add a Rule object to add a rule; remove an entry to drop one.
 		 * Entries that are not Rule objects, or that reuse an ID, are ignored.
 		 *
-		 * @param list<Rule> $rules Rules.
+		 * @param array<int, Rule> $rules Rules.
 		 */
 		$rules = apply_filters( 'estasoft_hp_rules', self::shipped() );
 		$out   = array();

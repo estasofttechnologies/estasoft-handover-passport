@@ -39,7 +39,7 @@ final class Schema {
 	 * The statements, one per table.
 	 *
 	 * @param string $charset Charset and collate clause.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function statements( string $charset ): array {
 		$t = Tables::all();

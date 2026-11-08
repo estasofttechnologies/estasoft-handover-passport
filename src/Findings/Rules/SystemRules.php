@@ -26,7 +26,7 @@ final class SystemRules extends Base {
 	/**
 	 * The rules.
 	 *
-	 * @return list<Rule>
+	 * @return array<int, Rule>
 	 */
 	public static function all(): array {
 		return array(

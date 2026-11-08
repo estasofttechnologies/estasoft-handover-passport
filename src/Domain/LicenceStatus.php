@@ -18,12 +18,12 @@ defined( 'ABSPATH' ) || exit;
  */
 final class LicenceStatus {
 
-	public const EXPIRED    = 'expired';
-	public const SOON       = 'renews_soon';
-	public const ACTIVE     = 'active';
-	public const CANCELLED  = 'cancelled';
-	public const UNKNOWN    = 'unknown';
-	public const FREE       = 'free';
+	public const EXPIRED   = 'expired';
+	public const SOON      = 'renews_soon';
+	public const ACTIVE    = 'active';
+	public const CANCELLED = 'cancelled';
+	public const UNKNOWN   = 'unknown';
+	public const FREE      = 'free';
 
 	/**
 	 * Compute the status of a record.

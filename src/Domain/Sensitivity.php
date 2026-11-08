@@ -20,7 +20,7 @@ final class Sensitivity {
 	 * Field keys flagged Sensitive in a kind's schema.
 	 *
 	 * @param string $kind Kind key.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function fieldKeys( string $kind ): array {
 		$def  = Kinds::get( $kind );
@@ -64,13 +64,13 @@ final class Sensitivity {
 		}
 		if ( ! empty( $record['sensitive'] ) ) {
 			return array(
-				'id'       => $record['id'],
-				'kind'     => $record['kind'],
-				'title'    => __( 'Sensitive record, hidden', 'estasoft-handover-passport' ),
-				'hidden'   => true,
+				'id'        => $record['id'],
+				'kind'      => $record['kind'],
+				'title'     => __( 'Sensitive record, hidden', 'estasoft-handover-passport' ),
+				'hidden'    => true,
 				'sensitive' => true,
-				'fields'   => array(),
-				'owners'   => array(),
+				'fields'    => array(),
+				'owners'    => array(),
 			);
 		}
 		$record['fields'] = self::stripFields( (string) $record['kind'], (array) ( $record['fields'] ?? array() ) );

@@ -19,14 +19,23 @@ class TestRepository extends Repository {
 	public const RESTORE_TEST = 'restore_test';
 	public const DRILL        = 'drill';
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'tests';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function jsonColumns(): array {
 		return array( 'step_log' );
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'kind', 'runbook_id', 'runbook_version', 'backup_item_id', 'test_date', 'who', 'scope', 'place', 'backup_date', 'minutes', 'result', 'problems', 'step_log', 'created_at', 'created_by' );
 	}
@@ -34,7 +43,7 @@ class TestRepository extends Repository {
 	/**
 	 * Restore tests (not drills), newest first.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function restoreTests(): array {
 		return $this->query( array( 'kind' => self::RESTORE_TEST ), 'test_date', 'DESC' );

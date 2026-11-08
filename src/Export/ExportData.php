@@ -21,17 +21,17 @@ final class ExportData {
 	/**
 	 * Constructor.
 	 *
-	 * @param array<string, mixed>           $site      name, url, client, purpose, status, readiness (ready, total), last_scan, wp_version.
-	 * @param list<array<string, mixed>>     $records   Hydrated records, unredacted.
-	 * @param list<array<string, mixed>>     $people    Hydrated people with roles (list of role keys) and share_flags.
-	 * @param array<string, list<int>>       $roles     Role key to ordered person IDs.
-	 * @param list<array<string, mixed>>     $runbooks  Runbooks with their current content.
-	 * @param list<array<string, mixed>>     $tests     Restore tests, newest first.
-	 * @param list<array<string, mixed>>     $findings  Open findings as presented for the current person.
-	 * @param array<string, mixed>           $facts     Facts of the latest scan, redacted.
-	 * @param list<array<string, mixed>>     $checklist Handover checklist rows.
-	 * @param string                         $notes     Notes to the successor.
-	 * @param string                         $generated UTC time the data was read.
+	 * @param array<string, mixed>             $site      name, url, client, purpose, status, readiness (ready, total), last_scan, wp_version.
+	 * @param array<int, array<string, mixed>> $records   Hydrated records, unredacted.
+	 * @param array<int, array<string, mixed>> $people    Hydrated people with roles (list of role keys) and share_flags.
+	 * @param array<string, array<int, int>>   $roles     Role key to ordered person IDs.
+	 * @param array<int, array<string, mixed>> $runbooks  Runbooks with their current content.
+	 * @param array<int, array<string, mixed>> $tests     Restore tests, newest first.
+	 * @param array<int, array<string, mixed>> $findings  Open findings as presented for the current person.
+	 * @param array<string, mixed>             $facts     Facts of the latest scan, redacted.
+	 * @param array<int, array<string, mixed>> $checklist Handover checklist rows.
+	 * @param string                           $notes     Notes to the successor.
+	 * @param string                           $generated UTC time the data was read.
 	 */
 	public function __construct(
 		public readonly array $site = array(),

@@ -17,6 +17,30 @@ final class StrTest extends TestCase {
 		$this->assertSame( '', Str::csvCell( '' ) );
 	}
 
+	public function test_a_csv_line_matches_what_fputcsv_writes(): void {
+		$samples = array(
+			array( 'plain', 'two words', '', 'a,b', 'say "hi"', "line\nbreak", "tab\there", "cr\rhere", '=1+1', 'مرحبا', ' lead', 'trail ', "'quoted'", '""', ',' ),
+			array( '' ),
+			array( 'a' ),
+			array( '', '' ),
+		);
+		foreach ( $samples as $cells ) {
+			$handle = fopen( 'php://temp', 'r+' );
+			fputcsv( $handle, $cells, ',', '"', '', "\r\n" );
+			rewind( $handle );
+			$expected = (string) stream_get_contents( $handle );
+			fclose( $handle );
+			$this->assertSame( $expected, Str::csvLine( $cells ), json_encode( $cells ) );
+		}
+	}
+
+	public function test_a_csv_line_can_be_read_back(): void {
+		$cells = array( 'a,b', 'say "hi"', "two\nlines", ' spaced ', '' );
+		$line  = Str::csvLine( $cells );
+		$this->assertSame( "\r\n", substr( $line, -2 ) );
+		$this->assertSame( $cells, str_getcsv( substr( $line, 0, -2 ), ',', '"', '' ) );
+	}
+
 	public function test_lines_drop_blanks_and_trim(): void {
 		$this->assertSame( array( 'a', 'b' ), Str::lines( " a \n\n b\r\n" ) );
 	}

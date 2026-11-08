@@ -111,8 +111,9 @@ final class TempFiles {
 		if ( '' === $dir ) {
 			return 0;
 		}
-		$gone = 0;
-		foreach ( glob( $dir . '/*' ) ?: array() as $path ) {
+		$gone  = 0;
+		$found = glob( $dir . '/*' );
+		foreach ( false === $found ? array() : $found as $path ) {
 			$name = basename( $path );
 			if ( 'index.php' === $name || 'web.config' === $name ) {
 				continue;

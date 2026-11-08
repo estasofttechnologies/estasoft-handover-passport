@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Export\Render;
 
 use Estasoft\HandoverPassport\Export\Display;
+use Estasoft\HandoverPassport\Support\Str;
 use Estasoft\HandoverPassport\Support\TempFiles;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,18 +21,32 @@ defined( 'ABSPATH' ) || exit;
  */
 final class CsvRenderer implements Renderer {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function key(): string {
 		return 'csv';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function extension(): string {
 		return 'zip';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function mime(): string {
 		return 'application/zip';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws RenderFailed When the file cannot be made.
+	 */
 	public function render( array $content, PackStyle $style, string $hash, string $label ): string {
 		$files = $this->files( $content, $style, $hash, $label );
 		if ( ! class_exists( \ZipArchive::class ) ) {
@@ -108,16 +123,10 @@ final class CsvRenderer implements Renderer {
 			$row[]  = ! empty( $item['sensitive'] ) ? __( 'Yes', 'estasoft-handover-passport' ) : '';
 			$rows[] = $row;
 		}
-		$handle = fopen( 'php://temp', 'r+' );
-		if ( false === $handle ) {
-			throw new RenderFailed( __( 'The file could not be built in memory.', 'estasoft-handover-passport' ) );
-		}
+		$text = '';
 		foreach ( $rows as $row ) {
-			fputcsv( $handle, array_map( array( self::class, 'safe' ), $row ), ',', '"', '', "\r\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fputcsv -- Writes to memory.
+			$text .= Str::csvLine( array_map( array( self::class, 'safe' ), $row ) );
 		}
-		rewind( $handle );
-		$text = (string) stream_get_contents( $handle );
-		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Memory stream.
 		return "\xEF\xBB\xBF" . $text;
 	}
 

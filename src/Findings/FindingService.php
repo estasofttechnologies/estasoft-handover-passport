@@ -47,7 +47,7 @@ final class FindingService {
 	 * Run the rules now.
 	 *
 	 * @param bool $deep Check snapshot hashes again (the daily task and the Run now button).
-	 * @return array{opened: int, updated: int, resolved: int, not_checked: list<string>}
+	 * @return array{opened: int, updated: int, resolved: int, not_checked: array<int, string>}
 	 */
 	public function run( bool $deep = false ): array {
 		$context = ( new ContextFactory( $this->plugin ) )->build( $deep );
@@ -82,7 +82,7 @@ final class FindingService {
 	/**
 	 * Rules that were not checked on the last run, and when it ran.
 	 *
-	 * @return array{ran_at: string, not_checked: list<string>}
+	 * @return array{ran_at: string, not_checked: array<int, string>}
 	 */
 	public function meta(): array {
 		$meta = (array) get_option( self::META_OPTION, array() );
@@ -102,7 +102,7 @@ final class FindingService {
 	 * Findings with their rule, message and link, most urgent first.
 	 *
 	 * @param array<string, mixed> $filter Optional state, severity and rule_id.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function list( array $filter = array() ): array {
 		$rules     = RuleCatalog::all();
@@ -166,7 +166,7 @@ final class FindingService {
 	 * The most urgent open findings.
 	 *
 	 * @param int $limit How many.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function top( int $limit = 5 ): array {
 		return array_slice( $this->list( array( 'state' => FindingRepository::OPEN ) ), 0, max( 1, $limit ) );
@@ -175,7 +175,7 @@ final class FindingService {
 	/**
 	 * Readiness: the rules marked Handover and whether each is clear (PRT-7).
 	 *
-	 * @return array{ready: int, total: int, rules: list<array<string, mixed>>}
+	 * @return array{ready: int, total: int, rules: array<int, array<string, mixed>>}
 	 */
 	public function readiness(): array {
 		$meta     = $this->meta();
@@ -306,7 +306,7 @@ final class FindingService {
 	/**
 	 * Findings that are about a record marked Sensitive, by finding ID.
 	 *
-	 * @param list<array<string, mixed>> $rows Stored findings.
+	 * @param array<int, array<string, mixed>> $rows Stored findings.
 	 * @return array<int, true>
 	 */
 	private function sensitiveSubjects( array $rows ): array {

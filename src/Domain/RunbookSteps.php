@@ -25,7 +25,7 @@ final class RunbookSteps {
 	 *
 	 * @param array<int|string, mixed> $rows  Posted rows with position, text, who, minutes, link, warning, remove, duplicate.
 	 * @param array<string, string>    $roles Valid role keys.
-	 * @return list<array{text: string, who: string, minutes: int, link: string, warning: bool}>
+	 * @return array<int, array{text: string, who: string, minutes: int, link: string, warning: bool}>
 	 */
 	public static function clean( array $rows, array $roles ): array {
 		$staged = array();
@@ -39,8 +39,8 @@ final class RunbookSteps {
 			if ( '' === $text || ! empty( $row['remove'] ) ) {
 				continue;
 			}
-			$who  = sanitize_key( self::scalar( $row['who'] ?? '' ) );
-			$step = array(
+			$who      = sanitize_key( self::scalar( $row['who'] ?? '' ) );
+			$step     = array(
 				'text'    => $text,
 				'who'     => array_key_exists( $who, $roles ) ? $who : '',
 				'minutes' => max( 0, min( 10000, (int) self::scalar( $row['minutes'] ?? 0 ) ) ),
@@ -52,7 +52,10 @@ final class RunbookSteps {
 		}
 		usort(
 			$staged,
-			static fn( array $a, array $b ): int => $a[0] <=> $b[0] ?: $a[1] <=> $b[1]
+			static function ( array $a, array $b ): int {
+				$order = $a[0] <=> $b[0];
+				return 0 !== $order ? $order : $a[1] <=> $b[1];
+			}
 		);
 		$out = array();
 		foreach ( $staged as $item ) {
@@ -67,7 +70,7 @@ final class RunbookSteps {
 	/**
 	 * Total minutes of a list of steps.
 	 *
-	 * @param list<array<string, mixed>> $steps Steps.
+	 * @param array<int, array<string, mixed>> $steps Steps.
 	 */
 	public static function minutes( array $steps ): int {
 		return array_sum( array_map( static fn( array $step ): int => (int) ( $step['minutes'] ?? 0 ), $steps ) );

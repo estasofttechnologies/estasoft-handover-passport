@@ -16,14 +16,23 @@ defined( 'ABSPATH' ) || exit;
  */
 class ScanRepository extends Repository {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'scans';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function jsonColumns(): array {
 		return array( 'facts', 'differences' );
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'trigger_kind', 'status', 'started_at', 'finished_at', 'facts', 'differences', 'error_code' );
 	}

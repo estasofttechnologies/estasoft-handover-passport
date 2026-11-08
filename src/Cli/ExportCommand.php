@@ -74,7 +74,7 @@ final class ExportCommand {
 	 *     wp estasoft-passport export full --format=json --file=/secure/full.json --include-sensitive --user=admin
 	 *     wp estasoft-passport export --snapshot=3 --format=html --file=/tmp/snapshot-3.html
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function __invoke( $args, $assoc_args ): void {
@@ -167,7 +167,7 @@ final class ExportCommand {
 		if ( false === file_put_contents( $file, $result->bytes, LOCK_EX ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Command-line tool writing to the path the operator named.
 			\WP_CLI::error( 'The file could not be written.' );
 		}
-		chmod( $file, 0600 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.chmod_chmod -- Owner-only, so other accounts on the server cannot read a pack.
+		chmod( $file, 0600 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Owner-only, so other accounts on the server cannot read a pack.
 		$real = realpath( $file );
 		$root = realpath( ABSPATH );
 		if ( false !== $real && false !== $root && 0 === strpos( $real, rtrim( $root, '/\\' ) . DIRECTORY_SEPARATOR ) ) {

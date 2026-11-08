@@ -41,7 +41,7 @@ final class SafetyRules extends Base {
 	/**
 	 * The rules.
 	 *
-	 * @return list<Rule>
+	 * @return array<int, Rule>
 	 */
 	public static function all(): array {
 		return array(
@@ -251,7 +251,7 @@ final class SafetyRules extends Base {
 				static function ( Context $c ): array {
 					$out = array();
 					foreach ( $c->runbooks as $runbook ) {
-						$interval = (int) ( $runbook['review_days'] ?: ( $c->review_days['runbooks'] ?? 180 ) );
+						$interval = (int) ( ! empty( $runbook['review_days'] ) ? $runbook['review_days'] : ( $c->review_days['runbooks'] ?? 180 ) );
 						$state    = Freshness::state( $runbook['last_reviewed'] ? (string) $runbook['last_reviewed'] : null, (string) $runbook['created_at'], $interval, $c->due_days, $c->now );
 						if ( Freshness::STALE === $state ) {
 							$out[] = Candidate::row( 'runbook', (int) $runbook['id'], Level::WORTH, array( 'name' => (string) $runbook['title'], 'days' => $interval ) );

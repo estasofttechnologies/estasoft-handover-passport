@@ -48,7 +48,7 @@ class ScanService {
 	 * pressing again does nothing new (SEC-9). Scheduled scans are not limited.
 	 *
 	 * @param string $trigger "manual", "cli" or "rest".
-	 * @return array{status: string, scan_id: int, changes: int, found: int, gaps: list<string>, baseline: bool, wait?: int}
+	 * @return array{status: string, scan_id: int, changes: int, found: int, gaps: array<int, string>, baseline: bool, wait?: int}
 	 */
 	public function runOnDemand( string $trigger ): array {
 		if ( ! CheckLimiter::take( 'scan', 'site' ) ) {
@@ -61,7 +61,7 @@ class ScanService {
 	 * Run a scan.
 	 *
 	 * @param string $trigger "scheduled", "manual", "cli", "rest", "event" or "install".
-	 * @return array{status: string, scan_id: int, changes: int, found: int, gaps: list<string>, baseline: bool}
+	 * @return array{status: string, scan_id: int, changes: int, found: int, gaps: array<int, string>, baseline: bool}
 	 */
 	public function run( string $trigger = 'manual' ): array {
 		// A scan never runs while a visitor's page is being built (SCN-6).
@@ -119,11 +119,11 @@ class ScanService {
 			do_action( 'estasoft_hp_scan_completed', $scan_id, self::redact( $facts ), $changes );
 
 			return array(
-				'status'  => 'done',
-				'scan_id' => $scan_id,
-				'changes' => $changes,
-				'found'   => count( $diffs ),
-				'gaps'    => array_keys( (array) ( $facts['gaps'] ?? array() ) ),
+				'status'   => 'done',
+				'scan_id'  => $scan_id,
+				'changes'  => $changes,
+				'found'    => count( $diffs ),
+				'gaps'     => array_keys( (array) ( $facts['gaps'] ?? array() ) ),
 				'baseline' => null === $previous,
 			);
 		} catch ( \Throwable $e ) {
@@ -184,8 +184,8 @@ class ScanService {
 	/**
 	 * Write the differences, skipping those a live capture already logged since the last scan.
 	 *
-	 * @param list<array<string, mixed>> $diffs Differences.
-	 * @param string                     $since Start of the last scan, UTC.
+	 * @param array<int, array<string, mixed>> $diffs Differences.
+	 * @param string                           $since Start of the last scan, UTC.
 	 * @return int Number written.
 	 */
 	private function logDifferences( array $diffs, string $since ): int {

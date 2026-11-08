@@ -37,7 +37,7 @@ final class PeopleRules extends Base {
 	/**
 	 * Kinds that carry ownership fields.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private static function owned(): array {
 		return array( Kinds::LICENCE, Kinds::DOMAIN, Kinds::HOST, Kinds::LAYER, Kinds::SERVICE, Kinds::BACKUP, Kinds::ASSET );
@@ -46,7 +46,7 @@ final class PeopleRules extends Base {
 	/**
 	 * The rules.
 	 *
-	 * @return list<Rule>
+	 * @return array<int, Rule>
 	 */
 	public static function all(): array {
 		return array(

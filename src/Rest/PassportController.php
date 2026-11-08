@@ -77,7 +77,7 @@ final class PassportController extends BaseController {
 		}
 		return new WP_REST_Response(
 			array(
-				'generated_at'       => gmdate( 'Y-m-d\TH:i:s\Z', strtotime( Clock::sql() . ' UTC' ) ?: time() ),
+				'generated_at'       => gmdate( 'Y-m-d\TH:i:s\Z', Clock::now()->getTimestamp() ),
 				'findings'           => (object) $counts['findings'],
 				'readiness'          => $counts['readiness'],
 				'records'            => array_merge( $counts['records'], array( 'by_kind' => (object) $counts['records']['by_kind'] ) ),

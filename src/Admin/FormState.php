@@ -25,9 +25,9 @@ final class FormState {
 	/**
 	 * Store the input and errors.
 	 *
-	 * @param SecretGuard          $guard  Secret guard.
-	 * @param string               $scope  What the form was for, for example "item:licence:0".
-	 * @param array<string, mixed> $input  Raw input.
+	 * @param SecretGuard           $guard  Secret guard.
+	 * @param string                $scope  What the form was for, for example "item:licence:0".
+	 * @param array<string, mixed>  $input  Raw input.
 	 * @param array<string, string> $errors Error message by field key.
 	 */
 	public static function put( SecretGuard $guard, string $scope, array $input, array $errors ): void {

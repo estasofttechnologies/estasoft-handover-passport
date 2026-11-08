@@ -99,9 +99,9 @@ class ChangeLog {
 	 * Entries as a person may see them: an entry about a Sensitive record keeps its time, kind and author but loses the
 	 * record's name, its values and its note, unless the viewer may see Sensitive records (AS-11).
 	 *
-	 * @param list<array<string, mixed>> $rows     Entries.
-	 * @param bool                       $can_view Whether the viewer holds the view-sensitive capability.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, array<string, mixed>> $rows     Entries.
+	 * @param bool                             $can_view Whether the viewer holds the view-sensitive capability.
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function forViewer( array $rows, bool $can_view ): array {
 		if ( $can_view ) {

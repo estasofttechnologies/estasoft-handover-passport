@@ -13,6 +13,7 @@ use Estasoft\HandoverPassport\Domain\LeadTimes;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Support\Dates;
+use Estasoft\HandoverPassport\Support\Str;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,8 +22,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class SettingsScreen extends Screen {
 
-	public const SLUG   = 'estasoft-passport-settings';
-	public const ACTION = 'estasoft_hp_save_settings';
+	public const SLUG        = 'estasoft-passport-settings';
+	public const ACTION      = 'estasoft_hp_save_settings';
 	public const MAIL_ACTION = 'estasoft_hp_test_mail';
 
 	/**
@@ -267,12 +268,14 @@ final class SettingsScreen extends Screen {
 			echo '<tr><th scope="row">' . esc_html( translate_user_role( $name ) ) . '</th>';
 			foreach ( array_keys( $caps ) as $cap ) {
 				$on = isset( $grants[ $slug ] ) && in_array( $cap, (array) $grants[ $slug ], true );
-				echo '<td><label><span class="screen-reader-text">' . esc_html( sprintf(
+				echo '<td><label><span class="screen-reader-text">' . esc_html(
+					sprintf(
 					/* translators: 1: role name, 2: capability name. */
-					__( '%1$s: %2$s', 'estasoft-handover-passport' ),
-					translate_user_role( $name ),
-					$this->capName( $cap )
-				) ) . '</span><input type="checkbox" name="grants[' . esc_attr( (string) $slug ) . '][]" value="' . esc_attr( $cap ) . '"' . checked( $on, true, false ) . '></label></td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- checked() returns a fixed attribute.
+						__( '%1$s: %2$s', 'estasoft-handover-passport' ),
+						translate_user_role( $name ),
+						$this->capName( $cap )
+					)
+				) . '</span><input type="checkbox" name="grants[' . esc_attr( (string) $slug ) . '][]" value="' . esc_attr( $cap ) . '"' . checked( $on, true, false ) . '></label></td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- checked() returns a fixed attribute.
 			}
 			echo '</tr>';
 		}
@@ -358,9 +361,9 @@ final class SettingsScreen extends Screen {
 			$settings->update( array( 'thresholds' => $thresholds, 'recovery' => $recovery ) );
 			$changed[] = __( 'finding thresholds', 'estasoft-handover-passport' );
 		} elseif ( 'reminders' === $tab ) {
-			$days = LeadTimes::parse( Request::post( 'reminder_days' ) );
+			$days   = LeadTimes::parse( Request::post( 'reminder_days' ) );
 			$emails = array();
-			foreach ( preg_split( '/\R/', Request::postedTextarea( 'reminder_emails' ) ) ?: array() as $line ) {
+			foreach ( Str::split( '/\R/', Request::postedTextarea( 'reminder_emails' ) ) as $line ) {
 				$address = sanitize_email( $line );
 				if ( '' !== $address && is_email( $address ) ) {
 					$emails[ strtolower( $address ) ] = $address;
@@ -427,7 +430,7 @@ final class SettingsScreen extends Screen {
 			$this->plugin->findings()->queue();
 		}
 		$this->plugin->changeLog()->add( 'settings_changed', 'settings', 0, __( 'Settings', 'estasoft-handover-passport' ), array(), array(), implode( ', ', $changed ), 'wordpress' );
-		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => $tab ?: 'general', 'estasoft_hp_notice' => 'saved' ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => '' !== $tab ? $tab : 'general', 'estasoft_hp_notice' => 'saved' ), admin_url( 'admin.php' ) ) );
 		exit;
 	}
 }

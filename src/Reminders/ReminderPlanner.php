@@ -24,13 +24,13 @@ final class ReminderPlanner {
 	/**
 	 * Reminders to send now.
 	 *
-	 * Each record is array{id: int, due: string, leads: list<int>, skip: bool}. The log lookup gets the record ID, the
+	 * Each record is array{id: int, due: string, leads: array<int, int>, skip: bool}. The log lookup gets the record ID, the
 	 * cycle key and the lead time, and returns the log row (with status, attempts and sent_at) or null.
 	 *
-	 * @param list<array<string, mixed>>                                         $records Records with a date.
-	 * @param string                                                             $today   Today, site time, Y-m-d.
-	 * @param callable(int, string, int): (array<string, mixed>|null)            $lookup  Finds a log row.
-	 * @return list<array{id: int, lead: int, cycle: string, days_left: int, attempt: int, log_id: int}>
+	 * @param array<int, array<string, mixed>>                        $records Records with a date.
+	 * @param string                                                  $today   Today, site time, Y-m-d.
+	 * @param callable(int, string, int): (array<string, mixed>|null) $lookup  Finds a log row.
+	 * @return array<int, array{id: int, lead: int, cycle: string, days_left: int, attempt: int, log_id: int}>
 	 */
 	public static function plan( array $records, string $today, callable $lookup ): array {
 		$out = array();

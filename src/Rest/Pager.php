@@ -22,14 +22,14 @@ final class Pager {
 	/**
 	 * Apply search, order and paging.
 	 *
-	 * @param list<array<string, mixed>>                       $rows       Rows, already limited to what the caller may see.
+	 * @param array<int, array<string, mixed>>                                                     $rows       Rows, already limited to what the caller may see.
 	 * @param array{search?: string, orderby?: string, order?: string, page?: int, per_page?: int} $args Request values.
-	 * @param callable(array<string, mixed>): string           $haystack   Text a search looks in.
-	 * @param array<string, callable(array<string, mixed>): (int|float|string)> $sorters Sort key by orderby name.
-	 * @param string                                           $default    Orderby used when the request names none or an unknown one.
-	 * @return array{items: list<array<string, mixed>>, total: int, pages: int, page: int, per_page: int}
+	 * @param callable                                                                             $haystack   Takes a row and returns the text a search looks in.
+	 * @param array<string, callable(array<string, mixed>): (int|float|string)>                    $sorters Sort key by orderby name.
+	 * @param string                                                                               $fallback    Orderby used when the request names none or an unknown one.
+	 * @return array{items: array<int, array<string, mixed>>, total: int, pages: int, page: int, per_page: int}
 	 */
-	public static function apply( array $rows, array $args, callable $haystack, array $sorters, string $default ): array {
+	public static function apply( array $rows, array $args, callable $haystack, array $sorters, string $fallback ): array {
 		$search = trim( (string) ( $args['search'] ?? '' ) );
 		if ( '' !== $search ) {
 			$needle = mb_strtolower( $search );
@@ -41,9 +41,9 @@ final class Pager {
 			);
 		}
 
-		$orderby = (string) ( $args['orderby'] ?? $default );
+		$orderby = (string) ( $args['orderby'] ?? $fallback );
 		if ( ! isset( $sorters[ $orderby ] ) ) {
-			$orderby = $default;
+			$orderby = $fallback;
 		}
 		$sign = 'desc' === strtolower( (string) ( $args['order'] ?? 'asc' ) ) ? -1 : 1;
 		$sort = $sorters[ $orderby ];

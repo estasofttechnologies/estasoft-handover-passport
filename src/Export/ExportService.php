@@ -179,7 +179,7 @@ final class ExportService {
 	 * @param string $profile Short key for what the file holds, for example change_log.
 	 * @param string $format  Format key.
 	 * @param string $bytes   The file.
-	 * @param int     $user_id Person who made it.
+	 * @param int    $user_id Person who made it.
 	 */
 	public function logFile( string $profile, string $format, string $bytes, int $user_id ): void {
 		$this->log->insert(
@@ -200,7 +200,7 @@ final class ExportService {
 	 * Export log entries of the last months, newest first (EXP-9).
 	 *
 	 * @param int $user_id Only this person's entries, or 0 for everyone's.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function recent( int $user_id = 0 ): array {
 		$months = max( 1, (int) $this->plugin->settings()->get( 'retention.exports_months', 12 ) );

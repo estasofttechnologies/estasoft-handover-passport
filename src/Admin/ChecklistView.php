@@ -86,9 +86,9 @@ final class ChecklistView {
 	/**
 	 * One table of items.
 	 *
-	 * @param list<array<string, mixed>> $rows     Items.
-	 * @param string                     $base     Screen URL.
-	 * @param bool                       $can_edit Whether the person may change items.
+	 * @param array<int, array<string, mixed>> $rows     Items.
+	 * @param string                           $base     Screen URL.
+	 * @param bool                             $can_edit Whether the person may change items.
 	 */
 	private function table( array $rows, string $base, bool $can_edit ): void {
 		$labels = Kinds::checklistStates();
@@ -193,7 +193,8 @@ final class ChecklistView {
 					$id     = absint( Request::post( 'id' ) );
 					$record = $this->plugin->records()->get( $id, false );
 					if ( null === $record || Kinds::CHECKLIST !== (string) $record['kind'] ) {
-						throw new ValidationError( __( 'Item', 'estasoft-handover-passport' ), __( 'That item is not on the checklist.', 'estasoft-handover-passport' ) );
+						$notice = 'checklist_invalid';
+						break;
 					}
 					$this->plugin->records()->delete( $id );
 					$notice = 'checklist_deleted';
@@ -229,8 +230,8 @@ final class ChecklistView {
 	/**
 	 * Hidden fields of a form.
 	 *
-	 * @param string               $op    Operation.
-	 * @param string               $base  Return URL.
+	 * @param string                $op    Operation.
+	 * @param string                $base  Return URL.
 	 * @param array<string, string> $extra More hidden fields.
 	 */
 	private function hidden( string $op, string $base, array $extra = array() ): void {

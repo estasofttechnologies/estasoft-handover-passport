@@ -69,7 +69,7 @@ class ReminderService {
 	 * Send the reminders that are due today. Safe to run twice: a second run sends nothing (RMD-4).
 	 *
 	 * @param bool $dry_run Only report what would go out.
-	 * @return array{state: string, planned: list<array<string, mixed>>, sent: int, failed: int, no_recipients: int}
+	 * @return array{state: string, planned: array<int, array<string, mixed>>, sent: int, failed: int, no_recipients: int}
 	 *         state is "ok", "disabled" or "paused" (the copy guard).
 	 */
 	public function run( bool $dry_run = false ): array {
@@ -187,7 +187,7 @@ class ReminderService {
 			return $report;
 		}
 
-		$message = ReminderMessage::digest(
+		$message   = ReminderMessage::digest(
 			array(
 				'site'         => $this->siteName(),
 				'site_url'     => home_url(),
@@ -261,7 +261,7 @@ class ReminderService {
 	/**
 	 * The lead times from Settings, after the developer filter.
 	 *
-	 * @return list<int>
+	 * @return array<int, int>
 	 */
 	public function leadTimes(): array {
 		$days = LeadTimes::clean( $this->plugin->settings()->get( 'reminder_days', LeadTimes::DEFAULT ) );
@@ -272,7 +272,7 @@ class ReminderService {
 	 * Who gets the reminder for one record: the Passport's list, the account holder and the payer (RMD-2).
 	 *
 	 * @param int $item_id Record ID.
-	 * @return list<string> Valid, unique addresses.
+	 * @return array<int, string> Valid, unique addresses.
 	 */
 	public function recipients( int $item_id ): array {
 		$found  = $this->listedAddresses();
@@ -295,7 +295,7 @@ class ReminderService {
 	/**
 	 * Who gets the weekly summary: the Passport's list, or the fallback.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public function summaryRecipients(): array {
 		$found = $this->cleanAddresses( (array) apply_filters( 'estasoft_hp_reminder_recipients', $this->listedAddresses(), array() ) );
@@ -306,7 +306,7 @@ class ReminderService {
 	 * Records with a date, as the planner reads them.
 	 *
 	 * @param string $today Today, Y-m-d.
-	 * @return list<array{id: int, due: string, leads: list<int>, skip: bool}>
+	 * @return array<int, array{id: int, due: string, leads: array<int, int>, skip: bool}>
 	 */
 	private function candidates( string $today ): array {
 		$records = array();
@@ -337,7 +337,7 @@ class ReminderService {
 	 *
 	 * @param array<string, mixed> $row        Stored record.
 	 * @param int                  $days_left  Days to the date.
-	 * @param list<string>         $recipients Addresses.
+	 * @param array<int, string>   $recipients Addresses.
 	 * @return int How many messages were accepted for delivery.
 	 */
 	private function deliver( array $row, int $days_left, array $recipients ): int {
@@ -360,9 +360,9 @@ class ReminderService {
 	/**
 	 * Send the same plain-text message to each address on its own.
 	 *
-	 * @param list<string> $recipients Addresses.
-	 * @param string       $subject    Subject.
-	 * @param string       $body       Body.
+	 * @param array<int, string> $recipients Addresses.
+	 * @param string             $subject    Subject.
+	 * @param string             $body       Body.
 	 * @return int Messages accepted for delivery.
 	 */
 	private function mailEach( array $recipients, string $subject, string $body ): int {
@@ -411,7 +411,7 @@ class ReminderService {
 	/**
 	 * Addresses on the Passport's reminder list.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function listedAddresses(): array {
 		return array_values( array_map( 'strval', array_filter( (array) $this->plugin->settings()->get( 'reminder_emails', array() ), 'is_scalar' ) ) );
@@ -421,7 +421,7 @@ class ReminderService {
 	 * Valid, unique addresses, at most MAX_RECIPIENTS.
 	 *
 	 * @param array<mixed> $addresses Candidates.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function cleanAddresses( array $addresses ): array {
 		$out = array();
@@ -437,7 +437,7 @@ class ReminderService {
 	/**
 	 * With nobody listed, reminders go to the site's administration address, so a new install is not silent.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function fallback(): array {
 		return $this->cleanAddresses( array( get_option( 'admin_email', '' ) ) );

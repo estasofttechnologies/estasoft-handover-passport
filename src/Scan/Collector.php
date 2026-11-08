@@ -37,7 +37,7 @@ class Collector {
 	public function collect( int $deadline ): array {
 		$this->gaps = array();
 
-		$facts = array(
+		$facts              = array(
 			'schema'     => 1,
 			'taken_at'   => gmdate( 'Y-m-d H:i:s' ),
 			'core'       => $this->guard( 'core', fn(): array => $this->core() ),
@@ -135,20 +135,20 @@ class Collector {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		$update   = get_site_transient( 'update_plugins' );
-		$response = is_object( $update ) && isset( $update->response ) ? (array) $update->response : array();
+		$update    = get_site_transient( 'update_plugins' );
+		$response  = is_object( $update ) && isset( $update->response ) ? (array) $update->response : array();
 		$no_update = is_object( $update ) && isset( $update->no_update ) ? (array) $update->no_update : array();
-		$checked  = is_object( $update ) && isset( $update->checked ) ? (array) $update->checked : array();
-		$active   = (array) get_option( 'active_plugins', array() );
-		$network  = is_multisite() ? array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) ) : array();
-		$seen     = $this->updateSeen();
+		$checked   = is_object( $update ) && isset( $update->checked ) ? (array) $update->checked : array();
+		$active    = (array) get_option( 'active_plugins', array() );
+		$network   = is_multisite() ? array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) ) : array();
+		$seen      = $this->updateSeen();
 
 		$out = array();
 		foreach ( get_plugins() as $file => $data ) {
-			$slug   = false === strpos( $file, '/' ) ? basename( $file, '.php' ) : dirname( $file );
-			$new    = isset( $response[ $file ] ) && isset( $response[ $file ]->new_version ) ? (string) $response[ $file ]->new_version : '';
-			$known  = isset( $response[ $file ] ) || isset( $no_update[ $file ] );
-			$wporg  = ( $known && $checked ) ? $this->isWpOrgEntry( $response[ $file ] ?? $no_update[ $file ] ) : null;
+			$slug         = false === strpos( $file, '/' ) ? basename( $file, '.php' ) : dirname( $file );
+			$new          = isset( $response[ $file ] ) && isset( $response[ $file ]->new_version ) ? (string) $response[ $file ]->new_version : '';
+			$known        = isset( $response[ $file ] ) || isset( $no_update[ $file ] );
+			$wporg        = ( $known && $checked ) ? $this->isWpOrgEntry( $response[ $file ] ?? $no_update[ $file ] ) : null;
 			$out[ $slug ] = array(
 				'file'         => $file,
 				'name'         => (string) $data['Name'],
@@ -205,23 +205,24 @@ class Collector {
 	 * @return array<string, array<string, mixed>>
 	 */
 	private function themes(): array {
-		$update   = get_site_transient( 'update_themes' );
-		$response = is_object( $update ) && isset( $update->response ) ? (array) $update->response : array();
+		$update    = get_site_transient( 'update_themes' );
+		$response  = is_object( $update ) && isset( $update->response ) ? (array) $update->response : array();
 		$no_update = is_object( $update ) && isset( $update->no_update ) ? (array) $update->no_update : array();
-		$checked  = is_object( $update ) && isset( $update->checked ) ? (array) $update->checked : array();
-		$active   = (string) get_stylesheet();
-		$seen     = $this->updateSeen();
+		$checked   = is_object( $update ) && isset( $update->checked ) ? (array) $update->checked : array();
+		$active    = (string) get_stylesheet();
+		$template  = (string) get_template();
+		$seen      = $this->updateSeen();
 
 		$out = array();
 		foreach ( wp_get_themes() as $slug => $theme ) {
-			$new   = isset( $response[ $slug ]['new_version'] ) ? (string) $response[ $slug ]['new_version'] : '';
-			$known = isset( $response[ $slug ] ) || isset( $no_update[ $slug ] );
+			$new                   = isset( $response[ $slug ]['new_version'] ) ? (string) $response[ $slug ]['new_version'] : '';
+			$known                 = isset( $response[ $slug ] ) || isset( $no_update[ $slug ] );
 			$out[ (string) $slug ] = array(
 				'name'         => (string) $theme->get( 'Name' ),
 				'version'      => (string) $theme->get( 'Version' ),
 				'author'       => wp_strip_all_tags( (string) $theme->get( 'Author' ) ),
 				'author_uri'   => (string) $theme->get( 'AuthorURI' ),
-				'active'       => (string) $slug === $active || (string) $slug === (string) get_template(),
+				'active'       => (string) $slug === $active || (string) $slug === $template,
 				'parent'       => (string) $theme->get_template() !== (string) $slug ? (string) $theme->get_template() : '',
 				'update'       => $new,
 				'update_since' => '' !== $new ? $this->markUpdate( $seen, 'theme:' . $slug . ':' . $new ) : '',
@@ -236,8 +237,8 @@ class Collector {
 	/**
 	 * Recurring scheduled tasks, grouped by a guess at the owner (SCN-3, Verify).
 	 *
-	 * @param list<string> $plugin_slugs Slugs of installed plugins.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, string> $plugin_slugs Slugs of installed plugins.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function cron( array $plugin_slugs ): array {
 		$cron = _get_cron_array();
@@ -275,8 +276,8 @@ class Collector {
 	/**
 	 * Guess the plugin that owns a hook from its name.
 	 *
-	 * @param string       $hook         Hook name.
-	 * @param list<string> $plugin_slugs Installed plugin slugs.
+	 * @param string             $hook         Hook name.
+	 * @param array<int, string> $plugin_slugs Installed plugin slugs.
 	 */
 	private function cronOwner( string $hook, array $plugin_slugs ): string {
 		$core = array( 'wp_', 'delete_expired_transients', 'recovery_mode_', 'wp_scheduled_', 'publish_future_post', 'importer_scheduled_cleanup', 'update_network_counts' );
@@ -288,7 +289,7 @@ class Collector {
 		$normal = str_replace( '-', '_', strtolower( $hook ) );
 		foreach ( $plugin_slugs as $slug ) {
 			$token = str_replace( '-', '_', strtolower( $slug ) );
-			if ( strlen( $token ) >= 4 && ( str_starts_with( $normal, $token ) || str_starts_with( $normal, explode( '_', $token )[0] . '_' ) && strlen( explode( '_', $token )[0] ) >= 5 ) ) {
+			if ( strlen( $token ) >= 4 && ( str_starts_with( $normal, $token ) || ( str_starts_with( $normal, explode( '_', $token )[0] . '_' ) && strlen( explode( '_', $token )[0] ) >= 5 ) ) ) {
 				return $slug;
 			}
 		}
@@ -358,7 +359,8 @@ class Collector {
 				if ( $file->isFile() ) {
 					$total += (int) $file->getSize();
 				}
-				if ( 0 === ( ++$count % 500 ) && time() >= $deadline ) {
+				++$count;
+				if ( 0 === $count % 500 && time() >= $deadline ) {
 					$partial = true;
 					break;
 				}

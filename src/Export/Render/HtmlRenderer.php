@@ -37,22 +37,34 @@ final class HtmlRenderer implements Renderer {
 	 */
 	public function __construct( private string $mode = self::MODE_FILE ) {}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function key(): string {
 		return 'html';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function extension(): string {
 		return 'html';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function mime(): string {
 		return 'text/html; charset=utf-8';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function render( array $content, PackStyle $style, string $hash, string $label ): string {
-		$title    = Layout::title( $content, $style );
-		$one_page = self::isOnePage( $content );
-		$body     = implode( '', $this->parts( $content, $style, $hash, $label ) );
+		$title        = Layout::title( $content, $style );
+		$one_page     = self::isOnePage( $content );
+		$body         = implode( '', $this->parts( $content, $style, $hash, $label ) );
 		$print_button = '';
 		if ( self::MODE_PRINT === $this->mode ) {
 			$print_button = '<p class="noprint muted">' . $this->esc( __( 'Use your browser\'s Print command and choose Save as PDF to keep a copy.', 'estasoft-handover-passport' ) ) . '</p>';
@@ -72,7 +84,7 @@ final class HtmlRenderer implements Renderer {
 	 * @param PackStyle            $style   Style.
 	 * @param string               $hash    SHA-256 of the canonical content.
 	 * @param string               $label   Snapshot name or pack name.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public function parts( array $content, PackStyle $style, string $hash, string $label ): array {
 		$this->one_page = self::isOnePage( $content );
@@ -150,10 +162,10 @@ final class HtmlRenderer implements Renderer {
 		$out .= '<h1' . $this->dir( $title, $style ) . '>' . $this->esc( $title ) . '</h1>';
 		$out .= '<p class="sub">' . $this->esc( (string) ( $content['profile']['label'] ?? '' ) ) . ' · ' . $this->esc( __( 'Handover Passport', 'estasoft-handover-passport' ) ) . '</p>';
 		$rows = array(
-			__( 'Site', 'estasoft-handover-passport' )         => (string) ( $site['name'] ?? '' ),
-			__( 'Address', 'estasoft-handover-passport' )      => (string) ( $site['url'] ?? '' ),
-			__( 'Client', 'estasoft-handover-passport' )       => (string) ( $site['client'] ?? '' ),
-			__( 'Made on', 'estasoft-handover-passport' )      => '' === (string) ( $content['generated_at'] ?? '' ) ? '' : Dates::display( (string) $content['generated_at'], true ) . ' UTC',
+			__( 'Site', 'estasoft-handover-passport' )    => (string) ( $site['name'] ?? '' ),
+			__( 'Address', 'estasoft-handover-passport' ) => (string) ( $site['url'] ?? '' ),
+			__( 'Client', 'estasoft-handover-passport' )  => (string) ( $site['client'] ?? '' ),
+			__( 'Made on', 'estasoft-handover-passport' ) => '' === (string) ( $content['generated_at'] ?? '' ) ? '' : Dates::display( (string) $content['generated_at'], true ) . ' UTC',
 		);
 		$out .= '<table class="facts">';
 		foreach ( $rows as $name => $value ) {
@@ -259,9 +271,9 @@ final class HtmlRenderer implements Renderer {
 	/**
 	 * Items as a table, the title first.
 	 *
-	 * @param list<array<string, mixed>> $columns Columns.
-	 * @param list<array<string, mixed>> $items   Items.
-	 * @param PackStyle                  $style   Style.
+	 * @param array<int, array<string, mixed>> $columns Columns.
+	 * @param array<int, array<string, mixed>> $items   Items.
+	 * @param PackStyle                        $style   Style.
 	 */
 	private function table( array $columns, array $items, PackStyle $style ): string {
 		$out = '<table class="grid"><thead><tr><th>' . $this->esc( __( 'Name', 'estasoft-handover-passport' ) ) . '</th>';
@@ -283,9 +295,9 @@ final class HtmlRenderer implements Renderer {
 	/**
 	 * One item as a card of labels and values.
 	 *
-	 * @param list<array<string, mixed>> $columns Columns.
-	 * @param array<string, mixed>       $item    Item.
-	 * @param PackStyle                  $style   Style.
+	 * @param array<int, array<string, mixed>> $columns Columns.
+	 * @param array<string, mixed>             $item    Item.
+	 * @param PackStyle                        $style   Style.
 	 */
 	private function card( array $columns, array $item, PackStyle $style ): string {
 		$out = '<div class="card"><h3' . $this->dir( (string) $item['title'], $style ) . '>' . $this->esc( (string) $item['title'] ) . $this->tag( $item ) . '</h3><table class="kv">';

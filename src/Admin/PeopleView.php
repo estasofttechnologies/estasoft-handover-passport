@@ -186,8 +186,8 @@ final class PeopleView {
 		}
 		echo '</fieldset>';
 
-		$roles  = PeopleService::roles();
-		$mine   = (array) ( $input['f']['roles'] ?? $input['roles'] ?? ( null === $person ? array() : $person['roles'] ) );
+		$roles = PeopleService::roles();
+		$mine  = (array) ( $input['f']['roles'] ?? $input['roles'] ?? ( null === $person ? array() : $person['roles'] ) );
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Roles', 'estasoft-handover-passport' ) . '</legend>';
 		foreach ( $roles as $key => $label ) {
 			echo '<div class="estasoft-hp-field estasoft-hp-field--check"><label><input type="checkbox" name="f[roles][]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $mine, true ), true, false ) . '> ' . esc_html( $label ) . '</label></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- checked() returns a fixed attribute.

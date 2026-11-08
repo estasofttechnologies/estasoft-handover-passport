@@ -19,18 +19,32 @@ defined( 'ABSPATH' ) || exit;
  */
 final class JsonRenderer implements Renderer {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function key(): string {
 		return 'json';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function extension(): string {
 		return 'json';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function mime(): string {
 		return 'application/json; charset=utf-8';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws RenderFailed When the file cannot be made.
+	 */
 	public function render( array $content, PackStyle $style, string $hash, string $label ): string {
 		$sorted = Json::decode( Json::canonical( $content ) );
 		$text   = json_encode( $sorted, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- A pretty file for people; wp_json_encode cannot keep the exact flags.

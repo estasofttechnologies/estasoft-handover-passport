@@ -19,13 +19,13 @@ final class ExportResult {
 	/**
 	 * Constructor.
 	 *
-	 * @param string       $bytes    File content.
-	 * @param string       $filename File name for a download.
-	 * @param string       $mime     Media type.
-	 * @param string       $format   Format key, such as "pdf" or "print".
-	 * @param string       $profile  Profile key.
-	 * @param int          $snapshot Snapshot ID, or 0 for the live Passport.
-	 * @param list<string> $warnings Things the person should know about this file.
+	 * @param string             $bytes    File content.
+	 * @param string             $filename File name for a download.
+	 * @param string             $mime     Media type.
+	 * @param string             $format   Format key, such as "pdf" or "print".
+	 * @param string             $profile  Profile key.
+	 * @param int                $snapshot Snapshot ID, or 0 for the live Passport.
+	 * @param array<int, string> $warnings Things the person should know about this file.
 	 */
 	public function __construct(
 		public readonly string $bytes,

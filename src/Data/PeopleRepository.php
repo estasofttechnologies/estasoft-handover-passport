@@ -18,14 +18,23 @@ defined( 'ABSPATH' ) || exit;
  */
 class PeopleRepository extends Repository {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'people';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function jsonColumns(): array {
 		return array( 'share_flags' );
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array(
 			'name',
@@ -53,7 +62,7 @@ class PeopleRepository extends Repository {
 	/**
 	 * Live people sorted by name.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function allLive(): array {
 		return $this->query( array( 'deleted_at' => null ), 'name', 'ASC' );
@@ -63,7 +72,7 @@ class PeopleRepository extends Repository {
 	 * Live people by email, case-insensitive (privacy tools, ACC-2).
 	 *
 	 * @param string $email Email address.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function byEmail( string $email ): array {
 		return $this->query( array(), 'id', 'ASC', 0, 0, 'LOWER(email) = %s', array( strtolower( $email ) ) );
@@ -91,7 +100,7 @@ class PeopleRepository extends Repository {
 	 * Remove people deleted before a moment.
 	 *
 	 * @param string $before UTC date-time.
-	 * @return list<int> IDs removed.
+	 * @return array<int, int> IDs removed.
 	 */
 	public function purgeDeletedBefore( string $before ): array {
 		$ids = array();

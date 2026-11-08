@@ -26,7 +26,7 @@ final class PrivacyPolicy {
 	/**
 	 * What is stored, in plain words (PRV-1).
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function stored(): array {
 		return array(

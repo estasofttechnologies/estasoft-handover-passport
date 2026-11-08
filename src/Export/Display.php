@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Export;
 
+use Estasoft\HandoverPassport\Support\Str;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -44,7 +46,7 @@ final class Display {
 	 *
 	 * @param array<string, mixed> $def   Field definition.
 	 * @param mixed                $value Value.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public static function lines( array $def, $value ): array {
 		if ( is_array( $value ) ) {
@@ -57,7 +59,7 @@ final class Display {
 			return $out;
 		}
 		$text = self::text( $def, $value );
-		return '' === trim( $text ) ? array() : array_values( array_filter( array_map( 'trim', preg_split( '/\R/', $text ) ?: array() ), static fn( string $line ): bool => '' !== $line ) );
+		return '' === trim( $text ) ? array() : array_values( array_filter( array_map( 'trim', Str::split( '/\R/', $text ) ), static fn( string $line ): bool => '' !== $line ) );
 	}
 
 	/**

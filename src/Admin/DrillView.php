@@ -120,8 +120,8 @@ final class DrillView {
 
 		$facts = array(
 			__( 'Runbook version', 'estasoft-handover-passport' ) => 'v' . (int) $drill['runbook_version'],
-			__( 'Started', 'estasoft-handover-passport' )         => Dates::display( (string) $log['started_at'], true ) . ' UTC' . ( '' !== (string) $log['started_by'] ? ' · ' . (string) $log['started_by'] : '' ),
-			__( 'Progress', 'estasoft-handover-passport' )        => sprintf( /* translators: 1: number done, 2: total. */ __( '%1$d of %2$d done', 'estasoft-handover-passport' ), $done, count( $all ) ),
+			__( 'Started', 'estasoft-handover-passport' )  => Dates::display( (string) $log['started_at'], true ) . ' UTC' . ( '' !== (string) $log['started_by'] ? ' · ' . (string) $log['started_by'] : '' ),
+			__( 'Progress', 'estasoft-handover-passport' ) => sprintf( /* translators: 1: number done, 2: total. */ __( '%1$d of %2$d done', 'estasoft-handover-passport' ), $done, count( $all ) ),
 		);
 		if ( ! $running ) {
 			$facts[ __( 'Finished', 'estasoft-handover-passport' ) ]   = Dates::display( (string) $log['finished_at'], true ) . ' UTC';
@@ -204,10 +204,10 @@ final class DrillView {
 	/**
 	 * The steps of a drill that is going, each with a button.
 	 *
-	 * @param string                       $section steps or checks.
-	 * @param list<array<string, mixed>>   $rows    Rows.
-	 * @param string                       $key     Which field holds the words.
-	 * @param string                       $heading Heading.
+	 * @param string                           $section steps or checks.
+	 * @param array<int, array<string, mixed>> $rows    Rows.
+	 * @param string                           $key     Which field holds the words.
+	 * @param string                           $heading Heading.
 	 */
 	private function rows( string $section, array $rows, string $key, string $heading ): void {
 		echo '<h3>' . esc_html( $heading ) . '</h3><ol class="estasoft-hp-readsteps estasoft-hp-drillsteps">';
@@ -240,9 +240,9 @@ final class DrillView {
 	/**
 	 * The record of a finished drill, read only.
 	 *
-	 * @param string                     $heading Heading.
-	 * @param list<array<string, mixed>> $rows    Rows.
-	 * @param string                     $key     Which field holds the words.
+	 * @param string                           $heading Heading.
+	 * @param array<int, array<string, mixed>> $rows    Rows.
+	 * @param string                           $key     Which field holds the words.
 	 */
 	private function table( string $heading, array $rows, string $key ): void {
 		echo '<h3>' . esc_html( $heading ) . '</h3>';

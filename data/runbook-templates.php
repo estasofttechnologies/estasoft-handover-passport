@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 return array(
 
-	'restore_site'     => array(
+	'restore_site'       => array(
 		'title'         => __( 'Restore the whole site', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Bring {site_url} back from a backup after data loss, a failed change or a hosting problem.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'The site is down, broken or missing content, and fixing it in place would take longer than restoring.', 'estasoft-handover-passport' ),
@@ -42,7 +42,7 @@ return array(
 		'rollback'      => __( 'If the restore makes things worse, put back the extra copy taken in step 3 and ask the host for help.', 'estasoft-handover-passport' ),
 	),
 
-	'restore_database' => array(
+	'restore_database'   => array(
 		'title'         => __( 'Restore only the database', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Bring back posts, settings or orders from a database backup while keeping current files.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'Content or settings were lost or damaged, and the files and uploads are fine.', 'estasoft-handover-passport' ),
@@ -67,7 +67,7 @@ return array(
 		'rollback'      => __( 'Import the export taken in step 2 to return to the state before the restore.', 'estasoft-handover-passport' ),
 	),
 
-	'restore_files'    => array(
+	'restore_files'      => array(
 		'title'         => __( 'Restore only files', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Bring back plugin, theme or upload files from a backup while keeping the current database.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'Files were deleted, changed or damaged, and the database is fine.', 'estasoft-handover-passport' ),
@@ -92,7 +92,7 @@ return array(
 		'rollback'      => __( 'Put back the folder copied aside in step 2.', 'estasoft-handover-passport' ),
 	),
 
-	'rollback_update'  => array(
+	'rollback_update'    => array(
 		'title'         => __( 'Roll back a failed update', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Return to the previous version of a plugin, theme or WordPress after an update broke the site.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'A site problem started straight after an update.', 'estasoft-handover-passport' ),
@@ -119,7 +119,7 @@ return array(
 		'rollback'      => __( 'If the old version does not help, restore the whole site using the "Restore the whole site" runbook.', 'estasoft-handover-passport' ),
 	),
 
-	'move_host'        => array(
+	'move_host'          => array(
 		'title'         => __( 'Move to a new host (cut-over)', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Move {site_url} from the current host to a new one with as little downtime as possible.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'The site is leaving its current host, by choice or because the host is closing the account.', 'estasoft-handover-passport' ),
@@ -149,7 +149,7 @@ return array(
 		'rollback'      => __( 'Point DNS back to the old host, which was kept running.', 'estasoft-handover-passport' ),
 	),
 
-	'renew_ssl'        => array(
+	'renew_ssl'          => array(
 		'title'         => __( 'Replace or renew an SSL certificate', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Renew the certificate for {site_url} before it expires, or replace it after a problem.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'The certificate is close to expiry, has expired, or browsers show a certificate warning.', 'estasoft-handover-passport' ),
@@ -174,7 +174,7 @@ return array(
 		'rollback'      => __( 'Reinstall the previous certificate if it is still valid.', 'estasoft-handover-passport' ),
 	),
 
-	'hacked_first_hour' => array(
+	'hacked_first_hour'  => array(
 		'title'         => __( 'Recover a hacked site (first hour)', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Limit the damage in the first hour after finding that {site_url} has been compromised.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'The site shows content you did not add, redirects visitors, sends spam, or a security tool reports malware.', 'estasoft-handover-passport' ),
@@ -200,7 +200,7 @@ return array(
 		'rollback'      => __( 'Keep the evidence copy until the host and the site owner agree the case is closed.', 'estasoft-handover-passport' ),
 	),
 
-	'regain_admin'     => array(
+	'regain_admin'       => array(
 		'title'         => __( 'Regain access to a lost admin account', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Get back into the WordPress admin area when the only working sign-in is lost.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'The administrator cannot sign in and the password reset e-mail does not arrive or is not available.', 'estasoft-handover-passport' ),
@@ -224,7 +224,7 @@ return array(
 		'rollback'      => __( 'Remove any temporary administrator you created.', 'estasoft-handover-passport' ),
 	),
 
-	'deploy_staging'   => array(
+	'deploy_staging'     => array(
 		'title'         => __( 'Deploy from staging to production', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Move tested changes from the staging site to {site_url} safely.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'A change has been built and tested on staging and is ready to go live.', 'estasoft-handover-passport' ),
@@ -249,7 +249,7 @@ return array(
 		'rollback'      => __( 'Restore the backup taken in step 1 using the "Restore the whole site" runbook.', 'estasoft-handover-passport' ),
 	),
 
-	'maintenance_mode' => array(
+	'maintenance_mode'   => array(
 		'title'         => __( 'Put the site in maintenance mode', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Show visitors a short notice while work is done on {site_url}.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'Before a restore, a move or any change that could leave the site half working.', 'estasoft-handover-passport' ),
@@ -297,7 +297,7 @@ return array(
 		'rollback'      => __( 'Access can be given back to the previous maintainer from the same accounts.', 'estasoft-handover-passport' ),
 	),
 
-	'contact_tree'     => array(
+	'contact_tree'       => array(
 		'title'         => __( 'Emergency contact tree', 'estasoft-handover-passport' ),
 		'purpose'       => __( 'Say who to call, in what order, when {site_url} has a serious problem and who is not available.', 'estasoft-handover-passport' ),
 		'when_to_use'   => __( 'The site is down or compromised and the first person you try does not answer.', 'estasoft-handover-passport' ),

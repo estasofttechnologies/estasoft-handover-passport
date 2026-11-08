@@ -39,7 +39,7 @@ final class PackCopies {
 		$emergency = Profile::EMERGENCY === $base_key;
 		return array_filter(
 			Profiles::chapters(),
-			static fn( string $key ): bool => $emergency === ( 0 === strpos( $key, 'emergency_' ) ),
+			static fn( string $key ): bool => ( 0 === strpos( $key, 'emergency_' ) ) === $emergency,
 			ARRAY_FILTER_USE_KEY
 		);
 	}
@@ -47,9 +47,9 @@ final class PackCopies {
 	/**
 	 * Make a copy.
 	 *
-	 * @param string       $base_key Key of a shipped profile.
-	 * @param string       $label    Name of the copy.
-	 * @param list<string> $sections Chapter keys.
+	 * @param string             $base_key Key of a shipped profile.
+	 * @param string             $label    Name of the copy.
+	 * @param array<int, string> $sections Chapter keys.
 	 * @return string Key of the new profile.
 	 * @throws ValidationError When the input is not accepted.
 	 */
@@ -63,8 +63,8 @@ final class PackCopies {
 			throw new ValidationError( __( 'Name', 'estasoft-handover-passport' ), __( 'Give the copy a name of up to 60 characters.', 'estasoft-handover-passport' ) );
 		}
 		$this->plugin->secretGuard()->assertClean( $label, __( 'Name', 'estasoft-handover-passport' ) );
-		$allowed  = array_keys( self::chaptersFor( $base_key ) );
-		$chosen   = array_values( array_intersect( $allowed, array_map( 'strval', $sections ) ) );
+		$allowed = array_keys( self::chaptersFor( $base_key ) );
+		$chosen  = array_values( array_intersect( $allowed, array_map( 'strval', $sections ) ) );
 		if ( array() === $chosen ) {
 			throw new ValidationError( __( 'Chapters', 'estasoft-handover-passport' ), __( 'Choose at least one chapter.', 'estasoft-handover-passport' ) );
 		}
@@ -77,7 +77,7 @@ final class PackCopies {
 				throw new ValidationError( __( 'Name', 'estasoft-handover-passport' ), __( 'A copy with that name exists already.', 'estasoft-handover-passport' ) );
 			}
 		}
-		$key = 'copy-' . substr( bin2hex( random_bytes( 4 ) ), 0, 8 );
+		$key            = 'copy-' . substr( bin2hex( random_bytes( 4 ) ), 0, 8 );
 		$copies[ $key ] = array(
 			'base'        => $base_key,
 			'label'       => $label,

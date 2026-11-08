@@ -28,14 +28,10 @@ final class ChangeCsv {
 	/**
 	 * Build the file.
 	 *
-	 * @param list<array<string, mixed>> $rows Change-log rows, in the order they should appear.
+	 * @param array<int, array<string, mixed>> $rows Change-log rows, in the order they should appear.
 	 * @return string UTF-8 text with a byte order mark so spreadsheet programs read it as UTF-8.
 	 */
 	public static function build( array $rows ): string {
-		$handle = fopen( 'php://temp', 'r+' );
-		if ( false === $handle ) {
-			return '';
-		}
 		$lines = array( array( __( 'When (UTC)', 'estasoft-handover-passport' ), __( 'What', 'estasoft-handover-passport' ), __( 'Kind', 'estasoft-handover-passport' ), __( 'Who', 'estasoft-handover-passport' ), __( 'Source', 'estasoft-handover-passport' ), __( 'Note', 'estasoft-handover-passport' ) ) );
 		foreach ( $rows as $row ) {
 			$lines[] = array(
@@ -47,12 +43,10 @@ final class ChangeCsv {
 				(string) $row['note'],
 			);
 		}
+		$text = '';
 		foreach ( $lines as $line ) {
-			fputcsv( $handle, array_map( array( Str::class, 'csvCell' ), array_map( 'strval', $line ) ), ',', '"', '', "\r\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fputcsv -- Writes to memory.
+			$text .= Str::csvLine( array_map( array( Str::class, 'csvCell' ), array_map( 'strval', $line ) ) );
 		}
-		rewind( $handle );
-		$text = (string) stream_get_contents( $handle );
-		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Memory stream.
 		return "\xEF\xBB\xBF" . $text;
 	}
 }

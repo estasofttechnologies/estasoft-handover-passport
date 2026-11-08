@@ -30,12 +30,12 @@ final class Retention {
 	/**
 	 * Constructor.
 	 *
-	 * @param Settings         $settings Settings.
-	 * @param ItemRepository   $items    Items.
-	 * @param PeopleRepository $people   People.
-	 * @param LinkRepository   $links    Links.
-	 * @param ChangeRepository $changes  Change log.
-	 * @param FindingRepository $findings Findings.
+	 * @param Settings           $settings Settings.
+	 * @param ItemRepository     $items    Items.
+	 * @param PeopleRepository   $people   People.
+	 * @param LinkRepository     $links    Links.
+	 * @param ChangeRepository   $changes  Change log.
+	 * @param FindingRepository  $findings Findings.
 	 * @param ReminderRepository $reminders Sent reminders.
 	 * @param ExportRepository   $exports   Export log.
 	 */

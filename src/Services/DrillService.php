@@ -52,7 +52,7 @@ final class DrillService {
 	 *
 	 * @param int $runbook_id Only this runbook's drills, or 0 for all.
 	 * @param int $limit      How many to return.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function all( int $runbook_id = 0, int $limit = 50 ): array {
 		$equals = array( 'kind' => TestRepository::DRILL );
@@ -106,10 +106,10 @@ final class DrillService {
 				return $drill;
 			}
 		}
-		$now    = Clock::sql();
-		$name   = $this->person();
-		$read   = (array) $this->presenter->present( $runbook_id );
-		$steps  = array();
+		$now   = Clock::sql();
+		$name  = $this->person();
+		$read  = (array) $this->presenter->present( $runbook_id );
+		$steps = array();
 		foreach ( (array) ( $read['steps'] ?? array() ) as $step ) {
 			$steps[] = array(
 				'text'    => (string) $step['text'],
@@ -164,8 +164,8 @@ final class DrillService {
 	/**
 	 * Save the notes, and tick or untick one step or check, in one go.
 	 *
-	 * @param int                      $id    Drill ID.
-	 * @param array<string, mixed>     $notes steps and checks: row number to note.
+	 * @param int                       $id    Drill ID.
+	 * @param array<string, mixed>      $notes steps and checks: row number to note.
 	 * @param array<string, mixed>|null $tick  section (steps or checks), index and done, or null to only save the notes.
 	 * @return array<string, mixed> The drill.
 	 * @throws ValidationError When the drill is missing or finished, or a note is too long.
@@ -235,7 +235,7 @@ final class DrillService {
 		$this->guard->assertClean( $problems, __( 'Problems found', 'estasoft-handover-passport' ) );
 
 		$now     = Clock::sql();
-		$seconds = max( 0, ( strtotime( $now . ' UTC' ) ?: 0 ) - ( strtotime( (string) $log['started_at'] . ' UTC' ) ?: 0 ) );
+		$seconds = max( 0, (int) strtotime( $now . ' UTC' ) - (int) strtotime( (string) $log['started_at'] . ' UTC' ) );
 		$minutes = max( 1, (int) ceil( $seconds / 60 ) );
 		$names   = array();
 		foreach ( array_merge( $log['steps'], $log['checks'] ) as $step ) {
@@ -300,7 +300,7 @@ final class DrillService {
 		if ( (int) $drill['step_log']['saved_test_id'] > 0 ) {
 			throw new ValidationError( __( 'Drill', 'estasoft-handover-passport' ), __( 'This drill was already saved as a restore test.', 'estasoft-handover-passport' ) );
 		}
-		$test = $this->restore->log(
+		$test                 = $this->restore->log(
 			array(
 				'test_date'      => (string) $drill['test_date'],
 				'result'         => (string) $drill['result'],
@@ -350,8 +350,8 @@ final class DrillService {
 	 * @return array<string, mixed>
 	 */
 	private function shape( array $row ): array {
-		$log = is_array( $row['step_log'] ) ? $row['step_log'] : array();
-		$fix = static fn( $list ): array => array_values( array_map( static fn( $step ): array => (array) $step + array( 'text' => '', 'label' => '', 'detail' => '', 'kind' => '', 'who' => '', 'minutes' => 0, 'link' => '', 'warning' => false, 'done_at' => '', 'by' => '', 'note' => '' ), is_array( $list ) ? $list : array() ) );
+		$log             = is_array( $row['step_log'] ) ? $row['step_log'] : array();
+		$fix             = static fn( $steps_in ): array => array_values( array_map( static fn( $step ): array => (array) $step + array( 'text' => '', 'label' => '', 'detail' => '', 'kind' => '', 'who' => '', 'minutes' => 0, 'link' => '', 'warning' => false, 'done_at' => '', 'by' => '', 'note' => '' ), is_array( $steps_in ) ? $steps_in : array() ) );
 		$row['step_log'] = array(
 			'started_at'    => (string) ( $log['started_at'] ?? $row['created_at'] ),
 			'started_by'    => (string) ( $log['started_by'] ?? '' ),

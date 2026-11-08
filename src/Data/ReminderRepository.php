@@ -16,10 +16,16 @@ defined( 'ABSPATH' ) || exit;
  */
 class ReminderRepository extends Repository {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'reminders';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'item_id', 'lead_days', 'cycle_key', 'sent_at', 'status', 'attempts', 'recipient_count' );
 	}
@@ -41,7 +47,7 @@ class ReminderRepository extends Repository {
 	 * Rows for failed sends that may be tried again.
 	 *
 	 * @param int $max_attempts Stop after this many attempts.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function retryable( int $max_attempts ): array {
 		return $this->query( array( 'status' => 'failed' ), 'sent_at', 'ASC', 0, 0, 'attempts < %d', array( $max_attempts ) );

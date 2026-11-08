@@ -34,7 +34,7 @@ final class UpcomingDates {
 	 * @param string $from              First day, Y-m-d.
 	 * @param string $to                Last day, Y-m-d.
 	 * @param bool   $include_cancelled Whether a record marked as cancelled is listed.
-	 * @return list<array{id: int, kind: string, kind_label: string, title: string, date: string, sensitive: bool, certificate: bool}>
+	 * @return array<int, array{id: int, kind: string, kind_label: string, title: string, date: string, sensitive: bool, certificate: bool}>
 	 */
 	public function between( string $from, string $to, bool $include_cancelled = true ): array {
 		$rows = array();

@@ -55,7 +55,7 @@ final class SnapshotCommand {
 	 *
 	 *     wp estasoft-passport snapshot create --name="Handover to Acme, May 2027" --pack=client --user=admin
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function create( $args, $assoc_args ): void {
@@ -93,16 +93,16 @@ final class SnapshotCommand {
 	 *
 	 * @subcommand list
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function list_( $args, $assoc_args ): void {
 		$checked = (array) get_option( SnapshotIntegrity::OPTION, array() );
 		$rows    = array();
 		foreach ( $this->plugin->snapshots()->all() as $row ) {
-			$id    = (int) $row['id'];
-			$user  = get_userdata( (int) $row['created_by'] );
-			$state = isset( $checked[ $id ]['ok'] ) ? ( $checked[ $id ]['ok'] ? 'ok' : 'MISMATCH' ) : 'not checked';
+			$id     = (int) $row['id'];
+			$user   = get_userdata( (int) $row['created_by'] );
+			$state  = isset( $checked[ $id ]['ok'] ) ? ( $checked[ $id ]['ok'] ? 'ok' : 'MISMATCH' ) : 'not checked';
 			$rows[] = array(
 				'id'           => $id,
 				'name'         => (string) $row['name'],
@@ -132,7 +132,7 @@ final class SnapshotCommand {
 	 *
 	 *     wp estasoft-passport snapshot verify 3
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function verify( $args, $assoc_args ): void {
@@ -175,7 +175,7 @@ final class SnapshotCommand {
 	 *     wp estasoft-passport snapshot compare 2 live
 	 *     wp estasoft-passport snapshot compare 2 3 --format=json
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function compare( $args, $assoc_args ): void {
@@ -232,9 +232,9 @@ final class SnapshotCommand {
 	/**
 	 * The snapshot number in an argument position, or an error.
 	 *
-	 * @param list<string> $args    Positional arguments.
-	 * @param int          $at      Position.
-	 * @param string       $example Example for the message.
+	 * @param array<int, string> $args    Positional arguments.
+	 * @param int                $at      Position.
+	 * @param string             $example Example for the message.
 	 */
 	private function id( array $args, int $at, string $example ): int {
 		$id = isset( $args[ $at ] ) && ctype_digit( (string) $args[ $at ] ) ? (int) $args[ $at ] : 0;

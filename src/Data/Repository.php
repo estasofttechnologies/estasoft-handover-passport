@@ -27,7 +27,7 @@ abstract class Repository {
 	/**
 	 * Columns stored as JSON text.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	protected function jsonColumns(): array {
 		return array();
@@ -36,7 +36,7 @@ abstract class Repository {
 	/**
 	 * Columns that may be written. Anything else is dropped.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	abstract protected function columns(): array;
 
@@ -108,8 +108,8 @@ abstract class Repository {
 	/**
 	 * Count rows with an optional prepared WHERE fragment.
 	 *
-	 * @param string       $where  Fragment such as "state = %s", already containing placeholders.
-	 * @param list<mixed>  $params Values for the placeholders.
+	 * @param string            $where  Fragment such as "state = %s", already containing placeholders.
+	 * @param array<int, mixed> $params Values for the placeholders.
 	 */
 	public function count( string $where = '', array $params = array() ): int {
 		$sql = "SELECT COUNT(*) FROM {$this->table()}" . ( '' === $where ? '' : ' WHERE ' . $where ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is fixed; the fragment is built in code with placeholders.
@@ -143,8 +143,8 @@ abstract class Repository {
 	 * @param int                  $limit   Maximum rows, 0 for all.
 	 * @param int                  $offset  Rows to skip.
 	 * @param string               $extra   Extra code-built fragment with placeholders, joined with AND.
-	 * @param list<mixed>          $params  Values for the extra fragment.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, mixed>    $params  Values for the extra fragment.
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function query( array $equals = array(), string $orderby = 'id', string $order = 'DESC', int $limit = 0, int $offset = 0, string $extra = '', array $params = array() ): array {
 		$allowed = array_merge( $this->columns(), array( 'id' ) );
@@ -179,9 +179,9 @@ abstract class Repository {
 	/**
 	 * Run a prepared SELECT and decode the rows.
 	 *
-	 * @param string      $sql    SQL with placeholders. Built in code from fixed pieces.
-	 * @param list<mixed> $params Values for the placeholders.
-	 * @return list<array<string, mixed>>
+	 * @param string            $sql    SQL with placeholders. Built in code from fixed pieces.
+	 * @param array<int, mixed> $params Values for the placeholders.
+	 * @return array<int, array<string, mixed>>
 	 */
 	protected function rows( string $sql, array $params = array() ): array {
 		if ( array() !== $params ) {

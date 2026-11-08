@@ -32,7 +32,7 @@ class ServiceMap {
 	 * Suggestions for the active plugins in a scan.
 	 *
 	 * @param array<string, array<string, mixed>> $plugins Plugins from the scan facts, keyed by slug.
-	 * @return list<array{slug: string, kind: string, service: string, plugin: string}>
+	 * @return array<int, array{slug: string, kind: string, service: string, plugin: string}>
 	 */
 	public function suggest( array $plugins ): array {
 		$out = array();

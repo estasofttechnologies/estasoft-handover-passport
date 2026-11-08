@@ -34,7 +34,7 @@ class RecordService {
 	/**
 	 * Cached map of links by target, cleared on every write.
 	 *
-	 * @var array<string, array<int, array<string, list<int>>>>|null
+	 * @var array<string, array<int, array<string, array<int, int>>>>|null
 	 */
 	private ?array $owner_index = null;
 
@@ -201,7 +201,7 @@ class RecordService {
 			throw new ValidationError( __( 'New date', 'estasoft-handover-passport' ), __( 'The new date must be later than the current one.', 'estasoft-handover-passport' ) );
 		}
 
-		$before          = $this->hydrate( $row );
+		$before         = $this->hydrate( $row );
 		$data[ $field ] = $new_date;
 		$this->items->update( $id, array( 'data' => $data, 'due_date' => $new_date, 'updated_at' => Clock::sql() ) );
 		$this->log->add( 'record_renewed', 'item', $id, (string) $row['title'], array( 'value' => $old ), array( 'value' => $new_date ), '', $channel, sensitive: (bool) $row['sensitive'] );
@@ -231,7 +231,7 @@ class RecordService {
 	 *
 	 * @param string $kind     Kind key.
 	 * @param bool   $can_view Whether the viewer may see Sensitive values.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function listKind( string $kind, bool $can_view ): array {
 		$out = array();
@@ -244,7 +244,7 @@ class RecordService {
 	/**
 	 * Every live record, unredacted. For rules and exports, which apply their own redaction.
 	 *
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function everything(): array {
 		return array_map( fn( array $row ): array => $this->hydrate( $row ), $this->items->allLive() );
@@ -282,7 +282,7 @@ class RecordService {
 			}
 		}
 
-		$interval  = (int) ( $row['review_days'] ?: $this->settings->reviewDays( (string) $def['section'] ) );
+		$interval = (int) ( ! empty( $row['review_days'] ) ? $row['review_days'] : $this->settings->reviewDays( (string) $def['section'] ) );
 		// A record of something that happened on a day (an incident) is a fact, not a claim that needs checking again.
 		$freshness = ! empty( $def['timeless'] ) ? Freshness::VERIFIED : Freshness::state(
 			$row['verified_at'] ? (string) $row['verified_at'] : null,
@@ -380,7 +380,7 @@ class RecordService {
 	 * @param array<string, mixed>      $def      Kind schema.
 	 * @param array<string, mixed>      $input    Raw input.
 	 * @param array<string, mixed>|null $existing Hydrated existing record, or null on create.
-	 * @return array{row: array<string, mixed>, links: array<string, list<int>>}
+	 * @return array{row: array<string, mixed>, links: array<string, array<int, int>>}
 	 * @throws ValidationError When invalid.
 	 * @throws \Estasoft\HandoverPassport\Security\SecretFound When a value looks like a secret.
 	 */
@@ -458,13 +458,13 @@ class RecordService {
 			'due_date'    => '' === $due ? null : $due,
 		) + $columns;
 
-		$flag = static fn( string $key, int $default ): int => array_key_exists( $key, $input ) ? (int) ( ! empty( $input[ $key ] ) && '0' !== $input[ $key ] ) : ( $existing ? (int) $existing[ $key ] : $default );
+		$flag                 = static fn( string $key, int $fallback ): int => array_key_exists( $key, $input ) ? (int) ( ! empty( $input[ $key ] ) && '0' !== $input[ $key ] ) : ( $existing ? (int) $existing[ $key ] : $fallback );
 		$row['vis_client']    = $flag( 'vis_client', (int) ( $def['vis'][0] ?? 0 ) );
 		$row['vis_emergency'] = $flag( 'vis_emergency', (int) ( $def['vis'][1] ?? 0 ) );
 		$row['sensitive']     = $flag( 'sensitive', 0 );
 
 		if ( array_key_exists( 'review_days', $input ) ) {
-			$days                = (int) $input['review_days'];
+			$days               = (int) $input['review_days'];
 			$row['review_days'] = $days > 0 ? min( $days, 3650 ) : null;
 		}
 		return array( 'row' => $row, 'links' => $links );
@@ -490,8 +490,8 @@ class RecordService {
 	/**
 	 * Write the ownership links of a record.
 	 *
-	 * @param int                      $id    Item ID.
-	 * @param array<string, list<int>> $links Person IDs by relation.
+	 * @param int                            $id    Item ID.
+	 * @param array<string, array<int, int>> $links Person IDs by relation.
 	 */
 	private function saveLinks( int $id, array $links ): void {
 		foreach ( $links as $relation => $people ) {
@@ -503,7 +503,7 @@ class RecordService {
 	/**
 	 * Person IDs by item and relation.
 	 *
-	 * @return array<int, array<string, list<int>>>
+	 * @return array<int, array<string, array<int, int>>>
 	 */
 	private function ownerIndex(): array {
 		if ( null === $this->owner_index ) {
@@ -563,7 +563,7 @@ class RecordService {
 		$out       = array();
 		foreach ( $after as $key => $value ) {
 			if ( ( $before[ $key ] ?? '' ) !== $value ) {
-				$source        = $old ? ( $before[ $key ] ?? '' ) : $value;
+				$source      = $old ? ( $before[ $key ] ?? '' ) : $value;
 				$out[ $key ] = in_array( $key, $sensitive, true ) ? '(Sensitive, changed)' : $source;
 			}
 		}

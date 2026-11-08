@@ -39,14 +39,23 @@ final class FindingsScreen extends Screen {
 		add_action( 'admin_post_' . self::CHECK, array( $this, 'handleCheck' ) );
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function slug(): string {
 		return self::SLUG;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function title(): string {
 		return __( 'Findings', 'estasoft-handover-passport' );
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function tabs(): array {
 		return array(
 			'open'     => __( 'Open', 'estasoft-handover-passport' ),
@@ -57,6 +66,9 @@ final class FindingsScreen extends Screen {
 		);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function tab( string $tab ): void {
 		if ( 'rules' === $tab ) {
 			$this->rules();

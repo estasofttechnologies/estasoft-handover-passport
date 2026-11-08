@@ -103,7 +103,7 @@ final class RunbookPresenter {
 		foreach ( (array) $source['prerequisites'] as $row ) {
 			$prerequisites[] = array( 'what' => $fill( (string) ( $row['what'] ?? '' ) ), 'who' => (string) ( $row['who'] ?? '' ) );
 		}
-		$present = array(
+		$present         = array(
 			'id'                => $id,
 			'title'             => (string) $runbook['title'],
 			'status'            => (string) $runbook['status'],
@@ -131,9 +131,9 @@ final class RunbookPresenter {
 	/**
 	 * Placeholders used in the texts that the Passport holds no value for.
 	 *
-	 * @param list<string>          $texts  Raw texts.
+	 * @param array<int, string>    $texts  Raw texts.
 	 * @param array<string, string> $values Values.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function gaps( array $texts, array $values ): array {
 		$missing = array();

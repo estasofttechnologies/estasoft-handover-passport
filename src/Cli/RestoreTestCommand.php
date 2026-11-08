@@ -87,7 +87,7 @@ final class RestoreTestCommand {
 	 *
 	 *     wp estasoft-passport restore-test add --result=pass --duration=42 --scope=both --place=staging --who="Nightly job" --user=ci
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function add( $args, $assoc_args ): void {
@@ -117,7 +117,7 @@ final class RestoreTestCommand {
 			'runbook_id'     => $value( 'runbook' ),
 			'backup_item_id' => $value( 'backup-item' ),
 		);
-		$row = Access::attempt( fn() => $this->plugin->restoreTests()->log( $input, 'cli' ) );
+		$row   = Access::attempt( fn() => $this->plugin->restoreTests()->log( $input, 'cli' ) );
 		if ( ! is_array( $row ) ) {
 			\WP_CLI::error( 'The test could not be logged.' );
 		}
@@ -148,7 +148,7 @@ final class RestoreTestCommand {
 	 *
 	 * @subcommand list
 	 *
-	 * @param list<string>         $args       Positional arguments.
+	 * @param array<int, string>   $args       Positional arguments.
 	 * @param array<string, mixed> $assoc_args Named arguments.
 	 */
 	public function list_( $args, $assoc_args ): void {

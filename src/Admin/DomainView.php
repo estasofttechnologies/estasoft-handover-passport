@@ -34,7 +34,7 @@ final class DomainView {
 	/**
 	 * Print the tab.
 	 *
-	 * @param string               $slug Screen slug.
+	 * @param string                $slug Screen slug.
 	 * @param array<string, string> $keep Query arguments that keep the tab.
 	 */
 	public function render( string $slug, array $keep ): void {
@@ -160,12 +160,12 @@ final class DomainView {
 		) . '</p>';
 		View::facts(
 			array(
-				__( 'Name servers', 'estasoft-handover-passport' )   => $list( $snap['ns'] ?? array() ),
-				__( 'A (IPv4)', 'estasoft-handover-passport' )       => $list( $snap['a'] ?? array() ),
-				__( 'AAAA (IPv6)', 'estasoft-handover-passport' )    => $list( $snap['aaaa'] ?? array() ),
-				__( 'www points to', 'estasoft-handover-passport' )  => (string) ( $snap['cname_www'] ?? '' ),
+				__( 'Name servers', 'estasoft-handover-passport' ) => $list( $snap['ns'] ?? array() ),
+				__( 'A (IPv4)', 'estasoft-handover-passport' ) => $list( $snap['a'] ?? array() ),
+				__( 'AAAA (IPv6)', 'estasoft-handover-passport' ) => $list( $snap['aaaa'] ?? array() ),
+				__( 'www points to', 'estasoft-handover-passport' ) => (string) ( $snap['cname_www'] ?? '' ),
 				__( 'Mail servers (MX)', 'estasoft-handover-passport' ) => $list( $mx ),
-				__( 'CAA', 'estasoft-handover-passport' )            => $list( $snap['caa'] ?? array() ),
+				__( 'CAA', 'estasoft-handover-passport' ) => $list( $snap['caa'] ?? array() ),
 			)
 		);
 
@@ -225,11 +225,11 @@ final class DomainView {
 		) . '</p>';
 		View::facts(
 			array(
-				__( 'Valid from', 'estasoft-handover-passport' )  => Dates::displayDate( (string) ( $cert['valid_from'] ?? '' ) ),
-				__( 'Valid to', 'estasoft-handover-passport' )    => Dates::displayDate( (string) ( $cert['valid_to'] ?? '' ) ),
-				__( 'Issued by', 'estasoft-handover-passport' )   => (string) ( $cert['issuer'] ?? '' ),
-				__( 'Names', 'estasoft-handover-passport' )       => implode( ', ', array_map( 'strval', (array) ( $cert['names'] ?? array() ) ) ),
-				__( 'Key', 'estasoft-handover-passport' )         => (string) ( $cert['key_type'] ?? '' ),
+				__( 'Valid from', 'estasoft-handover-passport' ) => Dates::displayDate( (string) ( $cert['valid_from'] ?? '' ) ),
+				__( 'Valid to', 'estasoft-handover-passport' ) => Dates::displayDate( (string) ( $cert['valid_to'] ?? '' ) ),
+				__( 'Issued by', 'estasoft-handover-passport' ) => (string) ( $cert['issuer'] ?? '' ),
+				__( 'Names', 'estasoft-handover-passport' ) => implode( ', ', array_map( 'strval', (array) ( $cert['names'] ?? array() ) ) ),
+				__( 'Key', 'estasoft-handover-passport' ) => (string) ( $cert['key_type'] ?? '' ),
 			)
 		);
 		if ( '' !== (string) ( $cert['error'] ?? '' ) ) {

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Domain;
 
+use Estasoft\HandoverPassport\Support\Str;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,11 +28,11 @@ final class LeadTimes {
 	 * the result is unique and sorted from the longest lead to the shortest.
 	 *
 	 * @param string $text Comma or space separated numbers.
-	 * @return list<int>
+	 * @return array<int, int>
 	 */
 	public static function parse( string $text ): array {
 		$days = array();
-		foreach ( preg_split( '/[\s,;]+/', trim( $text ) ) ?: array() as $part ) {
+		foreach ( Str::split( '/[\s,;]+/', trim( $text ) ) as $part ) {
 			if ( '' !== $part && ctype_digit( $part ) && (int) $part <= self::MAX_DAY ) {
 				$days[ (int) $part ] = (int) $part;
 			}
@@ -43,7 +45,7 @@ final class LeadTimes {
 	 * Clean a list that came from settings or a filter.
 	 *
 	 * @param mixed $value List of numbers.
-	 * @return list<int>
+	 * @return array<int, int>
 	 */
 	public static function clean( $value ): array {
 		return self::parse( implode( ',', array_filter( array_map( static fn( $v ): string => is_scalar( $v ) ? (string) $v : '', (array) $value ), 'strlen' ) ) );
@@ -63,7 +65,7 @@ final class LeadTimes {
 		if ( self::OFF === $text || 'none' === $text ) {
 			return self::OFF;
 		}
-		$parts = preg_split( '/[\s,;]+/', $text, -1, PREG_SPLIT_NO_EMPTY ) ?: array();
+		$parts = Str::split( '/[\s,;]+/', $text, PREG_SPLIT_NO_EMPTY );
 		foreach ( $parts as $part ) {
 			if ( ! ctype_digit( $part ) || (int) $part > self::MAX_DAY ) {
 				return null;
@@ -76,16 +78,16 @@ final class LeadTimes {
 	/**
 	 * The lead times that apply to one record.
 	 *
-	 * @param string    $setting A stored per-record setting.
-	 * @param list<int> $default The list from Settings.
-	 * @return list<int> Empty when reminders are off for the record.
+	 * @param string          $setting A stored per-record setting.
+	 * @param array<int, int> $fallback The list from Settings.
+	 * @return array<int, int> Empty when reminders are off for the record.
 	 */
-	public static function forRecord( string $setting, array $default ): array {
+	public static function forRecord( string $setting, array $fallback ): array {
 		if ( self::OFF === $setting ) {
 			return array();
 		}
 		$days = self::parse( $setting );
-		return array() === $days ? $default : $days;
+		return array() === $days ? $fallback : $days;
 	}
 
 	/**
@@ -93,9 +95,9 @@ final class LeadTimes {
 	 * A date 20 days away has reached the 30-day lead; one 14 days away has reached the 14-day lead. Once the date has
 	 * passed, only the on-the-day lead (0) counts, and only for a few days, so a missed run still sends it.
 	 *
-	 * @param int       $days_left   Days from today to the date; negative once it has passed.
-	 * @param list<int> $leads       Lead times, any order.
-	 * @param int       $grace_days  How many days after the date the on-the-day reminder may still go out.
+	 * @param int             $days_left   Days from today to the date; negative once it has passed.
+	 * @param array<int, int> $leads       Lead times, any order.
+	 * @param int             $grace_days  How many days after the date the on-the-day reminder may still go out.
 	 * @return int|null The lead time, or null when none applies yet or any more.
 	 */
 	public static function reached( int $days_left, array $leads, int $grace_days = 3 ): ?int {

@@ -19,9 +19,9 @@ final class ExportOptions {
 	/**
 	 * Constructor.
 	 *
-	 * @param bool      $may_see_sensitive Whether the person holds the Sensitive capability.
-	 * @param list<int> $include_ids       Sensitive records the person ticked and confirmed.
-	 * @param int       $user_id           Person making the pack, 0 for a task.
+	 * @param bool            $may_see_sensitive Whether the person holds the Sensitive capability.
+	 * @param array<int, int> $include_ids       Sensitive records the person ticked and confirmed.
+	 * @param int             $user_id           Person making the pack, 0 for a task.
 	 */
 	public function __construct(
 		public readonly bool $may_see_sensitive = false,

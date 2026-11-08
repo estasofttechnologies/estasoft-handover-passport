@@ -120,8 +120,8 @@ final class CompareView {
 	/**
 	 * A plain list of records.
 	 *
-	 * @param string                    $heading Heading.
-	 * @param list<array<string, mixed>> $items   Records.
+	 * @param string                           $heading Heading.
+	 * @param array<int, array<string, mixed>> $items   Records.
 	 */
 	private function list( string $heading, array $items ): void {
 		if ( array() === $items ) {

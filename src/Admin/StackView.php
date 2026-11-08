@@ -122,23 +122,23 @@ final class StackView {
 		echo '</div><div class="estasoft-hp-card"><h2>' . esc_html__( 'Server', 'estasoft-handover-passport' ) . '</h2>';
 		View::facts(
 			array(
-				__( 'PHP', 'estasoft-handover-passport' )                 => $php . ( null !== $php_end ? ' (' . sprintf(
+				__( 'PHP', 'estasoft-handover-passport' ) => $php . ( null !== $php_end ? ' (' . sprintf(
 					/* translators: %s: date. */
 					__( 'security support ends %s', 'estasoft-handover-passport' ),
 					Dates::displayDate( $php_end )
 				) . ')' : '' ),
-				__( 'PHP extensions', 'estasoft-handover-passport' )      => implode( ', ', $ext ),
-				__( 'Memory limit', 'estasoft-handover-passport' )        => (string) ( $core['memory_limit'] ?? '' ),
-				__( 'Upload limit', 'estasoft-handover-passport' )        => (string) ( $core['upload_max'] ?? '' ),
-				__( 'Post limit', 'estasoft-handover-passport' )          => (string) ( $core['post_max'] ?? '' ),
+				__( 'PHP extensions', 'estasoft-handover-passport' ) => implode( ', ', $ext ),
+				__( 'Memory limit', 'estasoft-handover-passport' ) => (string) ( $core['memory_limit'] ?? '' ),
+				__( 'Upload limit', 'estasoft-handover-passport' ) => (string) ( $core['upload_max'] ?? '' ),
+				__( 'Post limit', 'estasoft-handover-passport' ) => (string) ( $core['post_max'] ?? '' ),
 				__( 'Execution time limit', 'estasoft-handover-passport' ) => (string) ( $core['max_execution_time'] ?? '' ),
-				__( 'Database', 'estasoft-handover-passport' )            => trim( (string) ( $core['db_engine'] ?? '' ) . ' ' . (string) ( $core['db_version'] ?? '' ) ),
-				__( 'Web server', 'estasoft-handover-passport' )          => (string) ( $core['web_server'] ?? '' ),
-				__( 'Operating system', 'estasoft-handover-passport' )    => (string) ( $core['os_family'] ?? '' ),
+				__( 'Database', 'estasoft-handover-passport' ) => trim( (string) ( $core['db_engine'] ?? '' ) . ' ' . (string) ( $core['db_version'] ?? '' ) ),
+				__( 'Web server', 'estasoft-handover-passport' ) => (string) ( $core['web_server'] ?? '' ),
+				__( 'Operating system', 'estasoft-handover-passport' ) => (string) ( $core['os_family'] ?? '' ),
 				__( 'External object cache', 'estasoft-handover-passport' ) => View::yesNo( ! empty( $core['object_cache'] ) ),
-				__( 'OPcache', 'estasoft-handover-passport' )             => View::yesNo( ! empty( $core['opcache'] ) ),
+				__( 'OPcache', 'estasoft-handover-passport' ) => View::yesNo( ! empty( $core['opcache'] ) ),
 				__( 'Uploads folder size', 'estasoft-handover-passport' ) => View::size( isset( $resources['uploads_bytes'] ) ? (int) $resources['uploads_bytes'] : null ) . ( ! empty( $resources['uploads_partial'] ) ? ' ' . __( '(partial, the scan hit its time limit)', 'estasoft-handover-passport' ) : '' ),
-				__( 'Database size', 'estasoft-handover-passport' )       => View::size( isset( $resources['db_bytes'] ) ? (int) $resources['db_bytes'] : null ),
+				__( 'Database size', 'estasoft-handover-passport' ) => View::size( isset( $resources['db_bytes'] ) ? (int) $resources['db_bytes'] : null ),
 			)
 		);
 		echo '</div>';
@@ -172,7 +172,7 @@ final class StackView {
 			'updates'  => __( 'Update available', 'estasoft-handover-passport' ),
 			'outside'  => __( 'Not from WordPress.org', 'estasoft-handover-passport' ),
 		);
-		$filter = isset( $filters[ $filter ] ) ? $filter : 'all';
+		$filter  = isset( $filters[ $filter ] ) ? $filter : 'all';
 		$this->filterLinks( $filters, $filter, $base );
 
 		$inactive_since = $this->inactiveSince( 'plugin_deactivated' );
@@ -299,7 +299,7 @@ final class StackView {
 		} else {
 			echo '<ul>';
 			foreach ( $mu as $file => $item ) {
-				echo '<li><strong>' . esc_html( (string) ( $item['name'] ?: $file ) ) . '</strong> ' . esc_html( (string) $item['version'] ) . ' <span class="estasoft-hp-muted">' . esc_html( (string) $file ) . '</span> ' . View::badge( 'draft', __( 'May hold custom code', 'estasoft-handover-passport' ) ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+				echo '<li><strong>' . esc_html( (string) ( ! empty( $item['name'] ) ? $item['name'] : $file ) ) . '</strong> ' . esc_html( (string) $item['version'] ) . ' <span class="estasoft-hp-muted">' . esc_html( (string) $file ) . '</span> ' . View::badge( 'draft', __( 'May hold custom code', 'estasoft-handover-passport' ) ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			}
 			echo '</ul>';
 		}
@@ -319,7 +319,7 @@ final class StackView {
 	/**
 	 * Scheduled tasks grouped by owner (SCN-3).
 	 *
-	 * @param list<array<string, mixed>> $cron Tasks.
+	 * @param array<int, array<string, mixed>> $cron Tasks.
 	 */
 	private function cron( array $cron ): void {
 		if ( array() === $cron ) {
@@ -361,13 +361,13 @@ final class StackView {
 		if ( $outside && $can_edit ) {
 			$url = add_query_arg(
 				array(
-					'page'       => 'estasoft-passport-inventory',
-					'tab'        => 'licences',
-					'view'       => 'edit',
-					'kind'       => Kinds::LICENCE,
-					'id'         => 0,
-					'prefill'    => $name,
-					'init_slug'  => $slug,
+					'page'      => 'estasoft-passport-inventory',
+					'tab'       => 'licences',
+					'view'      => 'edit',
+					'kind'      => Kinds::LICENCE,
+					'id'        => 0,
+					'prefill'   => $name,
+					'init_slug' => $slug,
 				),
 				admin_url( 'admin.php' )
 			);
@@ -387,10 +387,10 @@ final class StackView {
 	private function noteLink( string $base, string $ref, string $name, ?array $note ): string {
 		return add_query_arg(
 			array(
-				'view'     => 'edit',
-				'kind'     => Kinds::STACKNOTE,
-				'id'       => null === $note ? 0 : (int) $note['id'],
-				'init_ref' => $ref,
+				'view'      => 'edit',
+				'kind'      => Kinds::STACKNOTE,
+				'id'        => null === $note ? 0 : (int) $note['id'],
+				'init_ref'  => $ref,
 				'init_name' => $name,
 			),
 			$base

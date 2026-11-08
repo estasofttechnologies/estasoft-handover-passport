@@ -22,7 +22,7 @@ final class PluginFilesOnly implements LocalContentLoaderInterface {
 	/**
 	 * Constructor.
 	 *
-	 * @param list<string> $roots Folders that may be read.
+	 * @param array<int, string> $roots Folders that may be read.
 	 */
 	public function __construct( private array $roots ) {}
 

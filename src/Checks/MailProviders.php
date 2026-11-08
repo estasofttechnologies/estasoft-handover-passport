@@ -19,9 +19,9 @@ final class MailProviders {
 	/**
 	 * Provider names found in a list of MX records.
 	 *
-	 * @param list<string>              $mx    MX values such as "10 aspmx.l.google.com".
+	 * @param array<int, string>         $mx    MX values such as "10 aspmx.l.google.com".
 	 * @param array<string, string>|null $table Suffix table, or null for the shipped one.
-	 * @return list<string> Distinct provider names; empty when none is recognised.
+	 * @return array<int, string> Distinct provider names; empty when none is recognised.
 	 */
 	public static function name( array $mx, ?array $table = null ): array {
 		if ( null === $table ) {
@@ -37,7 +37,7 @@ final class MailProviders {
 			}
 			foreach ( $table as $suffix => $provider ) {
 				$suffix = strtolower( (string) $suffix );
-				if ( $host === $suffix || ( strlen( $host ) > strlen( $suffix ) && '.' . $suffix === substr( $host, -strlen( $suffix ) - 1 ) ) ) {
+				if ( $suffix === $host || str_ends_with( $host, '.' . $suffix ) ) {
 					$found[ (string) $provider ] = (string) $provider;
 					break;
 				}

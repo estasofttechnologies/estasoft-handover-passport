@@ -25,7 +25,7 @@ final class SensitiveConfirm {
 	/**
 	 * Sensitive record IDs ticked on the form that was just posted. Empty when the person may not see Sensitive records.
 	 *
-	 * @return list<int>
+	 * @return array<int, int>
 	 */
 	public static function postedIds(): array {
 		if ( ! Capabilities::canSeeSensitive() ) {
@@ -115,8 +115,8 @@ final class SensitiveConfirm {
 	/**
 	 * Names of the Sensitive records among the given IDs.
 	 *
-	 * @param Plugin    $plugin Container.
-	 * @param list<int> $ids    Record IDs.
+	 * @param Plugin          $plugin Container.
+	 * @param array<int, int> $ids    Record IDs.
 	 * @return array<int, string> ID to title.
 	 */
 	public static function titles( Plugin $plugin, array $ids ): array {

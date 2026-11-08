@@ -19,21 +19,33 @@ defined( 'ABSPATH' ) || exit;
  */
 final class MarkdownRenderer implements Renderer {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function key(): string {
 		return 'md';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function extension(): string {
 		return 'md';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function mime(): string {
 		return 'text/markdown; charset=utf-8';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function render( array $content, PackStyle $style, string $hash, string $label ): string {
-		$site  = (array) ( $content['site'] ?? array() );
-		$lines = array( '# ' . $this->inline( Layout::title( $content, $style ) ), '' );
+		$site    = (array) ( $content['site'] ?? array() );
+		$lines   = array( '# ' . $this->inline( Layout::title( $content, $style ) ), '' );
 		$lines[] = '*' . $this->inline( (string) ( $content['profile']['label'] ?? '' ) ) . ' · ' . $this->inline( __( 'Handover Passport', 'estasoft-handover-passport' ) ) . '*';
 		$lines[] = '';
 		foreach ( array( __( 'Site', 'estasoft-handover-passport' ) => $site['name'] ?? '', __( 'Address', 'estasoft-handover-passport' ) => $site['url'] ?? '', __( 'Client', 'estasoft-handover-passport' ) => $site['client'] ?? '' ) as $name => $value ) {
@@ -105,14 +117,14 @@ final class MarkdownRenderer implements Renderer {
 	 * One group as a table, or as a list of items when it is wide.
 	 *
 	 * @param array<string, mixed> $group Group.
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	private function group( array $group ): array {
 		$columns = Layout::columns( $group );
 		$items   = (array) $group['items'];
 		$out     = array();
 		if ( Layout::asTable( $columns ) ) {
-			$head  = array( __( 'Name', 'estasoft-handover-passport' ) );
+			$head = array( __( 'Name', 'estasoft-handover-passport' ) );
 			foreach ( $columns as $def ) {
 				$head[] = (string) $def['label'];
 			}

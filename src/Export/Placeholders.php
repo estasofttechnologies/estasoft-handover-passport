@@ -61,7 +61,7 @@ final class Placeholders {
 			}
 			return '';
 		};
-		$named = static function ( string $role ) use ( $data, $profile ): string {
+		$named   = static function ( string $role ) use ( $data, $profile ): string {
 			foreach ( (array) ( $data->roles[ $role ] ?? array() ) as $id ) {
 				$person = $data->person( (int) $id );
 				if ( null === $person ) {
@@ -105,10 +105,10 @@ final class Placeholders {
 		}
 		return (string) preg_replace_callback(
 			'/\{([a-z_]+)\}/',
-			static function ( array $match ) use ( $values ): string {
-				$name = $match[1];
+			static function ( array $found ) use ( $values ): string {
+				$name = $found[1];
 				if ( ! array_key_exists( $name, self::names() ) ) {
-					return $match[0];
+					return $found[0];
 				}
 				$value = $values[ $name ] ?? '';
 				/* translators: %s: name of a placeholder such as registrar. */

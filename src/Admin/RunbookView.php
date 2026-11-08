@@ -119,7 +119,7 @@ final class RunbookView {
 			return;
 		}
 		if ( 'read' === $view ) {
-			$id = Request::int( 'id' );
+			$id   = Request::int( 'id' );
 			$book = $this->plugin->runbookPresenter()->present( $id, Request::int( 'version' ) > 0 ? Request::int( 'version' ) : null );
 			if ( null !== $book ) {
 				$this->reader( $book );
@@ -179,7 +179,7 @@ final class RunbookView {
 					$to     = add_query_arg( array( 'view' => 'edit', 'id' => $id ), $this->base() );
 					break;
 				case 'start_drill':
-					$drill = $this->plugin->drills()->start( $id );
+					$drill  = $this->plugin->drills()->start( $id );
 					$notice = 'drill_started';
 					$to     = DrillView::url( (int) $drill['id'] );
 					break;
@@ -474,11 +474,11 @@ final class RunbookView {
 		$existing = $id > 0 ? ( $service->get( $id ) ?? array() ) : array();
 		$state    = FormState::take( 'runbook:' . $id );
 		$errors   = null === $state ? array() : $state['errors'];
-		$value    = static function ( string $key, $default = '' ) use ( $state, $existing ) {
+		$value    = static function ( string $key, $fallback = '' ) use ( $state, $existing ) {
 			if ( null !== $state && array_key_exists( $key, $state['input'] ) ) {
 				return $state['input'][ $key ];
 			}
-			return $existing[ $key ] ?? $default;
+			return $existing[ $key ] ?? $fallback;
 		};
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 		$steps    = null !== $state && isset( $state['input']['steps'] ) ? (array) $state['input']['steps'] : (array) ( $existing['steps'] ?? array() );
@@ -579,8 +579,9 @@ final class RunbookView {
 	private function prerequisiteRows( array $rows ): void {
 		echo '<fieldset class="estasoft-hp-rows"><legend>' . esc_html__( 'Before you start', 'estasoft-handover-passport' ) . '</legend>';
 		echo '<p class="description">' . esc_html__( 'What must be in hand first, and who has it. Write where a password is kept, never the password.', 'estasoft-handover-passport' ) . '</p>';
-		$rows = array_values( array_filter( $rows, 'is_array' ) );
-		for ( $i = 0; $i < count( $rows ) + self::BLANK_PREREQUISITES; $i++ ) {
+		$rows  = array_values( array_filter( $rows, 'is_array' ) );
+		$total = count( $rows ) + self::BLANK_PREREQUISITES;
+		for ( $i = 0; $i < $total; $i++ ) {
 			$row = $rows[ $i ] ?? array();
 			$n   = $i + 1;
 			echo '<div class="estasoft-hp-row">';

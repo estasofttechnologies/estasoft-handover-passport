@@ -16,14 +16,23 @@ defined( 'ABSPATH' ) || exit;
  */
 class ChangeRepository extends Repository {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function key(): string {
 		return 'changes';
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function jsonColumns(): array {
 		return array( 'before_data', 'after_data' );
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function columns(): array {
 		return array( 'changed_at', 'kind', 'subject_type', 'subject_id', 'subject_label', 'before_data', 'after_data', 'actor_id', 'actor_label', 'source', 'batch_id', 'note', 'sensitive' );
 	}
@@ -39,7 +48,7 @@ class ChangeRepository extends Repository {
 	 * @param int                  $limit   Rows to return, 0 for all.
 	 * @param int                  $offset  Rows to skip.
 	 * @param string               $order   DESC for newest first, ASC for oldest first.
-	 * @return list<array<string, mixed>>
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function search( array $filters = array(), int $limit = 50, int $offset = 0, string $order = 'DESC' ): array {
 		[ $extra, $params ] = $this->filterSql( $filters );
@@ -68,10 +77,10 @@ class ChangeRepository extends Repository {
 	/**
 	 * Entries a WordPress user made (privacy export).
 	 *
-	 * @param list<int> $user_ids WordPress user numbers.
-	 * @param int       $limit    Rows to return, 0 for all.
-	 * @param int       $offset   Rows to skip.
-	 * @return list<array<string, mixed>>
+	 * @param array<int, int> $user_ids WordPress user numbers.
+	 * @param int             $limit    Rows to return, 0 for all.
+	 * @param int             $offset   Rows to skip.
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function byActors( array $user_ids, int $limit = 0, int $offset = 0 ): array {
 		$user_ids = $this->numbers( $user_ids );
@@ -89,9 +98,9 @@ class ChangeRepository extends Repository {
 	 * Entries about an account are found by the user number. A scan writes "administrator added" without a number, so
 	 * those are found by the name the scan saw.
 	 *
-	 * @param list<int>    $user_ids WordPress user numbers.
-	 * @param list<string> $names    Names the user went by in the scans.
-	 * @param string       $label    Neutral name to write instead.
+	 * @param array<int, int>    $user_ids WordPress user numbers.
+	 * @param array<int, string> $names    Names the user went by in the scans.
+	 * @param string             $label    Neutral name to write instead.
 	 * @return int Entries changed.
 	 */
 	public function anonymiseUsers( array $user_ids, array $names, string $label ): int {
@@ -127,7 +136,7 @@ class ChangeRepository extends Repository {
 	 * Whole numbers above zero, without repeats.
 	 *
 	 * @param array<mixed> $values Candidate values.
-	 * @return list<int>
+	 * @return array<int, int>
 	 */
 	private function numbers( array $values ): array {
 		return array_values( array_unique( array_filter( array_map( 'intval', $values ), static fn( int $n ): bool => $n > 0 ) ) );
@@ -137,7 +146,7 @@ class ChangeRepository extends Repository {
 	 * Build the WHERE fragment for the filters.
 	 *
 	 * @param array<string, mixed> $filters Filters.
-	 * @return array{0: string, 1: list<mixed>}
+	 * @return array{0: string, 1: array<int, mixed>}
 	 */
 	private function filterSql( array $filters ): array {
 		$parts  = array();

@@ -20,23 +20,23 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Admin {
 
-	public const MENU_SLUG = 'estasoft-passport';
-	public const SCAN_ACTION = 'estasoft_hp_scan_now';
+	public const MENU_SLUG      = 'estasoft-passport';
+	public const SCAN_ACTION    = 'estasoft_hp_scan_now';
 	public const DISMISS_ACTION = 'estasoft_hp_dismiss';
-	public const COPY_ACTION = 'estasoft_hp_copy_answer';
-	public const DISMISS_META = 'estasoft_hp_dismissed';
+	public const COPY_ACTION    = 'estasoft_hp_copy_answer';
+	public const DISMISS_META   = 'estasoft_hp_dismissed';
 
 	/**
 	 * Hook suffixes of the screens that belong to Passport, used to load assets only there (WPI-8).
 	 *
-	 * @var list<string>
+	 * @var array<int, string>
 	 */
 	private array $screen_hooks = array();
 
 	/**
 	 * Screens that handle their own form posts.
 	 *
-	 * @var list<Screen>
+	 * @var array<int, Screen>
 	 */
 	private array $screens = array();
 
@@ -214,16 +214,16 @@ final class Admin {
 	 * Print a notice that can be dismissed and stays dismissed for that person (ADM-6).
 	 *
 	 * @param string $id    Notice ID.
-	 * @param string $class Notice class.
+	 * @param string $css_class Notice class.
 	 * @param string $text  Message.
 	 */
-	private function notice( string $id, string $class, string $text ): void {
+	private function notice( string $id, string $css_class, string $text ): void {
 		$dismissed = (array) get_user_meta( get_current_user_id(), self::DISMISS_META, true );
 		if ( in_array( $id, $dismissed, true ) ) {
 			return;
 		}
 		$url = wp_nonce_url( add_query_arg( array( 'action' => self::DISMISS_ACTION, 'notice' => $id ), admin_url( 'admin-post.php' ) ), self::DISMISS_ACTION );
-		echo '<div class="notice ' . esc_attr( $class ) . '"><p>' . esc_html( $text ) . ' <a href="' . esc_url( $url ) . '">' . esc_html__( 'Dismiss', 'estasoft-handover-passport' ) . '</a></p></div>';
+		echo '<div class="notice ' . esc_attr( $css_class ) . '"><p>' . esc_html( $text ) . ' <a href="' . esc_url( $url ) . '">' . esc_html__( 'Dismiss', 'estasoft-handover-passport' ) . '</a></p></div>';
 	}
 
 	/**
@@ -240,7 +240,8 @@ final class Admin {
 			$dismissed[] = $id;
 			update_user_meta( get_current_user_id(), self::DISMISS_META, array_values( $dismissed ) );
 		}
-		wp_safe_redirect( wp_get_referer() ?: admin_url( 'admin.php?page=' . self::MENU_SLUG ) );
+		$referer = wp_get_referer();
+		wp_safe_redirect( false === $referer ? admin_url( 'admin.php?page=' . self::MENU_SLUG ) : $referer );
 		exit;
 	}
 

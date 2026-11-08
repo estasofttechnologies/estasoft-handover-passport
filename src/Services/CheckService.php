@@ -28,17 +28,17 @@ final class CheckService {
 	/**
 	 * Constructor.
 	 *
-	 * @param Plugin           $plugin Plugin.
-	 * @param DnsChecker|null  $dns    DNS reader, or null for the server's resolver.
-	 * @param SslChecker|null  $ssl    Certificate reader, or null for a real connection.
-	 * @param UrlChecker|null  $url    Address checker, or null for the WordPress HTTP API.
+	 * @param Plugin          $plugin Plugin.
+	 * @param DnsChecker|null $dns    DNS reader, or null for the server's resolver.
+	 * @param SslChecker|null $ssl    Certificate reader, or null for a real connection.
+	 * @param UrlChecker|null $url    Address checker, or null for the WordPress HTTP API.
 	 */
 	public function __construct( private Plugin $plugin, private ?DnsChecker $dns = null, private ?SslChecker $ssl = null, private ?UrlChecker $url = null ) {}
 
 	/**
 	 * Hosts that belong to this site.
 	 *
-	 * @return list<string>
+	 * @return array<int, string>
 	 */
 	public function siteHosts(): array {
 		$hosts = array();
@@ -97,9 +97,9 @@ final class CheckService {
 		if ( null !== $previous && is_array( $previous['data'] ) ) {
 			$changes = DnsChecker::changes( $previous['data'], $snapshot );
 		}
-		$snapshot['changed']    = array_keys( $changes );
-		$snapshot['changes']    = $changes;
-		$snapshot['source']     = 'server';
+		$snapshot['changed'] = array_keys( $changes );
+		$snapshot['changes'] = $changes;
+		$snapshot['source']  = 'server';
 		$records->saveSystem( Kinds::DNS, $domain, $domain, $snapshot, array(), true );
 
 		if ( array() !== $changes ) {
@@ -128,8 +128,8 @@ final class CheckService {
 			// Keep the last good reading, if there is one, and say the new one failed.
 			$existing = $this->plugin->records()->items()->bySubject( Kinds::SSL, $host );
 			if ( null !== $existing && is_array( $existing['data'] ) && '' !== (string) ( $existing['data']['valid_to'] ?? '' ) ) {
-				$existing['data']['error']      = (string) $result['error'];
-				$existing['data']['failed_at']  = (string) $result['checked_at'];
+				$existing['data']['error']     = (string) $result['error'];
+				$existing['data']['failed_at'] = (string) $result['checked_at'];
 				$this->plugin->records()->saveSystem( Kinds::SSL, $host, $host, $existing['data'], array(), true );
 			}
 			return array( 'status' => 'failed', 'certificate' => $result );
@@ -154,9 +154,9 @@ final class CheckService {
 		if ( ! CheckLimiter::take( 'url', (string) $id ) ) {
 			return array( 'status' => 'wait', 'wait' => CheckLimiter::secondsLeft( 'url', (string) $id ) );
 		}
-		$data   = is_array( $row['data'] ) ? $row['data'] : array();
-		$expect = (int) ( $data['expected_status'] ?? 200 );
-		$result = ( $this->url ?? new UrlChecker( $this->guard() ) )->check( (string) ( $data['address'] ?? '' ), $expect > 0 ? $expect : 200, (string) ( $data['expected_text'] ?? '' ) );
+		$data               = is_array( $row['data'] ) ? $row['data'] : array();
+		$expect             = (int) ( $data['expected_status'] ?? 200 );
+		$result             = ( $this->url ?? new UrlChecker( $this->guard() ) )->check( (string) ( $data['address'] ?? '' ), $expect > 0 ? $expect : 200, (string) ( $data['expected_text'] ?? '' ) );
 		$data['last_check'] = $result;
 		$this->plugin->records()->items()->update( $id, array( 'data' => $data, 'updated_at' => \Estasoft\HandoverPassport\Support\Clock::sql() ) );
 		$this->plugin->findings()->queue();

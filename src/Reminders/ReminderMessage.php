@@ -98,7 +98,7 @@ final class ReminderMessage {
 	/**
 	 * The weekly digest (RMD-3).
 	 *
-	 * @param array{site: string, site_url: string, dates: list<array{date: string, kind: string, title: string, days_left: int}>, needs_fixing: int, changes: int, since: string, overview: string, findings: string, history: string} $p Values.
+	 * @param array{site: string, site_url: string, dates: array<int, array{date: string, kind: string, title: string, days_left: int}>, needs_fixing: int, changes: int, since: string, overview: string, findings: string, history: string} $p Values.
 	 * @return array{subject: string, body: string}
 	 */
 	public static function digest( array $p ): array {
