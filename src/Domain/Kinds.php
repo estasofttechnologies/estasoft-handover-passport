@@ -24,6 +24,7 @@ final class Kinds {
 	public const LICENCE   = 'licence';
 	public const DOMAIN    = 'domain';
 	public const DNS       = 'dns_snapshot';
+	public const SSL       = 'ssl_check';
 	public const ZONE      = 'zone';
 	public const HOST      = 'host';
 	public const ENV       = 'environment';
@@ -455,6 +456,19 @@ final class Kinds {
 				'system'    => true,
 				'vis'       => array( 1, 0 ),
 				'columns'   => array( 'domain', 'checked_at' ),
+				'fields'    => array(),
+			),
+			self::SSL       => array(
+				'label'     => __( 'SSL certificate check', 'estasoft-handover-passport' ),
+				'plural'    => __( 'SSL certificate checks', 'estasoft-handover-passport' ),
+				'section'   => 'domains',
+				'title'     => 'host',
+				'subject'   => 'host',
+				'due'       => null,
+				'ownership' => false,
+				'system'    => true,
+				'vis'       => array( 1, 0 ),
+				'columns'   => array( 'host', 'valid_to' ),
 				'fields'    => array(),
 			),
 			self::HANDSTATE => array(
