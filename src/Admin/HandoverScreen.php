@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Admin;
 
+use Estasoft\HandoverPassport\Security\Capabilities;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -49,11 +51,99 @@ final class HandoverScreen extends Screen {
 		return array(
 			'checklist' => __( 'Checklist', 'estasoft-handover-passport' ),
 			'snapshots' => __( 'Snapshots', 'estasoft-handover-passport' ),
-			'export'    => __( 'Export', 'estasoft-handover-passport' ),
+			'log'       => __( 'Exports', 'estasoft-handover-passport' ),
+			'notes'     => __( 'Notes', 'estasoft-handover-passport' ),
+			'export'    => __( 'New export', 'estasoft-handover-passport' ),
 			'compare'   => __( 'Compare', 'estasoft-handover-passport' ),
-			'notes'     => __( 'Notes and status', 'estasoft-handover-passport' ),
-			'log'       => __( 'Export log', 'estasoft-handover-passport' ),
 		);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	protected function hiddenTabs(): array {
+		return array(
+			'export'  => 'log',
+			'compare' => 'snapshots',
+		);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function describe( string $tab ): string {
+		switch ( $tab ) {
+			case 'snapshots':
+				$count = count( $this->plugin->snapshots()->all() );
+				return sprintf(
+					/* translators: %d: number of snapshots. */
+					_n( '%d snapshot. A snapshot is a sealed copy of the register that cannot be changed.', '%d snapshots. A snapshot is a sealed copy of the register that cannot be changed.', $count, 'estasoft-handover-passport' ),
+					$count
+				);
+			case 'log':
+				$count = count( $this->plugin->exports()->recent( Capabilities::can( Capabilities::CONFIGURE ) ? 0 : get_current_user_id() ) );
+				return sprintf(
+					/* translators: %d: number of exports. */
+					_n( '%d export made from this site.', '%d exports made from this site.', $count, 'estasoft-handover-passport' ),
+					$count
+				);
+			case 'export':
+				return __( 'Choose a pack and a format. Packs never hold a password or key, because Passport does not store any.', 'estasoft-handover-passport' );
+			case 'compare':
+				return __( 'See what changed between a snapshot and the Passport as it is now, or between two snapshots.', 'estasoft-handover-passport' );
+			case 'notes':
+				return __( 'Notes for whoever takes over, and where the Passport stands in the handover.', 'estasoft-handover-passport' );
+			default:
+				$progress = $this->plugin->handover()->progress();
+				return sprintf(
+					/* translators: 1: number of checklist items done, 2: number of items counted. */
+					__( '%1$d of %2$d ready. Finish the list, then take a snapshot and export the pack.', 'estasoft-handover-passport' ),
+					$progress['done'],
+					$progress['total']
+				);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function action( string $tab ): ?array {
+		if ( ! Capabilities::can( Capabilities::EXPORT ) ) {
+			return null;
+		}
+		if ( 'log' === $tab ) {
+			return array(
+				'label' => __( 'New export', 'estasoft-handover-passport' ),
+				'url'   => add_query_arg( array( 'page' => self::SLUG, 'tab' => 'export' ), admin_url( 'admin.php' ) ),
+			);
+		}
+		if ( 'checklist' === $tab || 'snapshots' === $tab ) {
+			return array(
+				'label' => __( 'Take snapshot', 'estasoft-handover-passport' ),
+				'url'   => add_query_arg( array( 'page' => self::SLUG, 'tab' => 'snapshots', 'make' => '1' ), admin_url( 'admin.php' ) ) . '#estasoft-hp-make-snapshot',
+				'icon'  => 'archive',
+			);
+		}
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param string $tab Tab key.
+	 */
+	protected function extra( string $tab ): string {
+		if ( 'checklist' === $tab && Capabilities::can( Capabilities::EXPORT ) ) {
+			return '<a class="btn" href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'export' ), admin_url( 'admin.php' ) ) ) . '">' . Icons::svg( 'download', 16 ) . esc_html__( 'Export pack', 'estasoft-handover-passport' ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
+		}
+		if ( 'snapshots' === $tab && Capabilities::can( Capabilities::VIEW ) ) {
+			return '<a class="btn" href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'compare' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Compare', 'estasoft-handover-passport' ) . '</a>';
+		}
+		return '';
 	}
 
 	/**

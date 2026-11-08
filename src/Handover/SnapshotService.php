@@ -34,6 +34,11 @@ defined( 'ABSPATH' ) || exit;
 final class SnapshotService {
 
 	/**
+	 * Option that remembers how many records each snapshot holds. A snapshot never changes, so the count is counted once.
+	 */
+	public const COUNT_OPTION = 'estasoft_hp_snapshot_counts';
+
+	/**
 	 * Ways an acknowledgement can have been received (HND-4).
 	 *
 	 * @return array<string, string>
@@ -87,6 +92,31 @@ final class SnapshotService {
 		}
 		$content = Json::decode( (string) $row['content'] );
 		return array() === $content ? null : $content;
+	}
+
+	/**
+	 * How many records a snapshot holds, counted over its chapters the first time and remembered after that.
+	 *
+	 * @param int $id Snapshot ID.
+	 */
+	public function recordCount( int $id ): int {
+		$counts = (array) get_option( self::COUNT_OPTION, array() );
+		if ( isset( $counts[ $id ] ) ) {
+			return (int) $counts[ $id ];
+		}
+		$content = $this->content( $id );
+		if ( null === $content ) {
+			return 0;
+		}
+		$total = 0;
+		foreach ( (array) ( $content['sections'] ?? array() ) as $section ) {
+			foreach ( (array) ( is_array( $section ) ? ( $section['groups'] ?? array() ) : array() ) as $group ) {
+				$total += count( (array) ( is_array( $group ) ? ( $group['items'] ?? array() ) : array() ) );
+			}
+		}
+		$counts[ $id ] = $total;
+		update_option( self::COUNT_OPTION, $counts, false );
+		return $total;
 	}
 
 	/**
@@ -269,6 +299,9 @@ final class SnapshotService {
 		$results = (array) get_option( SnapshotIntegrity::OPTION, array() );
 		unset( $results[ $id ] );
 		update_option( SnapshotIntegrity::OPTION, $results, false );
+		$counts = (array) get_option( self::COUNT_OPTION, array() );
+		unset( $counts[ $id ] );
+		update_option( self::COUNT_OPTION, $counts, false );
 		$this->plugin->changeLog()->add( 'snapshot_deleted', 'snapshot', $id, (string) $row['name'], array( 'hash' => (string) $row['hash'], 'created_at' => (string) $row['created_at'] ), array() );
 		$this->plugin->findings()->queue();
 	}

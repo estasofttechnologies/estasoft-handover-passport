@@ -57,41 +57,98 @@ final class SnapshotView {
 		if ( $can_export && '1' === Request::key( 'estasoft_hp_confirm' ) && SensitiveConfirm::render( $this->plugin, self::ACTION, $base, __( 'this snapshot', 'estasoft-handover-passport' ) ) ) {
 			return;
 		}
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Snapshots', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p>' . esc_html__( 'A snapshot keeps what a pack said on the day you made it, so you can show later what you handed over. It cannot be edited. Each one has a fingerprint (a SHA-256 hash) of its content.', 'estasoft-handover-passport' ) . '</p>';
-		echo '<p class="description">' . esc_html__( 'What the fingerprint tells you: whether the stored content is still the same as when the fingerprint was made. What it does not tell you: who made it, or that nobody with access to the database changed both. This version does not sign snapshots.', 'estasoft-handover-passport' ) . '</p></div>';
-
+		$open = absint( Request::key( 'snapshot' ) );
+		if ( $open > 0 ) {
+			$row = $this->plugin->snapshots()->get( $open );
+			if ( null !== $row ) {
+				$this->detail( $row, $base, $can_export );
+				return;
+			}
+			View::say( __( 'That snapshot does not exist.', 'estasoft-handover-passport' ) );
+		}
 		if ( $can_export ) {
 			$this->createForm( $base );
 		}
 		$rows = $this->plugin->snapshots()->all();
 		if ( array() === $rows ) {
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'No snapshot has been made yet. Make one when you hand the site over.', 'estasoft-handover-passport' ) . '</p></div>';
+			View::cardStart( __( 'Snapshots', 'estasoft-handover-passport' ) );
+			echo '<p>' . esc_html__( 'No snapshot has been made yet. Make one when you hand the site over.', 'estasoft-handover-passport' ) . '</p>';
+			View::cardEnd();
 			return;
 		}
-		$integrity = (array) get_option( SnapshotIntegrity::OPTION, array() );
-		foreach ( $rows as $row ) {
-			$this->card( $row, (array) ( $integrity[ (int) $row['id'] ] ?? array() ), $base, $can_export );
-		}
+		$this->table( $rows, $base, $can_export );
+		echo '<p class="t2 cap">' . esc_html__( 'What the fingerprint tells you: whether the stored content is still the same as when the fingerprint was made. What it does not tell you: who made it, or that nobody with access to the database changed both. This version does not sign snapshots.', 'estasoft-handover-passport' ) . '</p>';
 	}
 
 	/**
-	 * One snapshot.
+	 * The list of snapshots.
 	 *
-	 * @param array<string, mixed> $row       Snapshot row without content.
+	 * @param array<int, array<string, mixed>> $rows       Snapshots without content.
+	 * @param string                           $base       Screen URL.
+	 * @param bool                             $can_export Whether the person may verify.
+	 */
+	private function table( array $rows, string $base, bool $can_export ): void {
+		$integrity = (array) get_option( SnapshotIntegrity::OPTION, array() );
+		View::bareCardStart();
+		echo '<div class="scr"><table class="tbl cards estasoft-hp-table"><caption class="sr">' . esc_html__( 'Snapshots', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
+		foreach ( array( __( 'Name', 'estasoft-handover-passport' ), __( 'Taken', 'estasoft-handover-passport' ), __( 'By', 'estasoft-handover-passport' ), __( 'Records', 'estasoft-handover-passport' ), __( 'Fingerprint (SHA-256)', 'estasoft-handover-passport' ), __( 'Actions', 'estasoft-handover-passport' ) ) as $heading ) {
+			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
+		}
+		echo '</tr></thead><tbody>';
+		foreach ( $rows as $row ) {
+			$id   = (int) $row['id'];
+			$user = get_userdata( (int) $row['created_by'] );
+			$open = add_query_arg( 'snapshot', (string) $id, $base );
+			echo '<tr id="snapshot-' . esc_attr( (string) $id ) . '"><td class="t1" data-label="' . esc_attr__( 'Name', 'estasoft-handover-passport' ) . '"><b>' . esc_html( (string) $row['name'] ) . '</b></td>';
+			echo '<td data-label="' . esc_attr__( 'Taken', 'estasoft-handover-passport' ) . '">' . esc_html( Dates::display( (string) $row['created_at'], true ) . ' UTC' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'By', 'estasoft-handover-passport' ) . '">' . esc_html( false === $user ? __( 'Passport (scheduled)', 'estasoft-handover-passport' ) : (string) $user->display_name ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Records', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $this->plugin->snapshots()->recordCount( $id ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Fingerprint (SHA-256)', 'estasoft-handover-passport' ) . '"><code>' . esc_html( substr( (string) $row['hash'], 0, 12 ) ) . '…</code>' . $this->integrityLine( (array) ( $integrity[ $id ] ?? array() ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts.
+			echo '<td class="act" data-label="' . esc_attr__( 'Actions', 'estasoft-handover-passport' ) . '">';
+			if ( $can_export ) {
+				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
+				$this->hidden( 'verify', $id, $base );
+				echo '<button type="submit" class="btn sm">' . Icons::svg( 'shield', 16 ) . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form> '; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
+			}
+			echo '<a class="btn sm" href="' . esc_url( $open ) . '">' . esc_html__( 'Open', 'estasoft-handover-passport' ) . '</a></td></tr>';
+		}
+		echo '</tbody></table></div>';
+		View::cardEnd();
+	}
+
+	/**
+	 * What the last check of a fingerprint said, as a line under the fingerprint.
+	 *
 	 * @param array<string, mixed> $integrity Last verification result.
-	 * @param string               $base      Screen URL.
+	 */
+	private function integrityLine( array $integrity ): string {
+		if ( array() === $integrity ) {
+			return '<div class="cap">' . View::badge( 'unknown', __( 'Not verified yet', 'estasoft-handover-passport' ) ) . '</div>';
+		}
+		$ok = ! empty( $integrity['ok'] );
+		return '<div class="cap">' . View::badge( $ok ? 'ok' : 'bad', $ok ? __( 'Fingerprint matches', 'estasoft-handover-passport' ) : __( 'Fingerprint does not match', 'estasoft-handover-passport' ) ) . '</div>';
+	}
+
+	/**
+	 * One snapshot in full.
+	 *
+	 * @param array<string, mixed> $row        Snapshot row.
+	 * @param string               $base       Screen URL with the tab.
 	 * @param bool                 $can_export Whether the person may act on it.
 	 */
-	private function card( array $row, array $integrity, string $base, bool $can_export ): void {
-		$id      = (int) $row['id'];
-		$profile = $this->plugin->exports()->profiles()->get( (string) $row['profile_key'] );
-		$user    = get_userdata( (int) $row['created_by'] );
-		echo '<div class="estasoft-hp-card estasoft-hp-snapshot" id="snapshot-' . esc_attr( (string) $id ) . '"><h3>' . esc_html( (string) $row['name'] ) . '</h3>';
+	private function detail( array $row, string $base, bool $can_export ): void {
+		$id        = (int) $row['id'];
+		$here      = add_query_arg( 'snapshot', (string) $id, $base );
+		$integrity = (array) ( ( (array) get_option( SnapshotIntegrity::OPTION, array() ) )[ $id ] ?? array() );
+		$profile   = $this->plugin->exports()->profiles()->get( (string) $row['profile_key'] );
+		$user      = get_userdata( (int) $row['created_by'] );
+		View::cardStart( (string) $row['name'], '<a class="btn sm" href="' . esc_url( $base ) . '">' . esc_html__( 'All snapshots', 'estasoft-handover-passport' ) . '</a>' );
+		echo '<div id="snapshot-' . esc_attr( (string) $id ) . '">';
 		View::facts(
 			array(
 				__( 'Pack', 'estasoft-handover-passport' ) => null === $profile ? (string) $row['profile_key'] : $profile->label,
 				__( 'Made', 'estasoft-handover-passport' ) => Dates::display( (string) $row['created_at'], true ) . ' UTC' . ( false === $user ? '' : ' · ' . $user->display_name ),
+				__( 'Records', 'estasoft-handover-passport' ) => (string) $this->plugin->snapshots()->recordCount( $id ),
 				__( 'Fingerprint', 'estasoft-handover-passport' ) => (string) $row['hash'],
 				__( 'Plugin version', 'estasoft-handover-passport' ) => (string) $row['plugin_version'],
 				__( 'Note', 'estasoft-handover-passport' ) => (string) $row['note'],
@@ -104,7 +161,7 @@ final class SnapshotView {
 		}
 		$acks = is_array( $row['acknowledgements'] ) ? $row['acknowledgements'] : array();
 		if ( array() !== $acks ) {
-			echo '<h4>' . esc_html__( 'Received', 'estasoft-handover-passport' ) . '</h4><ul class="ul-disc">';
+			echo '<h3>' . esc_html__( 'Received', 'estasoft-handover-passport' ) . '</h3><ul class="ul-disc">';
 			foreach ( $acks as $ack ) {
 				$who = trim( (string) ( $ack['name'] ?? '' ) . ( '' !== (string) ( $ack['organisation'] ?? '' ) ? ', ' . (string) $ack['organisation'] : '' ) . ( '' !== (string) ( $ack['role'] ?? '' ) ? ' (' . (string) $ack['role'] . ')' : '' ) );
 				$how = SnapshotService::methods()[ (string) ( $ack['method'] ?? '' ) ] ?? '';
@@ -116,9 +173,10 @@ final class SnapshotView {
 			echo '<p><a href="' . esc_url( add_query_arg( array( 'page' => HistoryScreen::SLUG, 'tab' => 'changes', 'since_snapshot' => $id ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'See what changed since this snapshot', 'estasoft-handover-passport' ) . '</a></p>';
 		}
 		if ( $can_export ) {
-			$this->buttons( $id, $base );
+			$this->buttons( $id, $here );
 		}
 		echo '</div>';
+		View::cardEnd();
 	}
 
 	/**
@@ -131,7 +189,7 @@ final class SnapshotView {
 		echo '<div class="estasoft-hp-snapshot__actions">';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 		$this->hidden( 'verify', $id, $base );
-		echo '<button type="submit" class="button">' . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form> ';
+		echo '<button type="submit" class="btn sm">' . Icons::svg( 'shield', 16 ) . esc_html__( 'Verify', 'estasoft-handover-passport' ) . '</button></form> '; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 		$this->hidden( 'download', $id, $base );
@@ -140,12 +198,12 @@ final class SnapshotView {
 			echo '<option value="' . esc_attr( $key ) . '"' . ( 'pdf' === $key && '' !== PdfRenderer::unavailable() ? ' disabled' : '' ) . '>' . esc_html( $format['label'] ) . '</option>';
 		}
 		echo '<option value="print">' . esc_html__( 'Print view (in the browser)', 'estasoft-handover-passport' ) . '</option>';
-		echo '</select> <button type="submit" class="button">' . esc_html__( 'Download', 'estasoft-handover-passport' ) . '</button></form>';
+		echo '</select> <button type="submit" class="btn sm">' . Icons::svg( 'download', 16 ) . esc_html__( 'Download', 'estasoft-handover-passport' ) . '</button></form>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 
 		$state  = FormState::take( 'snapshot_ack_' . $id );
 		$input  = null === $state ? array() : $state['input'];
 		$errors = null === $state ? array() : $state['errors'];
-		echo '<details' . ( array() !== $errors ? ' open' : '' ) . '><summary>' . esc_html__( 'Record that it was received', 'estasoft-handover-passport' ) . '</summary>';
+		echo '<details class="estasoft-hp-tools"' . ( array() !== $errors ? ' open' : '' ) . '><summary class="btn sm">' . esc_html__( 'Record that it was received', 'estasoft-handover-passport' ) . '</summary>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		$this->hidden( 'acknowledge', $id, $base );
 		Form::row( 'f[name]', array( 'type' => 'text', 'label' => __( 'Name of the person who received it', 'estasoft-handover-passport' ), 'required' => true, 'max' => 190 ), (string) ( $input['name'] ?? '' ), (string) ( $errors['name'] ?? '' ) );
@@ -155,15 +213,15 @@ final class SnapshotView {
 		Form::row( 'f[method]', array( 'type' => 'select', 'label' => __( 'How it was received', 'estasoft-handover-passport' ), 'required' => true, 'options' => SnapshotService::methods() ), (string) ( $input['method'] ?? '' ), (string) ( $errors['method'] ?? '' ) );
 		Form::row( 'f[note]', array( 'type' => 'textarea', 'label' => __( 'Note', 'estasoft-handover-passport' ) ), (string) ( $input['note'] ?? '' ), (string) ( $errors['note'] ?? '' ) );
 		echo '<p class="description">' . esc_html__( 'You are recording this for the person who received it. Marking it received sets the Passport to Handed over.', 'estasoft-handover-passport' ) . '</p>';
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Record', 'estasoft-handover-passport' ) . '</button></p></form></details>';
+		echo '<p class="submit"><button type="submit" class="btn pri">' . esc_html__( 'Record', 'estasoft-handover-passport' ) . '</button></p></form></details>';
 
 		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
-			echo '<details><summary class="estasoft-hp-danger">' . esc_html__( 'Delete this snapshot', 'estasoft-handover-passport' ) . '</summary>';
+			echo '<details class="estasoft-hp-tools"><summary class="btn sm estasoft-hp-danger">' . esc_html__( 'Delete this snapshot', 'estasoft-handover-passport' ) . '</summary>';
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 			$this->hidden( 'delete', $id, $base );
 			echo '<p>' . esc_html__( 'This cannot be undone. The name, fingerprint and date stay in the history.', 'estasoft-handover-passport' ) . '</p>';
 			echo '<p><label><input type="checkbox" name="confirm" value="1"> ' . esc_html__( 'Yes, delete this snapshot for good', 'estasoft-handover-passport' ) . '</label></p>';
-			echo '<p><button type="submit" class="button">' . esc_html__( 'Delete snapshot', 'estasoft-handover-passport' ) . '</button></p></form></details>';
+			echo '<p><button type="submit" class="btn sm dng">' . esc_html__( 'Delete snapshot', 'estasoft-handover-passport' ) . '</button></p></form></details>';
 		}
 		echo '</div>';
 	}
@@ -184,14 +242,14 @@ final class SnapshotView {
 			}
 			$packs[ $profile->key ] = $profile->label;
 		}
-		echo '<details class="estasoft-hp-card"' . ( array() !== $errors ? ' open' : '' ) . '><summary><strong>' . esc_html__( 'Make a snapshot', 'estasoft-handover-passport' ) . '</strong></summary>';
+		echo '<section class="card" id="estasoft-hp-make-snapshot"' . ( array() !== $errors || '1' === Request::key( 'make' ) || array() === $this->plugin->snapshots()->all() ? '' : ' hidden' ) . '><div class="hd"><h2>' . esc_html__( 'Take a snapshot', 'estasoft-handover-passport' ) . '</h2></div><div class="bdy">';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		$this->hidden( 'create', 0, $base );
 		Form::row( 'name', array( 'type' => 'text', 'label' => __( 'Name', 'estasoft-handover-passport' ), 'required' => true, 'max' => 190, 'help' => __( 'For example "Handover to Acme, May 2027".', 'estasoft-handover-passport' ) ), (string) ( $input['name'] ?? '' ), (string) ( $errors['name'] ?? '' ) );
 		Form::row( 'pack', array( 'type' => 'select', 'label' => __( 'Pack', 'estasoft-handover-passport' ), 'required' => true, 'options' => $packs ), (string) ( $input['pack'] ?? 'client' ), (string) ( $errors['pack'] ?? '' ) );
 		Form::row( 'note', array( 'type' => 'textarea', 'label' => __( 'Note', 'estasoft-handover-passport' ), 'help' => __( 'Optional. Never write passwords or keys here.', 'estasoft-handover-passport' ) ), (string) ( $input['note'] ?? '' ), (string) ( $errors['note'] ?? '' ) );
 		SensitiveConfirm::fieldset( $this->plugin );
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Make snapshot', 'estasoft-handover-passport' ) . '</button></p></form></details>';
+		echo '<p class="submit"><button type="submit" class="btn pri">' . Icons::svg( 'archive', 16 ) . esc_html__( 'Make snapshot', 'estasoft-handover-passport' ) . '</button></p></form></div></section>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 	}
 
 	/**

@@ -46,6 +46,10 @@ body.estasoft-hp-screen {
 }
 
 .estasoft-hp {
+	--wp-admin-theme-color: #212529;
+	--wp-admin-theme-color--rgb: 33, 37, 41;
+	--wp-admin-theme-color-darker-10: #212529;
+	--wp-admin-theme-color-darker-20: #212529;
 	--bg: #e9ecef;
 	--sf: #f8f9fa;
 	--sf2: #e9ecef;
@@ -943,21 +947,26 @@ body.estasoft-hp-screen {
 	display: none;
 }
 
-.estasoft-hp .estasoft-hp-finding__tools {
+.estasoft-hp .estasoft-hp-finding__tools,
+.estasoft-hp .estasoft-hp-tools {
 	display: inline-block;
 	vertical-align: top;
 	text-align: start;
 }
 
-.estasoft-hp .estasoft-hp-finding__tools summary.btn {
+.estasoft-hp .estasoft-hp-finding__tools summary.btn,
+.estasoft-hp .estasoft-hp-tools summary.btn {
 	list-style: none;
+	cursor: pointer;
 }
 
-.estasoft-hp .estasoft-hp-finding__tools summary.btn::-webkit-details-marker {
+.estasoft-hp .estasoft-hp-finding__tools summary.btn::-webkit-details-marker,
+.estasoft-hp .estasoft-hp-tools summary.btn::-webkit-details-marker {
 	display: none;
 }
 
-.estasoft-hp .estasoft-hp-finding__tools[open] {
+.estasoft-hp .estasoft-hp-finding__tools[open],
+.estasoft-hp .estasoft-hp-tools[open] {
 	display: block;
 	padding: 8px;
 	margin-top: 4px;
@@ -1233,17 +1242,39 @@ body.estasoft-hp-screen {
 }
 
 .estasoft-hp .estasoft-hp-field {
-	margin: 0 0 14px;
+	display: grid;
+	grid-template-columns: 200px minmax(0, 1fr);
+	gap: 4px 24px;
+	align-items: start;
+	margin: 0 0 12px;
 }
 
 .estasoft-hp .estasoft-hp-field > label {
-	display: block;
-	margin-bottom: 4px;
+	grid-column: 1;
+	grid-row: 1 / span 3;
+	margin: 0;
+	padding-top: 6px;
 	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-field > :not(label) {
+	grid-column: 2;
 }
 
 .estasoft-hp .estasoft-hp-field--check > label {
 	font-weight: 400;
+}
+
+.estasoft-hp .estasoft-hp-tools .estasoft-hp-field,
+.estasoft-hp .dlg .estasoft-hp-field {
+	display: block;
+}
+
+.estasoft-hp .estasoft-hp-tools .estasoft-hp-field > label,
+.estasoft-hp .dlg .estasoft-hp-field > label {
+	display: block;
+	padding-top: 0;
+	margin-bottom: 4px;
 }
 
 .estasoft-hp .estasoft-hp-field.has-error input,
@@ -1255,12 +1286,128 @@ body.estasoft-hp-screen {
 
 .estasoft-hp .estasoft-hp-field .description,
 .estasoft-hp .estasoft-hp-field .estasoft-hp-error {
-	margin-top: 4px;
+	margin-top: 0;
 }
 
 .estasoft-hp .estasoft-hp-field .estasoft-hp-error {
 	font-size: 12px;
 	line-height: 16px;
+}
+
+.estasoft-hp input[type="text"],
+.estasoft-hp input[type="email"],
+.estasoft-hp input[type="url"],
+.estasoft-hp input[type="number"],
+.estasoft-hp input[type="date"],
+.estasoft-hp input[type="search"],
+.estasoft-hp input[type="time"],
+.estasoft-hp select,
+.estasoft-hp textarea,
+.estasoft-hp .fld,
+.estasoft-hp .sel,
+.estasoft-hp .ta {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 560px;
+	min-height: 32px;
+	padding: 0 8px;
+	border: 1px solid var(--bdc);
+	border-radius: 4px;
+	background: #fff;
+	box-shadow: none;
+	color: var(--tx);
+	font: inherit;
+	line-height: 20px;
+}
+
+.estasoft-hp textarea,
+.estasoft-hp .ta {
+	max-width: 100%;
+	min-height: 72px;
+	padding: 6px 8px;
+}
+
+.estasoft-hp select,
+.estasoft-hp .sel {
+	padding: 0 6px;
+}
+
+.estasoft-hp input.small-text,
+.estasoft-hp input[type="number"] {
+	width: 120px;
+}
+
+.estasoft-hp input[type="date"] {
+	width: 180px;
+}
+
+.estasoft-hp input[type="text"]:focus,
+.estasoft-hp input[type="email"]:focus,
+.estasoft-hp input[type="url"]:focus,
+.estasoft-hp input[type="number"]:focus,
+.estasoft-hp input[type="date"]:focus,
+.estasoft-hp input[type="search"]:focus,
+.estasoft-hp select:focus,
+.estasoft-hp textarea:focus {
+	border-color: var(--tx);
+	box-shadow: none;
+	outline: 2px solid var(--tx);
+	outline-offset: 1px;
+}
+
+.estasoft-hp input[disabled],
+.estasoft-hp select[disabled],
+.estasoft-hp textarea[disabled] {
+	background: var(--sf2);
+	color: var(--tx2);
+	border-color: var(--bd2);
+}
+
+.estasoft-hp input[type="checkbox"],
+.estasoft-hp input[type="radio"] {
+	accent-color: #212529;
+	border-color: var(--bdc);
+	box-shadow: none;
+}
+
+.estasoft-hp .savebar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	padding: 12px 16px;
+	border: 1px solid var(--bd2);
+	border-radius: 8px;
+	background: var(--sf2);
+}
+
+.estasoft-hp .savebar .submit {
+	margin: 0;
+	padding: 0;
+}
+
+@media (max-width: 782px) {
+	.estasoft-hp .estasoft-hp-field {
+		display: block;
+	}
+
+	.estasoft-hp .estasoft-hp-field > label {
+		display: block;
+		padding-top: 0;
+		margin-bottom: 4px;
+	}
+
+	.estasoft-hp input[type="text"],
+	.estasoft-hp input[type="email"],
+	.estasoft-hp input[type="url"],
+	.estasoft-hp input[type="number"],
+	.estasoft-hp input[type="date"],
+	.estasoft-hp select,
+	.estasoft-hp .fld,
+	.estasoft-hp .sel {
+		max-width: none;
+		min-height: 40px;
+	}
 }
 
 .estasoft-hp .estasoft-hp-form .submit,
@@ -1325,7 +1472,8 @@ body.estasoft-hp-screen {
 	cursor: pointer;
 }
 
-.estasoft-hp .estasoft-hp-finding__tools form {
+.estasoft-hp .estasoft-hp-finding__tools form,
+.estasoft-hp .estasoft-hp-tools form {
 	margin-top: 8px;
 }
 
@@ -1621,4 +1769,128 @@ body.estasoft-hp-screen {
 		margin-inline-start: 0 !important;
 		padding-inline-start: 0 !important;
 	}
+}
+
+/* ------------------------------------------------------------------ choice cards (export) */
+.estasoft-hp .estasoft-hp-choices {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: 760px;
+	margin: 12px 0 0;
+	padding: 0;
+	border: 0;
+}
+
+.estasoft-hp .estasoft-hp-choices legend {
+	padding: 0;
+}
+
+.estasoft-hp .estasoft-hp-choice {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	padding: 12px 16px;
+	cursor: pointer;
+}
+
+.estasoft-hp .estasoft-hp-choice input {
+	margin-top: 3px;
+}
+
+.estasoft-hp .estasoft-hp-choice:has(input:checked) {
+	outline: 2px solid var(--tx);
+}
+
+.estasoft-hp .estasoft-hp-exportform > .card {
+	margin-bottom: 16px;
+}
+
+.estasoft-hp .estasoft-hp-exportform > .savebar {
+	margin-bottom: 8px;
+}
+
+.estasoft-hp .estasoft-hp-sensitive {
+	max-width: 760px;
+}
+
+.estasoft-hp .sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	border: 0;
+	white-space: nowrap;
+}
+
+.estasoft-hp input[type="radio"]:checked::before {
+	background-color: #212529;
+}
+
+.estasoft-hp input[type="checkbox"]:checked::before {
+	content: url("data:image/svg+xml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 20 20%27%3E%3Cpath d=%27M14.83 4.89l1.34.94-5.81 8.38H9.02L5.78 9.67l1.34-1.25 2.57 2.4z%27 fill=%27%23212529%27/%3E%3C/svg%3E");
+}
+
+.estasoft-hp input[type="radio"]:focus,
+.estasoft-hp input[type="checkbox"]:focus {
+	border-color: #212529;
+	box-shadow: 0 0 0 1px #212529;
+}
+
+.estasoft-hp .bdy > .estasoft-hp-tools {
+	margin-top: 12px;
+}
+
+.estasoft-hp .estasoft-hp-field--check {
+	display: block;
+}
+
+.estasoft-hp .estasoft-hp-field--check > label {
+	display: block;
+	padding-top: 0;
+	font-weight: 400;
+}
+
+.estasoft-hp .estasoft-hp-field--check > .description {
+	margin: 2px 0 0 24px;
+}
+
+.estasoft-hp .estasoft-hp-field--check input[type="checkbox"] {
+	margin-inline-end: 6px;
+}
+
+.estasoft-hp .card > .bdy > .estasoft-hp-field:last-child,
+.estasoft-hp .card > .bdy > p:last-child {
+	margin-bottom: 0;
+}
+
+.estasoft-hp .card > .bdy > .description {
+	margin: 0 0 12px;
+}
+
+.estasoft-hp .card + .savebar,
+.estasoft-hp form > .card + .savebar {
+	margin-top: 16px;
+}
+
+.estasoft-hp input[maxlength="5"] {
+	width: 96px;
+}
+
+.estasoft-hp .estasoft-hp-defs dt {
+	margin-top: 8px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-defs dt:first-child {
+	margin-top: 0;
+}
+
+.estasoft-hp .estasoft-hp-defs dd {
+	margin: 0;
+	color: var(--tx2);
 }

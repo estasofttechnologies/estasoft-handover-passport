@@ -55,7 +55,9 @@ final class ExportView {
 	 */
 	public function render( string $base ): void {
 		if ( ! Capabilities::can( Capabilities::EXPORT ) ) {
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'You need permission to export to use this tab. Ask someone who can change Passport settings.', 'estasoft-handover-passport' ) . '</p></div>';
+			View::cardStart( __( 'Export a pack', 'estasoft-handover-passport' ) );
+			echo '<p>' . esc_html__( 'You need permission to export to use this tab. Ask someone who can change Passport settings.', 'estasoft-handover-passport' ) . '</p>';
+			View::cardEnd();
 			return;
 		}
 		if ( '1' === Request::key( 'estasoft_hp_confirm' ) && SensitiveConfirm::render( $this->plugin, self::ACTION, $base, __( 'this file', 'estasoft-handover-passport' ) ) ) {
@@ -70,30 +72,36 @@ final class ExportView {
 		}
 		$why = PdfRenderer::unavailable();
 
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Export a pack', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p>' . esc_html__( 'A pack is the Passport as it is now, in the words and chapters of one audience. To keep a copy of what you handed over, make a snapshot instead. Packs never hold a password or key, because Passport does not store any.', 'estasoft-handover-passport' ) . '</p>';
 		if ( '' !== $why ) {
-			echo '<div class="notice notice-warning inline"><p>' . esc_html( sprintf( /* translators: %s: reason. */ __( 'PDF is not available on this server. %s Use the print view and Save as PDF in your browser, or one of the other formats.', 'estasoft-handover-passport' ), $why ) ) . '</p></div>';
+			echo '<div class="msg wn">' . Icons::svg( 'warning', 16 ) . '<div>' . esc_html( sprintf( /* translators: %s: reason. */ __( 'PDF is not available on this server. %s Use the print view and Save as PDF in your browser, or one of the other formats.', 'estasoft-handover-passport' ), $why ) ) . '</div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 		}
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-exportform">';
 		Form::nonce( self::ACTION, false );
 		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '"><input type="hidden" name="return" value="' . esc_url( $base ) . '">';
-		echo '<fieldset><legend>' . esc_html__( 'Pack', 'estasoft-handover-passport' ) . '</legend>';
+		View::cardStart( __( 'Export a pack', 'estasoft-handover-passport' ) );
+		echo '<p class="t2">' . esc_html__( 'A pack is the Passport as it is now, in the words and chapters of one audience. To keep a copy of what you handed over, make a snapshot instead. Packs never hold a password or key, because Passport does not store any.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<fieldset class="estasoft-hp-choices"><legend class="lbl">' . esc_html__( 'Pack', 'estasoft-handover-passport' ) . '</legend>';
 		$first = true;
 		foreach ( $packs as $profile ) {
-			echo '<p><label><input type="radio" name="pack" value="' . esc_attr( $profile->key ) . '"' . ( $first ? ' checked' : '' ) . '> <strong>' . esc_html( $profile->label ) . '</strong></label><br><span class="description">' . esc_html( $profile->description ) . '</span></p>';
+			echo '<label class="card estasoft-hp-choice"><input type="radio" name="pack" value="' . esc_attr( $profile->key ) . '"' . ( $first ? ' checked' : '' ) . '><span><b>' . esc_html( $profile->label ) . '</b><br><span class="t2">' . esc_html( $profile->description ) . '</span></span></label>';
 			$first = false;
 		}
 		echo '</fieldset>';
-		echo '<p><label for="estasoft-hp-format"><strong>' . esc_html__( 'Format', 'estasoft-handover-passport' ) . '</strong></label><br><select name="format" id="estasoft-hp-format">';
+		View::cardEnd();
+
+		View::cardStart( __( 'Options', 'estasoft-handover-passport' ) );
+		echo '<div class="estasoft-hp-field"><label for="estasoft-hp-format">' . esc_html__( 'Format', 'estasoft-handover-passport' ) . '</label><select name="format" id="estasoft-hp-format">';
 		foreach ( ExportService::formats() as $key => $format ) {
 			echo '<option value="' . esc_attr( $key ) . '"' . ( 'pdf' === $key && '' !== $why ? ' disabled' : '' ) . '>' . esc_html( $format['label'] ) . '</option>';
 		}
-		echo '</select></p>';
+		echo '</select></div>';
 		SensitiveConfirm::fieldset( $this->plugin );
-		echo '<p class="submit"><button type="submit" name="op" value="download" class="button button-primary">' . esc_html__( 'Download', 'estasoft-handover-passport' ) . '</button> ';
-		echo '<button type="submit" name="op" value="print" class="button">' . esc_html__( 'Open print view', 'estasoft-handover-passport' ) . '</button></p>';
-		echo '<p class="description">' . esc_html__( 'The print view opens in this browser. Use Print and choose Save as PDF; it works on every server.', 'estasoft-handover-passport' ) . '</p></form></div>';
+		View::cardEnd();
+
+		echo '<div class="savebar"><button type="submit" name="op" value="download" class="btn pri">' . Icons::svg( 'download', 16 ) . esc_html__( 'Download', 'estasoft-handover-passport' ) . '</button> '; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
+		echo '<button type="submit" name="op" value="print" class="btn">' . esc_html__( 'Open print view', 'estasoft-handover-passport' ) . '</button> ';
+		echo '<a class="btn" href="' . esc_url( add_query_arg( array( 'page' => HandoverScreen::SLUG, 'tab' => 'log' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Cancel', 'estasoft-handover-passport' ) . '</a></div>';
+		echo '<p class="t2 cap">' . esc_html__( 'The print view opens in this browser. Use Print and choose Save as PDF; it works on every server.', 'estasoft-handover-passport' ) . '</p></form>';
 
 		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
 			$this->copies( $base );
@@ -108,26 +116,26 @@ final class ExportView {
 	private function copies( string $base ): void {
 		$service = $this->plugin->packCopies();
 		$copies  = $service->all();
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Your own packs', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Copy a pack and choose its chapters. A copy follows the rules of the pack it came from: a copy of the Client pack still shows only what is marked visible to the client and never holds Sensitive values.', 'estasoft-handover-passport' ) . '</p>';
+		View::cardStart( __( 'Your own packs', 'estasoft-handover-passport' ) );
+		echo '<p class="t2">' . esc_html__( 'Copy a pack and choose its chapters. A copy follows the rules of the pack it came from: a copy of the Client pack still shows only what is marked visible to the client and never holds Sensitive values.', 'estasoft-handover-passport' ) . '</p>';
 		if ( array() !== $copies ) {
-			echo '<table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Name', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Copy of', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Chapters', 'estasoft-handover-passport' ) . '</th><th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
+			echo '<div class="scr"><table class="tbl cards estasoft-hp-table"><caption class="sr">' . esc_html__( 'Your own packs', 'estasoft-handover-passport' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Name', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Copy of', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Chapters', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
 			$builtin  = Profiles::builtin();
 			$chapters = Profiles::chapters();
 			foreach ( $copies as $key => $copy ) {
 				$names = array_map( static fn( string $c ): string => $chapters[ $c ] ?? $c, array_map( 'strval', (array) ( $copy['sections'] ?? array() ) ) );
-				echo '<tr><td>' . esc_html( (string) ( $copy['label'] ?? $key ) ) . '</td><td>' . esc_html( isset( $builtin[ (string) ( $copy['base'] ?? '' ) ] ) ? $builtin[ (string) $copy['base'] ]->label : '' ) . '</td><td>' . esc_html( implode( ', ', $names ) ) . '</td><td>';
+				echo '<tr><td class="t1" data-label="' . esc_attr__( 'Name', 'estasoft-handover-passport' ) . '"><b>' . esc_html( (string) ( $copy['label'] ?? $key ) ) . '</b></td><td data-label="' . esc_attr__( 'Copy of', 'estasoft-handover-passport' ) . '">' . esc_html( isset( $builtin[ (string) ( $copy['base'] ?? '' ) ] ) ? $builtin[ (string) $copy['base'] ]->label : '' ) . '</td><td data-label="' . esc_attr__( 'Chapters', 'estasoft-handover-passport' ) . '">' . esc_html( implode( ', ', $names ) ) . '</td><td class="act" data-label="' . esc_attr__( 'Actions', 'estasoft-handover-passport' ) . '">';
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 				Form::nonce( self::COPY_ACTION, false );
 				echo '<input type="hidden" name="action" value="' . esc_attr( self::COPY_ACTION ) . '"><input type="hidden" name="op" value="delete"><input type="hidden" name="key" value="' . esc_attr( (string) $key ) . '"><input type="hidden" name="return" value="' . esc_url( $base ) . '">';
-				echo '<button type="submit" class="button-link estasoft-hp-danger">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</button></form></td></tr>';
+				echo '<button type="submit" class="btn sm estasoft-hp-danger">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</button></form></td></tr>';
 			}
-			echo '</tbody></table>';
+			echo '</tbody></table></div>';
 		}
 		$state  = FormState::take( 'pack_copy' );
 		$input  = null === $state ? array() : $state['input'];
 		$errors = null === $state ? array() : $state['errors'];
-		echo '<details' . ( array() !== $errors ? ' open' : '' ) . '><summary><strong>' . esc_html__( 'Make a copy', 'estasoft-handover-passport' ) . '</strong></summary><form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<details class="estasoft-hp-tools"' . ( array() !== $errors ? ' open' : '' ) . '><summary class="btn sm">' . esc_html__( 'Make a copy', 'estasoft-handover-passport' ) . '</summary><form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		Form::nonce( self::COPY_ACTION, false );
 		echo '<input type="hidden" name="action" value="' . esc_attr( self::COPY_ACTION ) . '"><input type="hidden" name="op" value="create"><input type="hidden" name="return" value="' . esc_url( $base ) . '">';
 		$bases = array();
@@ -147,7 +155,8 @@ final class ExportView {
 		if ( isset( $errors['sections'] ) ) {
 			echo '<p class="estasoft-hp-error" role="alert">' . esc_html( (string) $errors['sections'] ) . '</p>';
 		}
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save the copy', 'estasoft-handover-passport' ) . '</button></p></form></details></div>';
+		echo '<p class="submit"><button type="submit" class="btn pri">' . esc_html__( 'Save the copy', 'estasoft-handover-passport' ) . '</button></p></form></details>';
+		View::cardEnd();
 	}
 
 	/**
@@ -155,37 +164,62 @@ final class ExportView {
 	 */
 	public function renderLog(): void {
 		if ( ! Capabilities::can( Capabilities::EXPORT ) ) {
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'You need permission to export to see this log.', 'estasoft-handover-passport' ) . '</p></div>';
+			View::cardStart( __( 'Exports', 'estasoft-handover-passport' ) );
+			echo '<p>' . esc_html__( 'You need permission to export to see this log.', 'estasoft-handover-passport' ) . '</p>';
+			View::cardEnd();
 			return;
 		}
 		$all  = Capabilities::can( Capabilities::CONFIGURE );
 		$rows = $this->plugin->exports()->recent( $all ? 0 : get_current_user_id() );
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Export log', 'estasoft-handover-passport' ) . '</h2><p>' . esc_html( $all ? __( 'Every file made in the last 12 months. The log holds no file, only who made it, when, and a fingerprint of it.', 'estasoft-handover-passport' ) : __( 'The files you made in the last 12 months. The log holds no file, only when you made it and a fingerprint of it.', 'estasoft-handover-passport' ) ) . '</p></div>';
 		if ( array() === $rows ) {
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'Nothing has been exported yet.', 'estasoft-handover-passport' ) . '</p></div>';
+			View::cardStart( __( 'Exports', 'estasoft-handover-passport' ) );
+			echo '<p>' . esc_html__( 'Nothing has been exported yet.', 'estasoft-handover-passport' ) . '</p>';
+			View::cardEnd();
 			return;
 		}
 		$profiles = $this->plugin->exports()->profiles();
 		$formats  = ExportService::formats();
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
-		foreach ( array( __( 'When', 'estasoft-handover-passport' ), __( 'Who', 'estasoft-handover-passport' ), __( 'Pack', 'estasoft-handover-passport' ), __( 'Format', 'estasoft-handover-passport' ), __( 'Snapshot', 'estasoft-handover-passport' ), __( 'Size', 'estasoft-handover-passport' ), __( 'Fingerprint', 'estasoft-handover-passport' ) ) as $heading ) {
+		View::bareCardStart();
+		echo '<div class="scr"><table class="tbl cards estasoft-hp-table"><caption class="sr">' . esc_html__( 'Export log', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
+		foreach ( array( __( 'Pack', 'estasoft-handover-passport' ), __( 'Format', 'estasoft-handover-passport' ), __( 'Made', 'estasoft-handover-passport' ), __( 'By', 'estasoft-handover-passport' ), __( 'Who may see it', 'estasoft-handover-passport' ), __( 'Snapshot', 'estasoft-handover-passport' ), __( 'Size', 'estasoft-handover-passport' ), __( 'Fingerprint', 'estasoft-handover-passport' ) ) as $heading ) {
 			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
 		foreach ( $rows as $row ) {
-			$user    = get_userdata( (int) $row['user_id'] );
-			$profile = $profiles->get( (string) $row['profile'] );
-			$format  = ExportService::PRINT === (string) $row['format'] ? __( 'Print view', 'estasoft-handover-passport' ) : ( $formats[ (string) $row['format'] ]['label'] ?? (string) $row['format'] );
-			echo '<tr><td>' . esc_html( Dates::display( (string) $row['exported_at'], true ) . ' UTC' ) . '</td>';
-			echo '<td>' . esc_html( 0 === (int) $row['user_id'] ? __( 'Passport (automatic)', 'estasoft-handover-passport' ) : ( false === $user ? '' : (string) $user->display_name ) ) . '</td>';
-			echo '<td>' . esc_html( 'change_log' === (string) $row['profile'] ? __( 'Change log', 'estasoft-handover-passport' ) : ( null === $profile ? (string) $row['profile'] : $profile->label ) ) . '</td>';
-			echo '<td>' . esc_html( ! empty( $row['emailed'] ) ? sprintf( /* translators: %s: file format, for example PDF. */ __( '%s, sent by email', 'estasoft-handover-passport' ), $format ) : $format ) . '</td>';
+			$user     = get_userdata( (int) $row['user_id'] );
+			$profile  = $profiles->get( (string) $row['profile'] );
+			$format   = ExportService::PRINT === (string) $row['format'] ? __( 'Print view', 'estasoft-handover-passport' ) : ( $formats[ (string) $row['format'] ]['label'] ?? (string) $row['format'] );
 			$snapshot = (int) $row['snapshot_id'] > 0 ? $this->plugin->snapshots()->get( (int) $row['snapshot_id'] ) : null;
-			echo '<td>' . esc_html( (int) $row['snapshot_id'] > 0 ? ( null === $snapshot ? __( 'Deleted snapshot', 'estasoft-handover-passport' ) : (string) $snapshot['name'] ) : '' ) . '</td>';
-			echo '<td>' . esc_html( View::size( (int) $row['size'] ) ) . '</td>';
-			echo '<td><code>' . esc_html( substr( (string) $row['hash'], 0, 16 ) ) . '</code></td></tr>';
+			echo '<tr><td class="t1" data-label="' . esc_attr__( 'Pack', 'estasoft-handover-passport' ) . '"><b>' . esc_html( 'change_log' === (string) $row['profile'] ? __( 'Change log', 'estasoft-handover-passport' ) : ( null === $profile ? (string) $row['profile'] : $profile->label ) ) . '</b></td>';
+			echo '<td data-label="' . esc_attr__( 'Format', 'estasoft-handover-passport' ) . '">' . esc_html( ! empty( $row['emailed'] ) ? sprintf( /* translators: %s: file format, for example PDF. */ __( '%s, sent by email', 'estasoft-handover-passport' ), $format ) : $format ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Made', 'estasoft-handover-passport' ) . '">' . esc_html( Dates::display( (string) $row['exported_at'], true ) . ' UTC' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'By', 'estasoft-handover-passport' ) . '">' . esc_html( 0 === (int) $row['user_id'] ? __( 'Passport (automatic)', 'estasoft-handover-passport' ) : ( false === $user ? '' : (string) $user->display_name ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Who may see it', 'estasoft-handover-passport' ) . '">' . $this->audienceTag( $profile ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts.
+			echo '<td data-label="' . esc_attr__( 'Snapshot', 'estasoft-handover-passport' ) . '">' . esc_html( (int) $row['snapshot_id'] > 0 ? ( null === $snapshot ? __( 'Deleted snapshot', 'estasoft-handover-passport' ) : (string) $snapshot['name'] ) : '' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Size', 'estasoft-handover-passport' ) . '">' . esc_html( View::size( (int) $row['size'] ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Fingerprint', 'estasoft-handover-passport' ) . '"><code>' . esc_html( substr( (string) $row['hash'], 0, 12 ) ) . '…</code></td></tr>';
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		View::cardEnd();
+		echo '<p class="t2 cap">' . esc_html( $all ? __( 'Every file made in the retention period. The log holds no file, only who made it, when, and a fingerprint of it.', 'estasoft-handover-passport' ) : __( 'The files you made in the retention period. The log holds no file, only when you made it and a fingerprint of it.', 'estasoft-handover-passport' ) ) . '</p>';
+	}
+
+	/**
+	 * A tag that says who may see a pack: the client, the emergency contact or only the team.
+	 *
+	 * @param Profile|null $profile Profile of the pack, or null for the change log.
+	 */
+	private function audienceTag( ?Profile $profile ): string {
+		if ( null === $profile ) {
+			return '<span class="tag">' . Icons::svg( 'lock', 12 ) . esc_html__( 'Internal', 'estasoft-handover-passport' ) . '</span>';
+		}
+		if ( Profile::CLIENT === $profile->audience ) {
+			return '<span class="tag">' . Icons::svg( 'users', 12 ) . esc_html__( 'Client pack', 'estasoft-handover-passport' ) . '</span>';
+		}
+		if ( Profile::EMERGENCY === $profile->audience ) {
+			return '<span class="tag">' . Icons::svg( 'warning', 12 ) . esc_html__( 'Emergency sheet', 'estasoft-handover-passport' ) . '</span>';
+		}
+		return '<span class="tag">' . Icons::svg( 'lock', 12 ) . esc_html__( 'Internal', 'estasoft-handover-passport' ) . '</span>';
 	}
 
 	/**

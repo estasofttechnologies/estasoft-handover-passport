@@ -50,37 +50,78 @@ final class ChecklistView {
 		$progress = $this->plugin->handover()->progress();
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Handover checklist', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p>' . esc_html(
-			sprintf(
-				/* translators: 1: number of items done, 2: number of items counted. */
-				__( '%1$d of %2$d items are done. Items from the rules are checked by Passport itself; items you add are ticked by hand. Items marked Not applicable are not counted.', 'estasoft-handover-passport' ),
-				$progress['done'],
-				$progress['total']
-			)
-		) . '</p></div>';
-
-		$groups = array(
-			'rule'     => __( 'Checked by the rules', 'estasoft-handover-passport' ),
-			'transfer' => __( 'Ownership transfers', 'estasoft-handover-passport' ),
-			'restore'  => __( 'Restore test', 'estasoft-handover-passport' ),
-			'custom'   => __( 'Your own items', 'estasoft-handover-passport' ),
+		$figure = sprintf(
+			/* translators: 1: number of items done, 2: number of items counted. */
+			__( '%1$d of %2$d', 'estasoft-handover-passport' ),
+			$progress['done'],
+			$progress['total']
 		);
-		foreach ( $groups as $group => $heading ) {
-			$rows = array_values( array_filter( $items, static fn( array $item ): bool => $group === $item['group'] ) );
-			if ( array() === $rows && 'custom' !== $group ) {
-				continue;
-			}
-			echo '<h3>' . esc_html( $heading ) . '</h3>';
-			if ( array() === $rows ) {
-				echo '<p>' . esc_html__( 'Nothing here yet.', 'estasoft-handover-passport' ) . '</p>';
-				continue;
-			}
-			$this->table( $rows, $base, $can_edit );
+		$words = sprintf(
+			/* translators: 1: number of items done, 2: number of items counted. */
+			__( '%1$d of %2$d checklist items are done', 'estasoft-handover-passport' ),
+			$progress['done'],
+			$progress['total']
+		);
+		$card = View::kpi( $figure, __( 'Handover checklist', 'estasoft-handover-passport' ), View::bar( $progress['done'], $progress['total'], $words ) );
+		echo $card; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kpi() and bar() escape their parts.
+
+		View::bareCardStart();
+		echo '<div class="scr">';
+		$this->table( $items, $base, $can_edit );
+		echo '</div>';
+		View::cardEnd( $this->footer( $base, $can_edit ) );
+	}
+
+	/**
+	 * The words under the table, and the form that adds an item.
+	 *
+	 * @param string $base     Screen URL.
+	 * @param bool   $can_edit Whether the person may add an item.
+	 */
+	private function footer( string $base, bool $can_edit ): string {
+		$note = '<p class="t2 cap">' . esc_html__( 'Items from the rules are checked by Passport itself; items you add are ticked by hand. Items marked Not applicable are not counted.', 'estasoft-handover-passport' ) . '</p>';
+		if ( ! $can_edit ) {
+			return $note;
 		}
-		if ( $can_edit ) {
-			$this->addForm( $base );
+		ob_start();
+		$this->addForm( $base );
+		return $note . (string) ob_get_clean();
+	}
+
+	/**
+	 * Where each rule is fixed, by rule ID.
+	 *
+	 * @return array<string, array<string, string>>
+	 */
+	private function ruleScreens(): array {
+		$out = array();
+		foreach ( $this->plugin->findings()->readiness()['rules'] as $rule ) {
+			$out[ (string) $rule['id'] ] = (array) $rule['screen'];
 		}
+		return $out;
+	}
+
+	/**
+	 * The address that leads to the place where an item is dealt with, or an empty string.
+	 *
+	 * @param array<string, mixed>                 $row     Item.
+	 * @param array<string, array<string, string>> $screens Where each rule is fixed.
+	 */
+	private function openUrl( array $row, array $screens ): string {
+		if ( 'rule' === $row['group'] ) {
+			$screen = $screens[ (string) strtok( (string) $row['label'], ' ' ) ] ?? array();
+			if ( '' === (string) ( $screen['page'] ?? '' ) ) {
+				return '';
+			}
+			return add_query_arg( array_filter( array( 'page' => (string) $screen['page'], 'tab' => (string) ( $screen['tab'] ?? '' ) ) ), admin_url( 'admin.php' ) );
+		}
+		if ( 'transfer' === $row['group'] ) {
+			return add_query_arg( array( 'page' => PeopleScreen::SLUG, 'tab' => 'ownership' ), admin_url( 'admin.php' ) );
+		}
+		if ( 'restore' === $row['group'] ) {
+			return add_query_arg( array( 'page' => SafetyScreen::SLUG, 'tab' => 'tests' ), admin_url( 'admin.php' ) );
+		}
+		return '';
 	}
 
 	/**
@@ -91,24 +132,49 @@ final class ChecklistView {
 	 * @param bool                             $can_edit Whether the person may change items.
 	 */
 	private function table( array $rows, string $base, bool $can_edit ): void {
-		$labels = Kinds::checklistStates();
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
-		foreach ( array( __( 'Item', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Who', 'estasoft-handover-passport' ), __( 'When', 'estasoft-handover-passport' ), __( 'Note', 'estasoft-handover-passport' ) ) as $heading ) {
+		$screens = $this->ruleScreens();
+		echo '<table class="tbl cards estasoft-hp-table"><caption class="sr">' . esc_html__( 'Handover checklist', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
+		foreach ( array( __( 'Item', 'estasoft-handover-passport' ), __( 'Owner', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Actions', 'estasoft-handover-passport' ) ) as $heading ) {
 			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
 		}
-		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
+		echo '</tr></thead><tbody>';
 		foreach ( $rows as $row ) {
-			echo '<tr><td>' . esc_html( (string) $row['label'] ) . '</td>';
-			echo '<td>' . View::badge( 'check-' . (string) $row['state'], (string) ( $labels[ (string) $row['state'] ] ?? '' ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-			echo '<td>' . esc_html( (string) $row['who'] ) . '</td>';
-			echo '<td>' . esc_html( '' === (string) $row['when'] ? '' : Dates::displayDate( (string) $row['when'] ) ) . '</td>';
-			echo '<td>' . esc_html( (string) $row['detail'] ) . '</td><td class="estasoft-hp-actions">';
+			$sub = array();
+			if ( '' !== (string) $row['detail'] ) {
+				$sub[] = (string) $row['detail'];
+			}
+			if ( '' !== (string) $row['when'] ) {
+				$sub[] = Dates::displayDate( (string) $row['when'] );
+			}
+			echo '<tr><td class="t1" data-label="' . esc_attr__( 'Item', 'estasoft-handover-passport' ) . '"><b>' . esc_html( (string) $row['label'] ) . '</b>' . ( array() !== $sub ? '<div class="t2 cap">' . esc_html( implode( ' · ', $sub ) ) . '</div>' : '' ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Parts are escaped above.
+			echo '<td data-label="' . esc_attr__( 'Owner', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $row['who'] ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'State', 'estasoft-handover-passport' ) . '">' . $this->stateBadge( (string) $row['state'] ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			echo '<td class="act" data-label="' . esc_attr__( 'Actions', 'estasoft-handover-passport' ) . '">';
+			$url = $this->openUrl( $row, $screens );
+			if ( '' !== $url ) {
+				echo '<a class="btn sm" href="' . esc_url( $url ) . '">' . esc_html__( 'Open', 'estasoft-handover-passport' ) . '</a> ';
+			}
 			if ( $can_edit ) {
 				$this->actions( $row, $base );
 			}
 			echo '</td></tr>';
 		}
 		echo '</tbody></table>';
+	}
+
+	/**
+	 * The badge for a state: Done, To do or Not applicable.
+	 *
+	 * @param string $state done, not_done or na.
+	 */
+	private function stateBadge( string $state ): string {
+		if ( HandoverChecklist::DONE === $state ) {
+			return View::badge( 'check-done', __( 'Done', 'estasoft-handover-passport' ) );
+		}
+		if ( HandoverChecklist::NA === $state ) {
+			return View::badge( 'check-na', __( 'Not applicable', 'estasoft-handover-passport' ) );
+		}
+		return View::badge( 'check-todo', __( 'To do', 'estasoft-handover-passport' ) );
 	}
 
 	/**
@@ -123,14 +189,14 @@ final class ChecklistView {
 			if ( HandoverChecklist::NA === $row['state'] ) {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 				$this->hidden( 'rule_auto', $base, array( 'rule_id' => $rule_id ) );
-				echo '<button type="submit" class="button-link">' . esc_html__( 'Check automatically again', 'estasoft-handover-passport' ) . '</button></form>';
+				echo '<button type="submit" class="btn sm">' . esc_html__( 'Check automatically again', 'estasoft-handover-passport' ) . '</button></form>';
 				return;
 			}
-			echo '<details><summary>' . esc_html__( 'Not applicable', 'estasoft-handover-passport' ) . '</summary>';
+			echo '<details class="estasoft-hp-tools"><summary class="btn sm">' . esc_html__( 'Not applicable', 'estasoft-handover-passport' ) . '</summary>';
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 			$this->hidden( 'rule_na', $base, array( 'rule_id' => $rule_id ) );
-			echo '<p><label>' . esc_html__( 'Why does this not apply?', 'estasoft-handover-passport' ) . '<br><input type="text" name="reason" class="regular-text" maxlength="500" required></label></p>';
-			echo '<p><button type="submit" class="button">' . esc_html__( 'Mark not applicable', 'estasoft-handover-passport' ) . '</button></p></form></details>';
+			echo '<p><label>' . esc_html__( 'Why does this not apply?', 'estasoft-handover-passport' ) . '<br><input type="text" name="reason" class="fld" maxlength="500" required></label></p>';
+			echo '<p><button type="submit" class="btn sm">' . esc_html__( 'Mark not applicable', 'estasoft-handover-passport' ) . '</button></p></form></details>';
 			return;
 		}
 		if ( 'custom' !== $row['group'] ) {
@@ -142,11 +208,11 @@ final class ChecklistView {
 			}
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 			$this->hidden( 'state', $base, array( 'id' => (string) (int) $row['id'], 'state' => $state ) );
-			echo '<button type="submit" class="button-link">' . esc_html( $label ) . '</button></form> ';
+			echo '<button type="submit" class="btn sm">' . esc_html( $label ) . '</button></form> ';
 		}
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 		$this->hidden( 'delete', $base, array( 'id' => (string) (int) $row['id'] ) );
-		echo '<button type="submit" class="button-link estasoft-hp-danger">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</button></form>';
+		echo '<button type="submit" class="btn sm estasoft-hp-danger">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</button></form>';
 	}
 
 	/**
@@ -158,13 +224,13 @@ final class ChecklistView {
 		$state  = FormState::take( 'checklist_add' );
 		$input  = null === $state ? array() : $state['input'];
 		$errors = null === $state ? array() : $state['errors'];
-		echo '<details class="estasoft-hp-card"' . ( array() !== $errors ? ' open' : '' ) . '><summary><strong>' . esc_html__( 'Add your own item', 'estasoft-handover-passport' ) . '</strong></summary>';
+		echo '<details class="estasoft-hp-tools"' . ( array() !== $errors ? ' open' : '' ) . '><summary class="btn sm">' . Icons::svg( 'plus', 16 ) . esc_html__( 'Add your own item', 'estasoft-handover-passport' ) . '</summary>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		$this->hidden( 'add', $base );
 		Form::row( 'text', array( 'type' => 'text', 'label' => __( 'What has to be done', 'estasoft-handover-passport' ), 'required' => true, 'max' => 190 ), (string) ( $input['text'] ?? '' ), (string) ( $errors['text'] ?? '' ) );
 		Form::row( 'owner', array( 'type' => 'text', 'label' => __( 'Who does it', 'estasoft-handover-passport' ), 'max' => 190 ), (string) ( $input['owner'] ?? '' ), (string) ( $errors['owner'] ?? '' ) );
 		Form::row( 'due', array( 'type' => 'date', 'label' => __( 'Due date', 'estasoft-handover-passport' ) ), (string) ( $input['due'] ?? '' ), (string) ( $errors['due'] ?? '' ) );
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Add item', 'estasoft-handover-passport' ) . '</button></p></form></details>';
+		echo '<p class="submit"><button type="submit" class="btn pri">' . esc_html__( 'Add item', 'estasoft-handover-passport' ) . '</button></p></form></details>';
 	}
 
 	/**

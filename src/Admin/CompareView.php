@@ -35,24 +35,26 @@ final class CompareView {
 	 */
 	public function render(): void {
 		$snapshots = $this->plugin->snapshots()->all();
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Compare', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p>' . esc_html__( 'See what changed between two snapshots, or between a snapshot and the Passport as it is now. Only the records the snapshot\'s pack includes are compared. Fields marked Sensitive show only that they changed.', 'estasoft-handover-passport' ) . '</p>';
+		View::cardStart( __( 'Compare', 'estasoft-handover-passport' ) );
+		echo '<p class="t2">' . esc_html__( 'See what changed between two snapshots, or between a snapshot and the Passport as it is now. Only the records the snapshot\'s pack includes are compared. Fields marked Sensitive show only that they changed.', 'estasoft-handover-passport' ) . '</p>';
 		if ( count( $snapshots ) < 1 ) {
-			echo '<p>' . esc_html__( 'Make a snapshot first.', 'estasoft-handover-passport' ) . '</p></div>';
+			echo '<p>' . esc_html__( 'Make a snapshot first.', 'estasoft-handover-passport' ) . '</p>';
+			View::cardEnd();
 			return;
 		}
 		$a = Request::int( 'a' );
 		$b = Request::key( 'b' );
 		echo '<form method="get" action="' . esc_url( admin_url( 'admin.php' ) ) . '"><input type="hidden" name="page" value="' . esc_attr( HandoverScreen::SLUG ) . '"><input type="hidden" name="tab" value="compare">';
-		echo '<p><label for="estasoft-hp-cmp-a"><strong>' . esc_html__( 'Older', 'estasoft-handover-passport' ) . '</strong></label><br><select name="a" id="estasoft-hp-cmp-a">';
+		echo '<div class="estasoft-hp-field"><label for="estasoft-hp-cmp-a">' . esc_html__( 'Older', 'estasoft-handover-passport' ) . '</label><select name="a" id="estasoft-hp-cmp-a">';
 		foreach ( $snapshots as $row ) {
 			echo '<option value="' . esc_attr( (string) $row['id'] ) . '"' . selected( $a, (int) $row['id'], false ) . '>' . esc_html( $this->label( $row ) ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
 		}
-		echo '</select></p><p><label for="estasoft-hp-cmp-b"><strong>' . esc_html__( 'Compared with', 'estasoft-handover-passport' ) . '</strong></label><br><select name="b" id="estasoft-hp-cmp-b"><option value="live"' . selected( $b, 'live', false ) . '>' . esc_html__( 'The Passport now', 'estasoft-handover-passport' ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
+		echo '</select></div><div class="estasoft-hp-field"><label for="estasoft-hp-cmp-b">' . esc_html__( 'Compared with', 'estasoft-handover-passport' ) . '</label><select name="b" id="estasoft-hp-cmp-b"><option value="live"' . selected( $b, 'live', false ) . '>' . esc_html__( 'The Passport now', 'estasoft-handover-passport' ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
 		foreach ( $snapshots as $row ) {
 			echo '<option value="' . esc_attr( (string) $row['id'] ) . '"' . selected( $b, (string) $row['id'], false ) . '>' . esc_html( $this->label( $row ) ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
 		}
-		echo '</select></p><p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Compare', 'estasoft-handover-passport' ) . '</button></p></form></div>';
+		echo '</select></div><p class="submit"><button type="submit" class="btn pri">' . esc_html__( 'Compare', 'estasoft-handover-passport' ) . '</button></p></form>';
+		View::cardEnd();
 
 		if ( $a < 1 || '' === $b ) {
 			return;
@@ -61,11 +63,11 @@ final class CompareView {
 		try {
 			$diff = $this->plugin->snapshots()->compare( $a, 'live' === $b ? 'live' : absint( $b ), $options );
 		} catch ( ExportRefused $e ) {
-			echo '<div class="notice notice-error inline"><p>' . esc_html( $e->getMessage() ) . '</p></div>';
+			echo '<div class="msg er">' . Icons::svg( 'error', 16 ) . '<div>' . esc_html( $e->getMessage() ) . '</div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 			return;
 		}
 		if ( null === $diff ) {
-			echo '<div class="notice notice-error inline"><p>' . esc_html__( 'One of those snapshots does not exist.', 'estasoft-handover-passport' ) . '</p></div>';
+			echo '<div class="msg er">' . Icons::svg( 'error', 16 ) . '<div>' . esc_html__( 'One of those snapshots does not exist.', 'estasoft-handover-passport' ) . '</div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 			return;
 		}
 		$this->result( $diff );
@@ -80,7 +82,7 @@ final class CompareView {
 		$added   = (array) $diff['added'];
 		$removed = (array) $diff['removed'];
 		$changed = (array) $diff['changed'];
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Result', 'estasoft-handover-passport' ) . '</h2>';
+		View::cardStart( __( 'Result', 'estasoft-handover-passport' ) );
 		echo '<p>' . esc_html(
 			sprintf(
 				/* translators: 1: records added, 2: removed, 3: changed, 4: unchanged. */
@@ -98,22 +100,25 @@ final class CompareView {
 			echo '<p class="description">' . esc_html__( 'Sensitive records are not part of this comparison, because you do not have permission to see them.', 'estasoft-handover-passport' ) . '</p>';
 		}
 		if ( array() === $added && array() === $removed && array() === $changed && empty( $diff['notes_changed'] ) ) {
-			echo '<p><strong>' . esc_html__( 'Nothing changed.', 'estasoft-handover-passport' ) . '</strong></p></div>';
+			echo '<p><strong>' . esc_html__( 'Nothing changed.', 'estasoft-handover-passport' ) . '</strong></p>';
+			View::cardEnd();
 			return;
 		}
-		echo '</div>';
+		View::cardEnd();
 		$this->list( __( 'Added', 'estasoft-handover-passport' ), $added );
 		$this->list( __( 'Removed', 'estasoft-handover-passport' ), $removed );
 		if ( array() !== $changed ) {
-			echo '<h3>' . esc_html__( 'Changed', 'estasoft-handover-passport' ) . '</h3><table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Record', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Field', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Before', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'After', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
+			View::cardStart( __( 'Changed', 'estasoft-handover-passport' ), '', true );
+			echo '<div class="scr"><table class="tbl cards estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Record', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Field', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Before', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'After', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
 			foreach ( $changed as $item ) {
 				foreach ( (array) $item['fields'] as $field ) {
 					$hidden = __( 'Changed (value not shown)', 'estasoft-handover-passport' );
-					echo '<tr><td>' . esc_html( ( '' === (string) $item['title'] ? __( 'A Sensitive record', 'estasoft-handover-passport' ) : (string) $item['title'] ) . ' · ' . (string) $item['section'] ) . '</td><td>' . esc_html( (string) $field['label'] ) . '</td>';
-					echo '<td>' . esc_html( ! empty( $field['masked'] ) ? $hidden : (string) $field['before'] ) . '</td><td>' . esc_html( ! empty( $field['masked'] ) ? '' : (string) $field['after'] ) . '</td></tr>';
+					echo '<tr><td class="t1" data-label="' . esc_attr__( 'Record', 'estasoft-handover-passport' ) . '"><b>' . esc_html( ( '' === (string) $item['title'] ? __( 'A Sensitive record', 'estasoft-handover-passport' ) : (string) $item['title'] ) . ' · ' . (string) $item['section'] ) . '</b></td><td data-label="' . esc_attr__( 'Field', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $field['label'] ) . '</td>';
+					echo '<td data-label="' . esc_attr__( 'Before', 'estasoft-handover-passport' ) . '">' . esc_html( ! empty( $field['masked'] ) ? $hidden : (string) $field['before'] ) . '</td><td data-label="' . esc_attr__( 'After', 'estasoft-handover-passport' ) . '">' . esc_html( ! empty( $field['masked'] ) ? '' : (string) $field['after'] ) . '</td></tr>';
 				}
 			}
-			echo '</tbody></table>';
+			echo '</tbody></table></div>';
+			View::cardEnd();
 		}
 	}
 
@@ -127,11 +132,13 @@ final class CompareView {
 		if ( array() === $items ) {
 			return;
 		}
-		echo '<h3>' . esc_html( $heading ) . '</h3><ul class="ul-disc">';
+		View::cardStart( $heading, '', true );
+		echo '<ul class="lst">';
 		foreach ( $items as $item ) {
-			echo '<li>' . esc_html( ( '' === (string) $item['title'] ? __( 'A Sensitive record', 'estasoft-handover-passport' ) : (string) $item['title'] ) . ' · ' . (string) $item['section'] ) . '</li>';
+			echo '<li><div class="gr">' . esc_html( ( '' === (string) $item['title'] ? __( 'A Sensitive record', 'estasoft-handover-passport' ) : (string) $item['title'] ) . ' · ' . (string) $item['section'] ) . '</div></li>';
 		}
 		echo '</ul>';
+		View::cardEnd();
 	}
 
 	/**

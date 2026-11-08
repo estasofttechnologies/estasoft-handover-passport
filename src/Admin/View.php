@@ -20,10 +20,10 @@ final class View {
 	 * Print the opening of a screen: the Passport bar with its sections, then the page header (title, a line of
 	 * description and an optional main action).
 	 *
-	 * @param string                                 $title       Screen title.
-	 * @param array{label: string, url: string}|null $action      Optional main action, shown as the one filled button.
-	 * @param string                                 $description One line under the title.
-	 * @param string                                 $actions     Markup for the header's action area, built from escaped parts.
+	 * @param string                                                $title       Screen title.
+	 * @param array{label: string, url: string, icon?: string}|null $action Optional main action, shown as the one filled button.
+	 * @param string                                                $description One line under the title.
+	 * @param string                                                $actions     Markup for the header's action area, built from escaped parts.
 	 */
 	public static function open( string $title, ?array $action = null, string $description = '', string $actions = '' ): void {
 		echo '<div class="wrap estasoft-hp">';
@@ -34,7 +34,7 @@ final class View {
 		}
 		echo '</div>';
 		if ( null !== $action ) {
-			$actions .= '<a class="btn pri" href="' . esc_url( $action['url'] ) . '">' . Icons::svg( 'plus', 16 ) . esc_html( $action['label'] ) . '</a>';
+			$actions .= '<a class="btn pri" href="' . esc_url( $action['url'] ) . '">' . Icons::svg( (string) ( $action['icon'] ?? 'plus' ), 16 ) . esc_html( $action['label'] ) . '</a>';
 		}
 		if ( '' !== $actions ) {
 			echo '<div class="act">' . $actions . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts by the caller.
@@ -225,7 +225,7 @@ final class View {
 			$icon = 'clock';
 		} elseif ( in_array( $state, array( 'info', 'critical', 'status-handed_over' ), true ) ) {
 			$icon = 'info';
-		} elseif ( in_array( $state, array( 'check-na', 'zone-skipped' ), true ) ) {
+		} elseif ( in_array( $state, array( 'check-na', 'check-todo', 'zone-skipped' ), true ) ) {
 			$icon = 'minus';
 		} elseif ( 'later' === $state ) {
 			$icon = 'calendar';
@@ -260,6 +260,13 @@ final class View {
 	 */
 	public static function cardStart( string $title, string $actions = '', bool $flat = false ): void {
 		echo '<section class="card' . ( $flat ? ' flat' : '' ) . '"><div class="hd"><h2>' . esc_html( $title ) . '</h2>' . $actions . '</div><div class="bdy">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts by the caller.
+	}
+
+	/**
+	 * Open a card that holds only a table or a list, with no head of its own. Close it with cardEnd().
+	 */
+	public static function bareCardStart(): void {
+		echo '<section class="card flat"><div class="bdy">';
 	}
 
 	/**

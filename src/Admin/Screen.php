@@ -71,7 +71,7 @@ abstract class Screen {
 	 * The main action in the page header for a tab, drawn as the one filled button. Null for none.
 	 *
 	 * @param string $tab Tab key.
-	 * @return array{label: string, url: string}|null
+	 * @return array{label: string, url: string, icon?: string}|null
 	 */
 	protected function action( string $tab ): ?array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Screens that use the tab override this method.
 		return null;
@@ -136,7 +136,7 @@ abstract class Screen {
 	 *
 	 * @param string $kind Kind key.
 	 * @param string $tab  Tab key.
-	 * @return array{label: string, url: string}|null
+	 * @return array{label: string, url: string, icon?: string}|null
 	 */
 	protected function addAction( string $kind, string $tab ): ?array {
 		$def = Kinds::get( $kind );

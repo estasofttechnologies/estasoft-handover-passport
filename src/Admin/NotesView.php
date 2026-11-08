@@ -48,29 +48,31 @@ final class NotesView {
 		$status   = $this->plugin->handoverStatus()->current();
 		$labels   = Passport::statusLabels();
 
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Status', 'estasoft-handover-passport' ) . '</h2>';
+		View::cardStart( __( 'Status', 'estasoft-handover-passport' ) );
 		echo '<p>' . View::badge( 'status-' . $status, (string) ( $labels[ $status ] ?? $status ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 		echo '<p>' . esc_html__( 'A Passport is Handed over when someone records that a snapshot was received. If you carry on looking after the site, mark it Active again.', 'estasoft-handover-passport' ) . '</p>';
 		if ( $can_edit && Passport::STATUS_ACTIVE !== $status ) {
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 			$this->hidden( 'active', $base );
-			echo '<button type="submit" class="button">' . esc_html__( 'Mark as Active', 'estasoft-handover-passport' ) . '</button></form>';
+			echo '<button type="submit" class="btn sm">' . esc_html__( 'Mark as Active', 'estasoft-handover-passport' ) . '</button></form>';
 		}
-		echo '</div>';
+		View::cardEnd();
 
 		$state  = FormState::take( 'successor_notes' );
 		$text   = null === $state ? $this->plugin->successorNotes()->get() : (string) ( $state['input']['notes'] ?? '' );
 		$errors = null === $state ? array() : $state['errors'];
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Notes to the successor', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p>' . esc_html__( 'What you would do first, what is fragile, and what is unfinished. These notes go into the Client pack and the Technical pack. You can use **bold**, *italic*, lists that start with - or 1., and links.', 'estasoft-handover-passport' ) . '</p>';
+		View::cardStart( __( 'Notes to the successor', 'estasoft-handover-passport' ) );
+		echo '<p class="t2">' . esc_html__( 'What you would do first, what is fragile, and what is unfinished. These notes go into the Client pack and the Technical pack. You can use **bold**, *italic*, lists that start with - or 1., and links.', 'estasoft-handover-passport' ) . '</p>';
 		if ( ! $can_edit ) {
-			echo '<div class="estasoft-hp-prose">' . ( '' === $text ? '<p>' . esc_html__( 'No notes yet.', 'estasoft-handover-passport' ) . '</p>' : '<pre class="estasoft-hp-pre">' . esc_html( $text ) . '</pre>' ) . '</div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The text is escaped; the rest is fixed markup.
+			echo '<div class="estasoft-hp-prose">' . ( '' === $text ? '<p>' . esc_html__( 'No notes yet.', 'estasoft-handover-passport' ) . '</p>' : '<pre class="pre">' . esc_html( $text ) . '</pre>' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The text is escaped; the rest is fixed markup.
+			View::cardEnd();
 			return;
 		}
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		$this->hidden( 'save', $base );
 		Form::row( 'notes', array( 'type' => 'textarea', 'label' => __( 'Notes', 'estasoft-handover-passport' ), 'help' => __( 'Never write passwords or keys here. Write where they are kept.', 'estasoft-handover-passport' ) ), $text, (string) ( $errors['notes'] ?? '' ) );
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save notes', 'estasoft-handover-passport' ) . '</button></p></form></div>';
+		echo '<p class="submit"><button type="submit" class="btn pri">' . esc_html__( 'Save notes', 'estasoft-handover-passport' ) . '</button></p></form>';
+		View::cardEnd();
 	}
 
 	/**
