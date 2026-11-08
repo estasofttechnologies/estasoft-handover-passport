@@ -95,6 +95,24 @@ class RunbookRepository extends Repository {
 	}
 
 	/**
+	 * Replace the content of a version in place (a draft being edited).
+	 *
+	 * @param int                  $runbook_id Runbook ID.
+	 * @param int                  $version    Version number.
+	 * @param array<string, mixed> $row        New content columns.
+	 */
+	public function updateVersion( int $runbook_id, int $version, array $row ): bool {
+		$allowed = array( 'steps', 'prerequisites', 'verification', 'rollback_text', 'change_note' );
+		$row     = array_intersect_key( $row, array_flip( $allowed ) );
+		foreach ( array( 'steps', 'prerequisites', 'verification' ) as $json ) {
+			if ( isset( $row[ $json ] ) && ! is_string( $row[ $json ] ) ) {
+				$row[ $json ] = \Estasoft\HandoverPassport\Support\Json::encode( $row[ $json ] );
+			}
+		}
+		return false !== $this->db()->update( Tables::name( 'runbook_versions' ), $row, array( 'runbook_id' => $runbook_id, 'version' => $version ) );
+	}
+
+	/**
 	 * Remove a runbook and its versions for good.
 	 *
 	 * @param int $id Runbook ID.
