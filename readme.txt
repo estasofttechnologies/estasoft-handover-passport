@@ -27,6 +27,7 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 * Checks the record against the site and lists findings in plain words, each stating a fact and a date. A finding never says "safe", "secure" or "compliant".
 * Keeps restore tests, runbooks (with twelve ready-made templates, a version history and a large-type print view) and a list of critical addresses, so the day something breaks is not the first day anyone looks for the steps.
 * Can email the one-page Emergency sheet as a PDF to a few addresses you choose when a snapshot is made and once a month, so a copy exists outside the site. Off until you switch it on; the sheet never holds a Sensitive record.
+* Offers the dates in a calendar file (`.ics`) from the Overview, titles and dates only, with Sensitive records left out. A Check data tool in Settings finds links that point at nothing and records of a kind this version does not know, and removes them only after you confirm.
 * Lets you rehearse a runbook as a drill: each step gets a Done button that keeps the time and the person, followed by an after-restore checklist built from your critical addresses. A drill of a restore runbook can be kept as a restore test.
 * Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server". An optional weekly check asks the critical addresses every Sunday and sends one email when one fails; it is off until you switch it on and it is not an uptime monitor.
 * Emails reminders before licence, domain, hosting and service dates, and can send a short weekly summary. Each reminder goes once per date and lead time.
@@ -69,6 +70,10 @@ Reminders go out through the email of your WordPress site, so they depend on it 
 = I copied the site to a staging server. Will it send every reminder again? =
 
 No. When the same data turns up on a different address, the plugin pauses reminders, emailed copies and scheduled checks and asks whether the site moved or this is a copy. Choose "This is a copy" and the reminders stay off there.
+
+= What does Check data do? =
+
+Under Settings, Privacy and data, it lists links that point at a person or a record that no longer exists, and records of a kind this version does not know. These can be left by a failed import, a manual database edit or a downgrade. It changes nothing until you tick the confirmation box and press the button, then looks again and removes only what is still wrong. History notes how many rows were removed, not which.
 
 = What happens to my data if I delete the plugin? =
 

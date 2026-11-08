@@ -53,12 +53,15 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - A Help tab on every Passport screen with a plain description of the screen, one worked example and a note on where the data lives.
 - An optional emailed copy of the Emergency sheet (off by default, switched on in Settings, Privacy and data): the one-page sheet is emailed as a PDF to up to five addresses when a snapshot is made and once a month. The message says email is not encrypted; the sheet is made without Sensitive rights, so it holds no Sensitive record. A failure is shown on the Overview and tried again once a day, up to three more times. Send a copy now tests it. Nothing is sent from a copy of the site. The export log marks emailed files and automatic ones.
 - Hook documentation in `docs/HOOKS.md`: every action and filter with its arguments and an example.
+- A calendar download on the Overview (Next 90 days): every dated record as an `.ics` file, titles and dates only, with Sensitive records left out. It needs the export capability and is entered in the export log.
+- Check data in Settings, Privacy and data: looks for links that point at a person or a record that no longer exists and for records of a kind this version does not know (what a failed import, a manual database edit or a downgrade can leave). Nothing is changed until the box is ticked and the button pressed; the check then looks again, removes only what is still wrong, ignores a ticked row that is fine, and History records the counts without naming any record.
 
 ### Fixed
 - The finding hooks (`estasoft_hp_finding_opened`, `estasoft_hp_finding_resolved`) no longer pass the values that name a record marked Sensitive.
 - The tables could not be created on MySQL and MariaDB: `sensitive` is a reserved word there. The column is now written with backticks in the schema and in every query, and a unit test refuses any column named with a reserved word without quotes.
 
 ### Changed
+- Removed the unused `calendar_feed` setting; the calendar is a download, not a feed.
 - The monthly copy is sent by the daily run, once in each calendar month, instead of by an event of its own. A leftover event from an earlier build is removed.
 - Scanning is limited to once a minute from the Scan now button, WP-CLI and the REST API alike, and the notices for scans, checks and test emails say how many seconds are left.
 - `wp estasoft-passport status` leaves Sensitive records out of its counts unless `--user` holds the Sensitive capability.

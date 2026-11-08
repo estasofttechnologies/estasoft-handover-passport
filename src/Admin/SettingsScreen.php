@@ -28,6 +28,7 @@ final class SettingsScreen extends Screen {
 	public const ACTION      = 'estasoft_hp_save_settings';
 	public const MAIL_ACTION = 'estasoft_hp_test_mail';
 	public const COPY_ACTION = 'estasoft_hp_send_copy';
+	public const FIX_ACTION  = 'estasoft_hp_repair';
 
 	/**
 	 * Attach the save handler.
@@ -36,6 +37,7 @@ final class SettingsScreen extends Screen {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handleSave' ) );
 		add_action( 'admin_post_' . self::MAIL_ACTION, array( $this, 'handleTestMail' ) );
 		add_action( 'admin_post_' . self::COPY_ACTION, array( $this, 'handleSendCopy' ) );
+		add_action( 'admin_post_' . self::FIX_ACTION, array( $this, 'handleRepair' ) );
 	}
 
 	/**
@@ -140,7 +142,84 @@ final class SettingsScreen extends Screen {
 		}
 		if ( 'privacy' === $tab ) {
 			$this->copyPanel();
+			$this->dataPanel();
 		}
+	}
+
+	/**
+	 * Check data: what is left behind when a link points at nothing or a record has a kind this version does not know (DAT-8).
+	 */
+	private function dataPanel(): void {
+		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Check data', 'estasoft-handover-passport' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Looks for links that point at a person or a record that no longer exists, and for records of a kind this version of Passport does not know. Nothing is changed until you tick the box and press the button.', 'estasoft-handover-passport' ) . '</p>';
+		$base = add_query_arg( array( 'page' => self::SLUG, 'tab' => 'privacy' ), admin_url( 'admin.php' ) );
+		if ( '1' !== Request::key( 'check' ) ) {
+			echo '<p><a class="button" href="' . esc_url( add_query_arg( 'check', '1', $base ) ) . '">' . esc_html__( 'Check data', 'estasoft-handover-passport' ) . '</a></p></div>';
+			return;
+		}
+
+		$found = $this->plugin->dataCheck()->scan();
+		if ( array() === $found['links'] && array() === $found['records'] ) {
+			echo '<p><strong>' . esc_html(
+				sprintf(
+					/* translators: %d: number of links looked at. */
+					_n( 'No problem found. %d link was looked at.', 'No problem found. %d links were looked at.', $found['checked_links'], 'estasoft-handover-passport' ),
+					$found['checked_links']
+				)
+			) . '</strong></p></div>';
+			return;
+		}
+
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::FIX_ACTION ) . '">';
+		Form::nonce( self::FIX_ACTION );
+		if ( array() !== $found['links'] ) {
+			echo '<h3>' . esc_html__( 'Links that point at nothing', 'estasoft-handover-passport' ) . '</h3><table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Remove', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Link', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Why', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
+			foreach ( $found['links'] as $link ) {
+				echo '<tr><td><label><span class="screen-reader-text">' . esc_html( sprintf( /* translators: %d: link number. */ __( 'Remove link %d', 'estasoft-handover-passport' ), $link['id'] ) ) . '</span><input type="checkbox" name="link_ids[]" value="' . esc_attr( (string) $link['id'] ) . '" checked></label></td><td>' . esc_html( sprintf( /* translators: 1: link number, 2: what the link says. */ __( '#%1$d, %2$s', 'estasoft-handover-passport' ), $link['id'], $link['relation'] ) ) . '</td><td>' . esc_html( $link['reason'] ) . '</td></tr>';
+			}
+			echo '</tbody></table>';
+		}
+		if ( array() !== $found['records'] ) {
+			echo '<h3>' . esc_html__( 'Records of a kind this version does not know', 'estasoft-handover-passport' ) . '</h3><p class="description">' . esc_html__( 'A record like this may belong to a newer version of Passport, for example after a downgrade. Removing it deletes it for good.', 'estasoft-handover-passport' ) . '</p><table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Remove', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Record', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Kind', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
+			foreach ( $found['records'] as $record ) {
+				$title = $record['sensitive'] && ! Capabilities::canSeeSensitive() ? __( 'A Sensitive record', 'estasoft-handover-passport' ) : $record['title'];
+				echo '<tr><td><label><span class="screen-reader-text">' . esc_html( sprintf( /* translators: %d: record number. */ __( 'Remove record %d', 'estasoft-handover-passport' ), $record['id'] ) ) . '</span><input type="checkbox" name="record_ids[]" value="' . esc_attr( (string) $record['id'] ) . '"></label></td><td>' . esc_html( sprintf( /* translators: 1: record number, 2: record title. */ __( '#%1$d: %2$s', 'estasoft-handover-passport' ), $record['id'], $title ) ) . '</td><td><code>' . esc_html( $record['kind'] ) . '</code></td></tr>';
+			}
+			echo '</tbody></table>';
+		}
+		Form::checkbox( 'confirm_repair', __( 'I understand that the ticked rows are removed for good', 'estasoft-handover-passport' ), false );
+		echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Remove the ticked rows', 'estasoft-handover-passport' ) . '</button></p></form></div>';
+	}
+
+	/**
+	 * Remove what was ticked in the data check.
+	 */
+	public function handleRepair(): void {
+		if ( ! Capabilities::can( Capabilities::CONFIGURE ) ) {
+			wp_die( esc_html__( 'You do not have permission to change settings.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
+		}
+		check_admin_referer( self::FIX_ACTION );
+		$args = array( 'page' => self::SLUG, 'tab' => 'privacy' );
+		if ( '1' !== Request::post( 'confirm_repair' ) ) {
+			View::say( __( 'Nothing was removed. Tick the box that says you understand the rows are removed for good, then try again.', 'estasoft-handover-passport' ) );
+			$args['check'] = '1';
+			wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
+			exit;
+		}
+		$links   = isset( $_POST['link_ids'] ) && is_array( $_POST['link_ids'] ) ? array_map( 'absint', wp_unslash( $_POST['link_ids'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce checked above; each value is cast to an integer here and looked at again by the check.
+		$records = isset( $_POST['record_ids'] ) && is_array( $_POST['record_ids'] ) ? array_map( 'absint', wp_unslash( $_POST['record_ids'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce checked above; each value is cast to an integer here and looked at again by the check.
+		$removed = $this->plugin->dataCheck()->remove( $links, $records );
+		View::say(
+			sprintf(
+				/* translators: 1: number of links, 2: number of records. */
+				__( 'Removed %1$d links and %2$d records.', 'estasoft-handover-passport' ),
+				$removed['links'],
+				$removed['records']
+			),
+			false
+		);
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/**

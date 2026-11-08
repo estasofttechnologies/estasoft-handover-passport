@@ -106,6 +106,22 @@ abstract class Repository {
 	}
 
 	/**
+	 * The IDs among the given ones that exist in the table, deleted or not.
+	 *
+	 * @param array<int, int> $ids IDs.
+	 * @return array<int, int>
+	 */
+	public function existingIds( array $ids ): array {
+		$ids = array_values( array_unique( array_filter( array_map( 'intval', $ids ) ) ) );
+		if ( array() === $ids ) {
+			return array();
+		}
+		$marks = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$sql   = $this->db()->prepare( "SELECT id FROM {$this->table()} WHERE id IN ({$marks})", ...$ids ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Fixed table name; one placeholder per ID.
+		return array_map( 'intval', (array) $this->db()->get_col( $sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared above.
+	}
+
+	/**
 	 * Count rows with an optional prepared WHERE fragment.
 	 *
 	 * @param string            $where  Fragment such as "state = %s", already containing placeholders.

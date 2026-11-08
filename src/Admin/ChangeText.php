@@ -158,6 +158,9 @@ final class ChangeText {
 			case 'checklist_marked':
 				/* translators: %s: checklist item. */
 				return sprintf( __( 'Handover checklist updated: %s', 'estasoft-handover-passport' ), $label ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
+			case 'data_repaired':
+				/* translators: 1: number of links, 2: number of records. */
+				return sprintf( __( 'Data check. Links removed: %1$d. Records removed: %2$d.', 'estasoft-handover-passport' ), (int) ( $after['links'] ?? 0 ), (int) ( $after['records'] ?? 0 ) );
 			case 'settings_changed':
 				return __( 'Settings changed', 'estasoft-handover-passport' ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
 			case 'maintenance_note':
@@ -192,6 +195,7 @@ final class ChangeText {
 			'record_edited'             => __( 'Record edited', 'estasoft-handover-passport' ),
 			'record_deleted'            => __( 'Record deleted', 'estasoft-handover-passport' ),
 			'record_renewed'            => __( 'Record renewed', 'estasoft-handover-passport' ),
+			'data_repaired'             => __( 'Data check', 'estasoft-handover-passport' ),
 			'maintenance_note'          => __( 'Maintenance note', 'estasoft-handover-passport' ),
 			'drill_finished'            => __( 'Drill finished', 'estasoft-handover-passport' ),
 			'finding_accepted'          => __( 'Finding accepted', 'estasoft-handover-passport' ),

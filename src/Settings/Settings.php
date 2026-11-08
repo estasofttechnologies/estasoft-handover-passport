@@ -70,7 +70,6 @@ class Settings {
 			'url_check_weekly'    => false,
 			'restore_checks'      => array(),
 			'dashboard_widget'    => false,
-			'calendar_feed'       => false,
 			'pack'                => array(
 				'title'       => '',
 				'cover_text'  => '',

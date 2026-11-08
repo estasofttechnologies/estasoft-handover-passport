@@ -51,6 +51,7 @@ use Estasoft\HandoverPassport\Scan\ScanService;
 use Estasoft\HandoverPassport\Security\CopyGuard;
 use Estasoft\HandoverPassport\Security\SecretGuard;
 use Estasoft\HandoverPassport\Services\CheckService;
+use Estasoft\HandoverPassport\Services\DataCheck;
 use Estasoft\HandoverPassport\Services\PeopleService;
 use Estasoft\HandoverPassport\Services\ReminderService;
 use Estasoft\HandoverPassport\Services\RecordService;
@@ -210,6 +211,13 @@ final class Plugin {
 	 */
 	public function runWeeklyUrls(): void {
 		$this->weeklyUrls()->run();
+	}
+
+	/**
+	 * The data check in Settings.
+	 */
+	public function dataCheck(): DataCheck {
+		return $this->shared( 'data_check', fn(): DataCheck => new DataCheck( $this, $this->records()->items(), new PeopleRepository(), $this->records()->links() ) );
 	}
 
 	/**

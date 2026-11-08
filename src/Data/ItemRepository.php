@@ -101,6 +101,22 @@ class ItemRepository extends Repository {
 	}
 
 	/**
+	 * Records whose kind is not in the list, deleted or not (the data check, DAT-8).
+	 *
+	 * @param array<int, string> $known Kinds this version knows.
+	 * @return array<int, array<string, mixed>> Rows with id, kind, title and sensitive.
+	 */
+	public function ofUnknownKind( array $known ): array {
+		$known = array_values( array_unique( array_map( 'strval', $known ) ) );
+		if ( array() === $known ) {
+			return array();
+		}
+		$marks = implode( ',', array_fill( 0, count( $known ), '%s' ) );
+		$sql   = $this->db()->prepare( "SELECT id, kind, title, `sensitive` FROM {$this->table()} WHERE kind NOT IN ({$marks}) ORDER BY id ASC LIMIT 500", ...$known ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Fixed table name; one placeholder per kind.
+		return (array) $this->db()->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared above.
+	}
+
+	/**
 	 * IDs among the given ones that are marked Sensitive, deleted or not.
 	 *
 	 * @param array<int, int> $ids Record IDs.

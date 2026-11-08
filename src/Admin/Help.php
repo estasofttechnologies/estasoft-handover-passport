@@ -186,7 +186,7 @@ final class Help {
 				);
 			case SettingsScreen::SLUG:
 				return array(
-					'about'   => __( 'Settings holds the review periods, the scan time, the reminder recipients, who may do what, and what happens to the data when the plugin is deleted. A person can see or change only what the capabilities on the Who can do what tab allow.', 'estasoft-handover-passport' ),
+					'about'   => __( 'Settings holds the review periods, the scan time, the reminder recipients, who may do what, and what happens to the data when the plugin is deleted. The Privacy and data tab also holds the emailed copy of the Emergency sheet and Check data, which finds links that point at nothing. A person can see or change only what the capabilities on the Who can do what tab allow.', 'estasoft-handover-passport' ),
 					'goal'    => __( 'Example: send renewal reminders to the agency inbox.', 'estasoft-handover-passport' ),
 					'example' => array(
 						__( 'Open the Reminders tab.', 'estasoft-handover-passport' ),

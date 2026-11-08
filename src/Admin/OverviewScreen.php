@@ -293,7 +293,13 @@ final class OverviewScreen {
 			$in = 0 === $days ? __( 'Today', 'estasoft-handover-passport' ) : sprintf( _n( '%d day', '%d days', $days, 'estasoft-handover-passport' ), $days );
 			echo '<tr><td>' . esc_html( Dates::displayDate( $row[0] ) ) . '</td><td>' . esc_html( $row[2] ) . ' <span class="estasoft-hp-muted">' . esc_html( $row[1] ) . '</span></td><td>' . esc_html( $in ) . '</td></tr>';
 		}
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
+		if ( Capabilities::can( Capabilities::EXPORT ) ) {
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( ExportView::ACTION ) . '"><input type="hidden" name="pack" value="technical"><input type="hidden" name="format" value="ics"><input type="hidden" name="return" value="' . esc_url( add_query_arg( array( 'page' => Admin::MENU_SLUG ), admin_url( 'admin.php' ) ) ) . '">';
+			Form::nonce( ExportView::ACTION );
+			echo '<p><button type="submit" class="button">' . esc_html__( 'Download every date as a calendar file (.ics)', 'estasoft-handover-passport' ) . '</button> <span class="estasoft-hp-muted">' . esc_html__( 'Titles and dates only. Records marked Sensitive are left out.', 'estasoft-handover-passport' ) . '</span></p></form>';
+		}
+		echo '</div>';
 	}
 
 	/**
