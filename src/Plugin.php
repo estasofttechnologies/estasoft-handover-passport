@@ -1,0 +1,190 @@
+<?php
+/**
+ * Plugin container and start-up.
+ *
+ * @package Estasoft\HandoverPassport
+ */
+
+declare(strict_types=1);
+
+namespace Estasoft\HandoverPassport;
+
+use Estasoft\HandoverPassport\Admin\Admin;
+use Estasoft\HandoverPassport\Changes\ChangeCapture;
+use Estasoft\HandoverPassport\Changes\ChangeLog;
+use Estasoft\HandoverPassport\Cli\ScanCommand;
+use Estasoft\HandoverPassport\Data\ChangeRepository;
+use Estasoft\HandoverPassport\Data\ItemRepository;
+use Estasoft\HandoverPassport\Data\LinkRepository;
+use Estasoft\HandoverPassport\Data\PeopleRepository;
+use Estasoft\HandoverPassport\Data\ScanRepository;
+use Estasoft\HandoverPassport\Install\Schedule;
+use Estasoft\HandoverPassport\Install\Upgrader;
+use Estasoft\HandoverPassport\Passport\Passport;
+use Estasoft\HandoverPassport\Rest\Routes;
+use Estasoft\HandoverPassport\Scan\Collector;
+use Estasoft\HandoverPassport\Scan\ScanService;
+use Estasoft\HandoverPassport\Security\SecretGuard;
+use Estasoft\HandoverPassport\Services\PeopleService;
+use Estasoft\HandoverPassport\Services\RecordService;
+use Estasoft\HandoverPassport\Settings\Settings;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Holds one instance of each service and attaches the plugin to WordPress.
+ */
+final class Plugin {
+
+	/**
+	 * The one instance.
+	 *
+	 * @var Plugin|null
+	 */
+	private static ?Plugin $instance = null;
+
+	/**
+	 * Services built so far.
+	 *
+	 * @var array<string, object>
+	 */
+	private array $services = array();
+
+	/**
+	 * Whether boot() has run.
+	 *
+	 * @var bool
+	 */
+	private bool $booted = false;
+
+	/**
+	 * The instance.
+	 */
+	public static function instance(): self {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Attach to WordPress. Nothing here touches the front end (WPI-10).
+	 */
+	public function boot(): void {
+		if ( $this->booted ) {
+			return;
+		}
+		$this->booted = true;
+
+		add_action( 'plugins_loaded', array( Upgrader::class, 'maybeUpgrade' ), 5 );
+
+		( new ChangeCapture( $this->changeLog() ) )->register();
+
+		add_action( Schedule::SCAN, array( $this, 'runScheduledScan' ) );
+		add_action( Schedule::EVENT_SCAN, array( $this, 'runEventScan' ) );
+
+		if ( is_admin() ) {
+			( new Admin( $this ) )->register();
+		}
+
+		add_action( 'rest_api_init', array( new Routes( $this ), 'register' ) );
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			\WP_CLI::add_command( 'estasoft-passport scan', new ScanCommand( $this ) );
+		}
+	}
+
+	/**
+	 * Cron callback for the daily scan.
+	 */
+	public function runScheduledScan(): void {
+		$this->scanService()->run( 'scheduled' );
+	}
+
+	/**
+	 * Cron callback for a scan asked for by an event such as a plugin update.
+	 */
+	public function runEventScan(): void {
+		$this->scanService()->run( 'event' );
+	}
+
+	/**
+	 * Settings.
+	 */
+	public function settings(): Settings {
+		return $this->shared( 'settings', static fn(): Settings => new Settings() );
+	}
+
+	/**
+	 * Passport record.
+	 */
+	public function passport(): Passport {
+		return $this->shared( 'passport', static fn(): Passport => new Passport() );
+	}
+
+	/**
+	 * Secret guard.
+	 */
+	public function secretGuard(): SecretGuard {
+		return $this->shared( 'secret_guard', static fn(): SecretGuard => new SecretGuard() );
+	}
+
+	/**
+	 * Change log.
+	 */
+	public function changeLog(): ChangeLog {
+		return $this->shared( 'change_log', static fn(): ChangeLog => new ChangeLog( new ChangeRepository() ) );
+	}
+
+	/**
+	 * Records service.
+	 */
+	public function records(): RecordService {
+		return $this->shared(
+			'records',
+			fn(): RecordService => new RecordService( new ItemRepository(), new LinkRepository(), $this->secretGuard(), $this->changeLog(), $this->settings() )
+		);
+	}
+
+	/**
+	 * People service.
+	 */
+	public function people(): PeopleService {
+		return $this->shared(
+			'people',
+			fn(): PeopleService => new PeopleService( new PeopleRepository(), new LinkRepository(), $this->secretGuard(), $this->changeLog(), $this->settings() )
+		);
+	}
+
+	/**
+	 * Scan service.
+	 */
+	public function scanService(): ScanService {
+		return $this->shared(
+			'scan',
+			fn(): ScanService => new ScanService( new Collector(), new ScanRepository(), $this->changeLog(), $this->records(), $this->settings() )
+		);
+	}
+
+	/**
+	 * Build a service once.
+	 *
+	 * @template T of object
+	 * @param string          $id      Service ID.
+	 * @param callable(): T   $factory Builds the service.
+	 * @return T
+	 */
+	private function shared( string $id, callable $factory ): object {
+		if ( ! isset( $this->services[ $id ] ) ) {
+			$this->services[ $id ] = $factory();
+		}
+		return $this->services[ $id ];
+	}
+
+	/**
+	 * Forget built services. Used by tests.
+	 */
+	public function reset(): void {
+		$this->services = array();
+	}
+}
