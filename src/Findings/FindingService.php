@@ -11,8 +11,10 @@ namespace Estasoft\HandoverPassport\Findings;
 
 use Estasoft\HandoverPassport\Changes\ChangeLog;
 use Estasoft\HandoverPassport\Data\FindingRepository;
+use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Domain\ValidationError;
 use Estasoft\HandoverPassport\Plugin;
+use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Support\Clock;
 use Estasoft\HandoverPassport\Support\Json;
 
@@ -103,9 +105,11 @@ final class FindingService {
 	 * @return list<array<string, mixed>>
 	 */
 	public function list( array $filter = array() ): array {
-		$rules = RuleCatalog::all();
-		$out   = array();
-		foreach ( $this->findings->query( array(), 'last_seen', 'DESC' ) as $row ) {
+		$rules     = RuleCatalog::all();
+		$out       = array();
+		$rows      = $this->findings->query( array(), 'last_seen', 'DESC' );
+		$sensitive = $this->sensitiveSubjects( $rows );
+		foreach ( $rows as $row ) {
 			$state = $this->effectiveState( $row );
 			if ( isset( $filter['state'] ) && '' !== $filter['state'] && $filter['state'] !== $state ) {
 				continue;
@@ -116,7 +120,7 @@ final class FindingService {
 			if ( isset( $filter['rule_id'] ) && '' !== $filter['rule_id'] && $filter['rule_id'] !== (string) $row['rule_id'] ) {
 				continue;
 			}
-			$out[] = $this->present( $row, $rules[ (string) $row['rule_id'] ] ?? null, $state );
+			$out[] = $this->present( $row, $rules[ (string) $row['rule_id'] ] ?? null, $state, isset( $sensitive[ (int) $row['id'] ] ) );
 		}
 		usort(
 			$out,
@@ -140,7 +144,7 @@ final class FindingService {
 			return null;
 		}
 		$rules = RuleCatalog::all();
-		return $this->present( $row, $rules[ (string) $row['rule_id'] ] ?? null, $this->effectiveState( $row ) );
+		return $this->present( $row, $rules[ (string) $row['rule_id'] ] ?? null, $this->effectiveState( $row ), array() !== $this->sensitiveSubjects( array( $row ) ) );
 	}
 
 	/**
@@ -230,8 +234,9 @@ final class FindingService {
 		}
 		$this->plugin->secretGuard()->assertClean( array( 'reason' => $reason ), __( 'Reason', 'estasoft-handover-passport' ) );
 		$this->findings->update( (int) $row['id'], array( 'state' => FindingRepository::ACCEPTED, 'accepted_reason' => mb_substr( $reason, 0, 500 ), 'accepted_by' => get_current_user_id(), 'snoozed_until' => null ) );
-		$presented = $this->get( (int) $row['id'] );
-		$this->log->add( 'finding_accepted', 'finding', (int) $row['id'], (string) ( $presented['message'] ?? (string) $row['rule_id'] ), array(), array(), mb_substr( $reason, 0, 500 ) );
+		$sensitive = array() !== $this->sensitiveSubjects( array( $row ) );
+		$presented = $this->present( $row, RuleCatalog::all()[ (string) $row['rule_id'] ] ?? null, FindingRepository::ACCEPTED, false );
+		$this->log->add( 'finding_accepted', 'finding', (int) $row['id'], (string) ( $presented['message'] ?? (string) $row['rule_id'] ), array(), array(), mb_substr( $reason, 0, 500 ), sensitive: $sensitive );
 	}
 
 	/**
@@ -298,6 +303,32 @@ final class FindingService {
 	}
 
 	/**
+	 * Findings that are about a record marked Sensitive, by finding ID.
+	 *
+	 * @param list<array<string, mixed>> $rows Stored findings.
+	 * @return array<int, true>
+	 */
+	private function sensitiveSubjects( array $rows ): array {
+		$item_ids = array();
+		foreach ( $rows as $row ) {
+			if ( 'item' === (string) $row['subject_type'] && (int) $row['subject_id'] > 0 ) {
+				$item_ids[] = (int) $row['subject_id'];
+			}
+		}
+		if ( array() === $item_ids ) {
+			return array();
+		}
+		$marked = array_flip( ( new ItemRepository() )->sensitiveIds( $item_ids ) );
+		$out    = array();
+		foreach ( $rows as $row ) {
+			if ( 'item' === (string) $row['subject_type'] && isset( $marked[ (int) $row['subject_id'] ] ) ) {
+				$out[ (int) $row['id'] ] = true;
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * A finding that is not resolved.
 	 *
 	 * @param int $id Finding ID.
@@ -318,10 +349,15 @@ final class FindingService {
 	 * @param array<string, mixed> $row   Stored finding.
 	 * @param Rule|null            $rule  Its rule, or null when the rule no longer exists.
 	 * @param string               $state Effective state.
+	 * @param bool                 $about_sensitive Whether the finding is about a Sensitive record.
 	 * @return array<string, mixed>
 	 */
-	private function present( array $row, ?Rule $rule, string $state ): array {
+	private function present( array $row, ?Rule $rule, string $state, bool $about_sensitive = false ): array {
 		$values = (array) $row['message_values'];
+		$hidden = $about_sensitive && ! Capabilities::canSeeSensitive();
+		if ( $hidden ) {
+			$values = array(); // The values hold the record's name.
+		}
 		return array(
 			'id'              => (int) $row['id'],
 			'rule_id'         => (string) $row['rule_id'],
@@ -330,8 +366,11 @@ final class FindingService {
 			'state'           => $state,
 			'subject_type'    => (string) $row['subject_type'],
 			'subject_id'      => (int) $row['subject_id'],
-			'subject_key'     => (string) $row['subject_key'],
-			'message'         => null === $rule ? __( 'This finding comes from a rule that is no longer available.', 'estasoft-handover-passport' ) : $rule->message( $values ),
+			'subject_key'     => $hidden ? '' : (string) $row['subject_key'],
+			'message'         => $hidden
+				? __( 'A finding about a Sensitive record. Someone with the Sensitive capability can read it.', 'estasoft-handover-passport' )
+				: ( null === $rule ? __( 'This finding comes from a rule that is no longer available.', 'estasoft-handover-passport' ) : $rule->message( $values ) ),
+			'sensitive'       => $hidden,
 			'rule_title'      => null === $rule ? (string) $row['rule_id'] : $rule->title,
 			'handover'        => null !== $rule && $rule->handover,
 			'screen'          => null === $rule ? array( 'page' => '', 'tab' => '' ) : $rule->screen,

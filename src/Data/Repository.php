@@ -120,6 +120,21 @@ abstract class Repository {
 	}
 
 	/**
+	 * The greatest value of a column among rows with no deleted time, or null when there are none.
+	 *
+	 * @param string $column A column of this table (checked against the fixed list).
+	 * @return string|null
+	 */
+	public function maxOf( string $column ): ?string {
+		if ( ! in_array( $column, $this->columns(), true ) ) {
+			return null;
+		}
+		$where = in_array( 'deleted_at', $this->columns(), true ) ? ' WHERE deleted_at IS NULL' : '';
+		$value = $this->db()->get_var( "SELECT MAX({$column}) FROM {$this->table()}{$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Table and column names come from fixed lists.
+		return is_string( $value ) && '' !== $value ? $value : null;
+	}
+
+	/**
 	 * Select rows matching equality filters. Column names are checked against the fixed list.
 	 *
 	 * @param array<string, mixed> $equals  Column => value. A null value means IS NULL.

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport;
 
 use Estasoft\HandoverPassport\Admin\Admin;
+use Estasoft\HandoverPassport\Admin\SiteHealth;
 use Estasoft\HandoverPassport\Changes\ChangeCapture;
 use Estasoft\HandoverPassport\Changes\ChangeLog;
 use Estasoft\HandoverPassport\Cli\RemindersCommand;
@@ -104,6 +105,8 @@ final class Plugin {
 		if ( is_admin() ) {
 			( new Admin( $this ) )->register();
 		}
+
+		( new SiteHealth( $this ) )->register();
 
 		add_action( 'rest_api_init', array( new Routes( $this ), 'register' ) );
 
