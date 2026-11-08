@@ -91,6 +91,8 @@ The PDF needs the PHP extensions GD and mbstring and enough memory. When it cann
 
 The plugin stores a record of the site and the names and work email addresses of the people you enter. Nothing is sent to ESTASOFT TECHNOLOGIES or any third party.
 
+The plugin joins the WordPress tools under Tools > Export Personal Data and Tools > Erase Personal Data. For an email address, the export lists the person's entry in the directory, the records that name them, the handover acknowledgements that carry their name, their entry among the administrators found by the scan and the changes they made. The erase replaces the person with "Former contact" and keeps the row, so a role or a record that pointed at them still shows that someone held it. It cannot change saved snapshots, which are fixed by their checksum, or free text in records, so it tells you what remains and how to deal with it.
+
 Reminder emails go to the addresses you list and to the account holder and payer you enter on a record. The email names the record and its date, never a password or key, and a record marked Sensitive is not named in the email. The log of sent reminders keeps the date, the record and the number of recipients, not their addresses.
 
 == Changelog ==

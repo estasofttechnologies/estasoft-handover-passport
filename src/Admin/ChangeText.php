@@ -89,6 +89,8 @@ final class ChangeText {
 			case 'person_deleted':
 				/* translators: %s: person's name. */
 				return sprintf( __( 'Person deleted: %s', 'estasoft-handover-passport' ), $label );
+			case 'personal_data_erased':
+				return __( 'Personal data erased at the request of a person', 'estasoft-handover-passport' );
 			case 'role_changed':
 				/* translators: %s: role name. */
 				return sprintf( __( 'People in the role "%s" changed', 'estasoft-handover-passport' ), $label );

@@ -66,6 +66,74 @@ class ChangeRepository extends Repository {
 	}
 
 	/**
+	 * Entries a WordPress user made (privacy export).
+	 *
+	 * @param list<int> $user_ids WordPress user numbers.
+	 * @param int       $limit    Rows to return, 0 for all.
+	 * @param int       $offset   Rows to skip.
+	 * @return list<array<string, mixed>>
+	 */
+	public function byActors( array $user_ids, int $limit = 0, int $offset = 0 ): array {
+		$user_ids = $this->numbers( $user_ids );
+		if ( array() === $user_ids ) {
+			return array();
+		}
+		return $this->query( array(), 'changed_at', 'ASC', $limit, $offset, 'actor_id IN (' . implode( ',', array_fill( 0, count( $user_ids ), '%d' ) ) . ')', $user_ids );
+	}
+
+	/**
+	 * Replace the name of a WordPress user in the entries they made and the entries about them. This is one of two
+	 * places that change stored entries (the other is relabel()), and it runs only when a person's personal-data erase
+	 * request is processed.
+	 *
+	 * Entries about an account are found by the user number. A scan writes "administrator added" without a number, so
+	 * those are found by the name the scan saw.
+	 *
+	 * @param list<int>    $user_ids WordPress user numbers.
+	 * @param list<string> $names    Names the user went by in the scans.
+	 * @param string       $label    Neutral name to write instead.
+	 * @return int Entries changed.
+	 */
+	public function anonymiseUsers( array $user_ids, array $names, string $label ): int {
+		$user_ids = $this->numbers( $user_ids );
+		$names    = array_values( array_filter( array_unique( array_map( 'strval', $names ) ), static fn( string $name ): bool => '' !== $name ) );
+		$changed  = 0;
+		if ( array() !== $user_ids ) {
+			$marks    = implode( ',', array_fill( 0, count( $user_ids ), '%d' ) );
+			$changed += (int) $this->db()->query( $this->db()->prepare( "UPDATE {$this->table()} SET actor_id = 0, actor_label = %s WHERE actor_id IN ({$marks})", $label, ...$user_ids ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed table name; one placeholder per ID.
+			$changed += (int) $this->db()->query( $this->db()->prepare( "UPDATE {$this->table()} SET subject_label = %s WHERE subject_type = 'user' AND subject_id IN ({$marks})", $label, ...$user_ids ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed table name; one placeholder per ID.
+		}
+		if ( array() !== $names ) {
+			$marks    = implode( ',', array_fill( 0, count( $names ), '%s' ) );
+			$changed += (int) $this->db()->query( $this->db()->prepare( "UPDATE {$this->table()} SET subject_label = %s WHERE subject_type = 'user' AND subject_id = 0 AND subject_label IN ({$marks})", $label, ...$names ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed table name; one placeholder per name.
+		}
+		return $changed;
+	}
+
+	/**
+	 * Replace the name of a subject, such as a person in the directory, in its entries (privacy erase).
+	 *
+	 * @param string $subject_type Subject type.
+	 * @param int    $subject_id   Subject number.
+	 * @param string $label        Neutral name to write instead.
+	 * @return int Entries changed.
+	 */
+	public function relabel( string $subject_type, int $subject_id, string $label ): int {
+		$done = $this->db()->update( $this->table(), array( 'subject_label' => $label ), array( 'subject_type' => $subject_type, 'subject_id' => $subject_id ) );
+		return false === $done ? 0 : (int) $done;
+	}
+
+	/**
+	 * Whole numbers above zero, without repeats.
+	 *
+	 * @param array<mixed> $values Candidate values.
+	 * @return list<int>
+	 */
+	private function numbers( array $values ): array {
+		return array_values( array_unique( array_filter( array_map( 'intval', $values ), static fn( int $n ): bool => $n > 0 ) ) );
+	}
+
+	/**
 	 * Build the WHERE fragment for the filters.
 	 *
 	 * @param array<string, mixed> $filters Filters.

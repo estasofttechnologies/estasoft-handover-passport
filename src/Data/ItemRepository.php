@@ -108,6 +108,20 @@ class ItemRepository extends Repository {
 	}
 
 	/**
+	 * Live records whose title or text contains a string (privacy tools).
+	 *
+	 * @param string $needle Text to look for, such as an email address.
+	 * @return list<array<string, mixed>>
+	 */
+	public function mentioning( string $needle ): array {
+		if ( '' === $needle ) {
+			return array();
+		}
+		$like = '%' . $this->db()->esc_like( $needle ) . '%';
+		return $this->query( array( 'deleted_at' => null ), 'id', 'ASC', 0, 0, 'title LIKE %s OR data LIKE %s', array( $like, $like ) );
+	}
+
+	/**
 	 * The numbers of every record marked Sensitive, deleted ones included.
 	 *
 	 * @return list<int>

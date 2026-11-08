@@ -1,6 +1,6 @@
 <?php
 /**
- * Privacy information: what is stored, suggested policy text and the personal-data tools (PRV-1, PRV-2, PRV-3).
+ * Privacy information: what is stored and suggested policy text (PRV-1, PRV-2). The personal-data tools (PRV-3) are in Privacy\PersonalData.
  *
  * @package Estasoft\HandoverPassport
  */

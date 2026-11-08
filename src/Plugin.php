@@ -42,6 +42,7 @@ use Estasoft\HandoverPassport\Handover\SuccessorNotes;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Install\Upgrader;
 use Estasoft\HandoverPassport\Passport\Passport;
+use Estasoft\HandoverPassport\Privacy\PersonalData;
 use Estasoft\HandoverPassport\Rest\Routes;
 use Estasoft\HandoverPassport\Scan\Collector;
 use Estasoft\HandoverPassport\Scan\ScanService;
@@ -124,6 +125,7 @@ final class Plugin {
 		}
 
 		( new SiteHealth( $this ) )->register();
+		( new PersonalData( $this ) )->register();
 
 		add_action( 'rest_api_init', array( new Routes( $this ), 'register' ) );
 

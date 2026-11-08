@@ -30,6 +30,12 @@ class PeopleService {
 	public const PASSPORT_ID = 1;
 
 	/**
+	 * The name that replaces a person after a personal-data erase (PPL-5). Not translated: stored text must not
+	 * change with the language of whoever processes the request.
+	 */
+	public const FORMER_CONTACT = 'Former contact';
+
+	/**
 	 * Constructor.
 	 *
 	 * @param PeopleRepository $people   People.
@@ -171,6 +177,42 @@ class PeopleService {
 		$this->people->softDelete( $id );
 		$this->log->add( 'person_deleted', 'person', $id, (string) $row['name'], source: $channel );
 		do_action( 'estasoft_hp_record_saved', $id, 'person', array(), array() );
+	}
+
+	/**
+	 * Replace a person's details with "Former contact" and keep their place in the roles and on the records, so a role
+	 * still shows that someone held it (PPL-5). Used by the WordPress personal-data eraser. The change log is not
+	 * written here; the caller records one entry for the whole request.
+	 *
+	 * @param int $id Person ID.
+	 * @return bool Whether the row changed.
+	 */
+	public function anonymise( int $id ): bool {
+		$row = $this->people->find( $id );
+		if ( null === $row ) {
+			return false;
+		}
+		$changed = $this->people->update(
+			$id,
+			array(
+				'name'          => self::FORMER_CONTACT,
+				'organisation'  => '',
+				'title'         => '',
+				'email'         => '',
+				'phone'         => '',
+				'language'      => '',
+				'timezone'      => '',
+				'urgent_method' => '',
+				'note'          => '',
+				'left_on'       => $row['left_on'] ?: Clock::today(),
+				'active'        => 0,
+				'updated_at'    => Clock::sql(),
+			)
+		);
+		if ( $changed ) {
+			do_action( 'estasoft_hp_record_saved', $id, 'person', array(), array() );
+		}
+		return $changed;
 	}
 
 	/**

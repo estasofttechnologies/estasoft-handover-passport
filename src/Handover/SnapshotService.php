@@ -247,7 +247,7 @@ final class SnapshotService {
 		$this->plugin->secretGuard()->assertClean( $ack, __( 'Acknowledgement', 'estasoft-handover-passport' ) );
 
 		$this->snapshots->appendAcknowledgement( $id, $ack );
-		$this->plugin->changeLog()->add( 'snapshot_acknowledged', 'snapshot', $id, (string) $row['name'], array(), array( 'received_by' => $name, 'how' => self::methods()[ $method ] ), $note );
+		$this->plugin->changeLog()->add( 'snapshot_acknowledged', 'snapshot', $id, (string) $row['name'], array(), array( 'received_by' => $name, 'organisation' => $ack['organisation'], 'how' => self::methods()[ $method ] ), $note );
 		$this->plugin->handoverStatus()->set( Passport::STATUS_HANDED, (string) $row['name'] );
 		do_action( 'estasoft_hp_snapshot_acknowledged', $id, $ack );
 	}

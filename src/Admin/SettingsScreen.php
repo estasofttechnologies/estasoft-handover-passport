@@ -310,7 +310,17 @@ final class SettingsScreen extends Screen {
 		foreach ( PrivacyPolicy::stored() as $line ) {
 			echo '<li>' . esc_html( $line ) . '</li>';
 		}
-		echo '</ul><p>' . esc_html__( 'Nothing is sent to ESTASOFT TECHNOLOGIES or to any other outside party. Scans read local data only.', 'estasoft-handover-passport' ) . '</p></div>';
+		echo '</ul><p>' . esc_html__( 'Nothing is sent to ESTASOFT TECHNOLOGIES or to any other outside party. Scans read local data only.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<p>' . esc_html__( 'Every record stays in this site\'s own database. Data leaves it only in a file someone downloads, or in a reminder or digest email you have switched on.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<p>' . wp_kses(
+			sprintf(
+				/* translators: 1: link to Export Personal Data, 2: link to Erase Personal Data. */
+				__( 'To answer a request from a person, use %1$s or %2$s. Passport takes part in both: the export lists what is held about an email address, and the erase replaces the person with "Former contact" and keeps their place in the roles.', 'estasoft-handover-passport' ),
+				'<a href="' . esc_url( admin_url( 'export-personal-data.php' ) ) . '">' . esc_html__( 'Export Personal Data', 'estasoft-handover-passport' ) . '</a>',
+				'<a href="' . esc_url( admin_url( 'erase-personal-data.php' ) ) . '">' . esc_html__( 'Erase Personal Data', 'estasoft-handover-passport' ) . '</a>'
+			),
+			array( 'a' => array( 'href' => array() ) )
+		) . '</p></div>';
 
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'How long things are kept', 'estasoft-handover-passport' ) . '</legend>';
 		Form::row( 'ret_changes_months', array( 'type' => 'int', 'label' => __( 'Change log (months)', 'estasoft-handover-passport' ) ), $retention['changes_months'] ?? 24 );
