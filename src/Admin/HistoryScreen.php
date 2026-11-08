@@ -195,7 +195,8 @@ final class HistoryScreen extends Screen {
 			$error = __( 'Use a real date in the form YYYY-MM-DD.', 'estasoft-handover-passport' );
 		} else {
 			try {
-				$this->plugin->secretGuard()->assertClean( array( 'text' => $text, 'asset' => $asset ), __( 'Note', 'estasoft-handover-passport' ) );
+				$this->plugin->secretGuard()->assertClean( $text, __( 'Note', 'estasoft-handover-passport' ) );
+				$this->plugin->secretGuard()->assertClean( $asset, __( 'Asset', 'estasoft-handover-passport' ) );
 			} catch ( SecretFound $e ) {
 				$error = $e->getMessage();
 			}

@@ -29,8 +29,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Copy guard: a copy of the site on another address pauses reminders and asks whether the site moved or this is a copy.
 - `wp estasoft-passport reminders run --dry-run`, `digest` and `test --to=`.
 - Site Health: a test for how recently the Passport was reviewed, a test for whether scans are running, and a debug information section with counts and dates only.
+- `wp estasoft-passport status` with counts and dates only and `--fail-on=needs-fixing|worth-fixing` for build scripts; `findings list|snooze|accept|reopen` and `record list|verify|renew`. Commands that change the Passport need `--user`, so History names the person; changes show "cli" as their origin.
 
 ### Changed
 - The change log hides the names and values of Sensitive records from people without the capability, including entries written before the record was marked Sensitive.
 - The test email, when pressed again within a minute, says how many seconds are left.
 - Findings about a Sensitive record no longer name it for people without the Sensitive capability.
+- The message for a note or reason that looks like a secret names the field once, not twice.

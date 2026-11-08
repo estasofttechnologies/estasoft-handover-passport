@@ -221,22 +221,23 @@ final class FindingService {
 	/**
 	 * Accept a finding with a reason. It stays until the condition clears, and exports show the reason.
 	 *
-	 * @param int    $id     Finding ID.
-	 * @param string $reason Why it is accepted. Must not hold a secret.
+	 * @param int    $id      Finding ID.
+	 * @param string $reason  Why it is accepted. Must not hold a secret.
+	 * @param string $channel Origin for the log.
 	 * @throws ValidationError When the reason is empty.
 	 * @throws \Estasoft\HandoverPassport\Security\SecretFound When the reason looks like a secret.
 	 */
-	public function accept( int $id, string $reason ): void {
+	public function accept( int $id, string $reason, string $channel = 'wordpress' ): void {
 		$row    = $this->requireActive( $id );
 		$reason = trim( sanitize_textarea_field( $reason ) );
 		if ( '' === $reason ) {
 			throw new ValidationError( __( 'Reason', 'estasoft-handover-passport' ), __( 'Say why this finding is accepted.', 'estasoft-handover-passport' ) );
 		}
-		$this->plugin->secretGuard()->assertClean( array( 'reason' => $reason ), __( 'Reason', 'estasoft-handover-passport' ) );
+		$this->plugin->secretGuard()->assertClean( $reason, __( 'Reason', 'estasoft-handover-passport' ) );
 		$this->findings->update( (int) $row['id'], array( 'state' => FindingRepository::ACCEPTED, 'accepted_reason' => mb_substr( $reason, 0, 500 ), 'accepted_by' => get_current_user_id(), 'snoozed_until' => null ) );
 		$sensitive = array() !== $this->sensitiveSubjects( array( $row ) );
 		$presented = $this->present( $row, RuleCatalog::all()[ (string) $row['rule_id'] ] ?? null, FindingRepository::ACCEPTED, false );
-		$this->log->add( 'finding_accepted', 'finding', (int) $row['id'], (string) ( $presented['message'] ?? (string) $row['rule_id'] ), array(), array(), mb_substr( $reason, 0, 500 ), sensitive: $sensitive );
+		$this->log->add( 'finding_accepted', 'finding', (int) $row['id'], (string) ( $presented['message'] ?? (string) $row['rule_id'] ), array(), array(), mb_substr( $reason, 0, 500 ), source: $channel, sensitive: $sensitive );
 	}
 
 	/**
@@ -266,7 +267,7 @@ final class FindingService {
 		if ( '' === $reason ) {
 			throw new ValidationError( __( 'Reason', 'estasoft-handover-passport' ), __( 'Say why this rule is switched off.', 'estasoft-handover-passport' ) );
 		}
-		$this->plugin->secretGuard()->assertClean( array( 'reason' => $reason ), __( 'Reason', 'estasoft-handover-passport' ) );
+		$this->plugin->secretGuard()->assertClean( $reason, __( 'Reason', 'estasoft-handover-passport' ) );
 		$disabled             = $this->disabledRules();
 		$disabled[ $rule_id ] = mb_substr( $reason, 0, 500 );
 		$this->plugin->settings()->set( 'disabled_rules', $disabled );

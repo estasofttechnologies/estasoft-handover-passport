@@ -28,7 +28,7 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 * Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server".
 * Emails reminders before licence, domain, hosting and service dates, and can send a short weekly summary. Each reminder goes once per date and lead time.
 * Pauses reminders on a copy of the site, so a staging site does not send every reminder a second time.
-* Works with WP-CLI (`wp estasoft-passport scan`, `wp estasoft-passport reminders run --dry-run`) and a REST API with capability checks on every route.
+* Works with WP-CLI (`wp estasoft-passport status --fail-on=needs-fixing`, `findings`, `record`, `scan`, `reminders run --dry-run`) and a REST API with capability checks on every route.
 
 **Built for trust**
 

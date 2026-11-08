@@ -158,15 +158,16 @@ class RecordService {
 	/**
 	 * Verify a record: stores the date and name, restarts freshness (PRT-3).
 	 *
-	 * @param int $id Record ID.
+	 * @param int    $id      Record ID.
+	 * @param string $channel Origin for the log.
 	 */
-	public function verify( int $id ): void {
+	public function verify( int $id, string $channel = 'wordpress' ): void {
 		$row = $this->items->find( $id );
 		if ( null === $row || null !== $row['deleted_at'] ) {
 			return;
 		}
 		$this->items->update( $id, array( 'verified_at' => Clock::sql(), 'verified_by' => get_current_user_id() ) );
-		$this->log->add( 'record_verified', 'item', $id, (string) $row['title'], sensitive: (bool) $row['sensitive'] );
+		$this->log->add( 'record_verified', 'item', $id, (string) $row['title'], source: $channel, sensitive: (bool) $row['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], array(), $this->forHook( $this->hydrate( $row ) ) );
 	}
 

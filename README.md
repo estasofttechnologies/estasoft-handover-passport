@@ -26,7 +26,22 @@ After activation, open **Passport** in the admin menu and press **Scan now**.
 ```bash
 wp estasoft-passport scan
 wp estasoft-passport scan --format=json
+
+wp estasoft-passport status                          # counts and dates only, safe for a build log
+wp estasoft-passport status --fail-on=needs-fixing   # exit 1 when such findings are open
+
+wp estasoft-passport findings list --severity=needs-fixing
+wp estasoft-passport findings snooze 12 --days=30 --user=admin
+wp estasoft-passport findings accept 12 --reason="The client renews this by hand" --user=admin
+
+wp estasoft-passport record list --kind=domain
+wp estasoft-passport record verify 7 --user=admin
+wp estasoft-passport record renew 7 2027-03-01 --user=admin
+
+wp estasoft-passport reminders run --dry-run
 ```
+
+Commands that change the Passport need `--user` with someone who may edit it, so the change log names that person. Reading needs no user, and without one nothing Sensitive is shown.
 
 REST routes live under `estasoft-passport/v1` and always check a capability.
 
