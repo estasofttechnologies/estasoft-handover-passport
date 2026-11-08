@@ -283,7 +283,8 @@ class RecordService {
 		}
 
 		$interval  = (int) ( $row['review_days'] ?: $this->settings->reviewDays( (string) $def['section'] ) );
-		$freshness = Freshness::state(
+		// A record of something that happened on a day (an incident) is a fact, not a claim that needs checking again.
+		$freshness = ! empty( $def['timeless'] ) ? Freshness::VERIFIED : Freshness::state(
 			$row['verified_at'] ? (string) $row['verified_at'] : null,
 			(string) $row['created_at'],
 			$interval,

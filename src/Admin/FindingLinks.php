@@ -77,6 +77,8 @@ final class FindingLinks {
 				return array( 'page' => SafetyScreen::SLUG, 'tab' => 'urls' );
 			case Kinds::ACCESS:
 				return array( 'page' => PeopleScreen::SLUG, 'tab' => 'access' );
+			case Kinds::INCIDENT:
+				return array( 'page' => HistoryScreen::SLUG, 'tab' => 'incidents' );
 			case Kinds::STACKNOTE:
 				return array( 'page' => InventoryScreen::SLUG, 'tab' => 'stack' );
 			default:

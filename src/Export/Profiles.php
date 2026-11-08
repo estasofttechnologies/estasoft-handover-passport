@@ -46,6 +46,7 @@ final class Profiles {
 			'runbooks'           => __( 'Runbooks', 'estasoft-handover-passport' ),
 			'tests'              => __( 'Restore tests', 'estasoft-handover-passport' ),
 			'transfers'          => __( 'Ownership transfers', 'estasoft-handover-passport' ),
+			'incidents'          => __( 'Incidents', 'estasoft-handover-passport' ),
 			'checklist'          => __( 'Handover checklist', 'estasoft-handover-passport' ),
 			'findings'           => __( 'Findings', 'estasoft-handover-passport' ),
 			'emergency_contacts' => __( 'Who to call', 'estasoft-handover-passport' ),
@@ -64,7 +65,7 @@ final class Profiles {
 	 */
 	public static function builtin(): array {
 		$common = array( 'passport', 'people', 'domains', 'hosting', 'licences', 'services', 'backups', 'urls', 'runbooks', 'tests', 'transfers', 'checklist' );
-		$deep   = array( 'passport', 'people', 'stack', 'domains', 'dns', 'hosting', 'licences', 'services', 'backups', 'urls', 'access', 'assets', 'stack_notes', 'runbooks', 'tests', 'transfers', 'checklist', 'findings' );
+		$deep   = array( 'passport', 'people', 'stack', 'domains', 'dns', 'hosting', 'licences', 'services', 'backups', 'urls', 'access', 'assets', 'stack_notes', 'runbooks', 'tests', 'incidents', 'transfers', 'checklist', 'findings' );
 		return array(
 			Profile::CLIENT    => new Profile( Profile::CLIENT, __( 'Client pack', 'estasoft-handover-passport' ), __( 'What the site owner needs and may see. Records are included only when marked visible to the client.', 'estasoft-handover-passport' ), $common, Profile::CLIENT ),
 			Profile::TECHNICAL => new Profile( Profile::TECHNICAL, __( 'Technical pack', 'estasoft-handover-passport' ), __( 'Everything that is not Sensitive, for the next maintainer.', 'estasoft-handover-passport' ), $deep, Profile::TECHNICAL ),

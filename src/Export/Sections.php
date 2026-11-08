@@ -38,6 +38,7 @@ final class Sections {
 		'access'            => array( Kinds::ACCESS ),
 		'assets'            => array( Kinds::ASSET ),
 		'stack_notes'       => array( Kinds::STACKNOTE ),
+		'incidents'         => array( Kinds::INCIDENT ),
 		'emergency_hosting' => array( Kinds::HOST ),
 		'emergency_domains' => array( Kinds::DOMAIN ),
 		'emergency_backups' => array( Kinds::BACKUP ),
@@ -567,6 +568,10 @@ final class Sections {
 			$items[] = $this->item( 'item:' . (int) $record['id'], (string) $record['title'], $values, (string) $record['due_date'], $due_label, ! empty( $record['sensitive'] ), $kind );
 		}
 		$items = $this->sorted( $items );
+		if ( Kinds::INCIDENT === $kind ) {
+			// The latest incident first; the title only breaks a tie.
+			usort( $items, static fn( array $a, array $b ): int => strcmp( (string) ( $b['values']['occurred_on'] ?? '' ), (string) ( $a['values']['occurred_on'] ?? '' ) ) );
+		}
 		$items = $this->limit( $chapter, $items, (string) ( $def['plural'] ?? $kind ) );
 		return $this->group( $kind, (string) ( $def['plural'] ?? $kind ), $fields, $items );
 	}

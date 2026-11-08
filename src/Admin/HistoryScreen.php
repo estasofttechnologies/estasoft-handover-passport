@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Admin;
 
+use Estasoft\HandoverPassport\Domain\Kinds;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Security\SecretFound;
 use Estasoft\HandoverPassport\Support\Clock;
@@ -51,8 +52,9 @@ final class HistoryScreen extends Screen {
 	 */
 	protected function tabs(): array {
 		return array(
-			'changes' => __( 'Change log', 'estasoft-handover-passport' ),
-			'notes'   => __( 'Notes', 'estasoft-handover-passport' ),
+			'changes'   => __( 'Change log', 'estasoft-handover-passport' ),
+			'notes'     => __( 'Notes', 'estasoft-handover-passport' ),
+			'incidents' => __( 'Incidents', 'estasoft-handover-passport' ),
 		);
 	}
 
@@ -64,6 +66,11 @@ final class HistoryScreen extends Screen {
 	protected function tab( string $tab ): void {
 		if ( 'notes' === $tab ) {
 			$this->notes();
+			return;
+		}
+		if ( 'incidents' === $tab ) {
+			echo '<p class="description">' . esc_html__( 'Write down what went wrong while it is fresh: what happened, the effect, the cause, the fix, how long the site took to come back and what will change. The next maintainer learns more from this than from the change log.', 'estasoft-handover-passport' ) . '</p>';
+			( new RegisterView( $this->plugin ) )->render( Kinds::INCIDENT, self::SLUG, $this->keep( 'incidents' ) );
 			return;
 		}
 		$this->changes();
@@ -186,7 +193,17 @@ final class HistoryScreen extends Screen {
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::NOTE_ACTION ) . '">';
 			Form::nonce( self::NOTE_ACTION );
 			Form::row( 'note_date', array( 'type' => 'date', 'label' => __( 'Date', 'estasoft-handover-passport' ) ), $input['note_date'] ?? Clock::today() );
-			Form::row( 'note_type', array( 'type' => 'select', 'label' => __( 'Type', 'estasoft-handover-passport' ), 'options' => $types, 'required' => true ), $input['note_type'] ?? '' );
+			Form::row(
+				'note_type',
+				array(
+					'type'     => 'select',
+					'label'    => __( 'Type', 'estasoft-handover-passport' ),
+					'options'  => $types,
+					'required' => true,
+					'help'     => __( 'For something that broke, a short note is fine. To record the cause, the fix and how long it took, use the Incidents tab.', 'estasoft-handover-passport' ),
+				),
+				$input['note_type'] ?? ''
+			);
 			Form::row( 'note_asset', array( 'type' => 'text', 'label' => __( 'About (optional)', 'estasoft-handover-passport' ), 'help' => __( 'For example a plugin, a domain or a server.', 'estasoft-handover-passport' ), 'max' => 120 ), $input['note_asset'] ?? '' );
 			Form::row( 'note_text', array( 'type' => 'textarea', 'label' => __( 'What was done', 'estasoft-handover-passport' ), 'required' => true, 'help' => __( 'Plain text. Never paste a password or key here.', 'estasoft-handover-passport' ) ), $input['note_text'] ?? '', $errors['note_text'] ?? '' );
 			echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Add note', 'estasoft-handover-passport' ) . '</button></p></form></div>';

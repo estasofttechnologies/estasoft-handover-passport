@@ -116,8 +116,11 @@ final class RegisterView {
 		foreach ( $columns as $column ) {
 			echo '<th scope="col">' . esc_html( $this->columnLabel( $def, (string) $column ) ) . '</th>';
 		}
+		$timeless = ! empty( $def['timeless'] );
 		echo '<th scope="col">' . esc_html__( 'Source', 'estasoft-handover-passport' ) . '</th>';
-		echo '<th scope="col">' . esc_html__( 'Review', 'estasoft-handover-passport' ) . '</th>';
+		if ( ! $timeless ) {
+			echo '<th scope="col">' . esc_html__( 'Review', 'estasoft-handover-passport' ) . '</th>';
+		}
 		if ( Kinds::LICENCE === $kind ) {
 			echo '<th scope="col">' . esc_html__( 'Status', 'estasoft-handover-passport' ) . '</th>';
 		}
@@ -126,7 +129,7 @@ final class RegisterView {
 		foreach ( $records as $record ) {
 			echo '<tr>';
 			if ( ! empty( $record['hidden'] ) ) {
-				echo '<td colspan="' . esc_attr( (string) ( count( $columns ) + 2 + ( Kinds::LICENCE === $kind ? 1 : 0 ) ) ) . '"><em>' . esc_html__( 'Sensitive record, hidden', 'estasoft-handover-passport' ) . '</em></td><td></td></tr>';
+				echo '<td colspan="' . esc_attr( (string) ( count( $columns ) + ( $timeless ? 1 : 2 ) + ( Kinds::LICENCE === $kind ? 1 : 0 ) ) ) . '"><em>' . esc_html__( 'Sensitive record, hidden', 'estasoft-handover-passport' ) . '</em></td><td></td></tr>';
 				continue;
 			}
 			foreach ( $columns as $i => $column ) {
@@ -138,7 +141,9 @@ final class RegisterView {
 				}
 			}
 			echo '<td>' . View::badge( (string) $record['source'], $this->sourceLabel( (string) $record['source'] ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-			echo '<td>' . View::badge( (string) $record['freshness'], Freshness::label( (string) $record['freshness'] ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			if ( ! $timeless ) {
+				echo '<td>' . View::badge( (string) $record['freshness'], Freshness::label( (string) $record['freshness'] ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			}
 			if ( Kinds::LICENCE === $kind ) {
 				$status = LicenceStatus::compute( (array) $record['fields'], Clock::today(), (int) $this->plugin->settings()->get( 'thresholds.licence_lead_days', 30 ) );
 				echo '<td>' . View::badge( $status, LicenceStatus::label( $status ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
@@ -150,7 +155,9 @@ final class RegisterView {
 			}
 			echo '<td class="estasoft-hp-actions">';
 			if ( $can_edit ) {
-				$this->verifyButton( $record, $base );
+				if ( ! $timeless ) {
+					$this->verifyButton( $record, $base );
+				}
 				$this->kindButtons( $kind, $record, $base );
 				echo ' <a href="' . esc_url( add_query_arg( array( 'view' => 'edit', 'kind' => $kind, 'id' => $record['id'] ), $base ) ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>';
 				if ( 'detected' !== $record['source'] ) {
@@ -287,13 +294,15 @@ final class RegisterView {
 			echo '</fieldset>';
 		}
 
-		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Review', 'estasoft-handover-passport' ) . '</legend>';
-		Form::row(
-			'review_days',
-			array( 'type' => 'int', 'label' => __( 'Review every (days)', 'estasoft-handover-passport' ), 'help' => __( 'Leave empty to use the interval from Settings.', 'estasoft-handover-passport' ) ),
-			$input['review_days'] ?? ( null !== $record && $record['review_days'] !== $this->plugin->settings()->reviewDays( (string) $def['section'] ) ? $record['review_days'] : '' )
-		);
-		echo '</fieldset>';
+		if ( empty( $def['timeless'] ) ) {
+			echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Review', 'estasoft-handover-passport' ) . '</legend>';
+			Form::row(
+				'review_days',
+				array( 'type' => 'int', 'label' => __( 'Review every (days)', 'estasoft-handover-passport' ), 'help' => __( 'Leave empty to use the interval from Settings.', 'estasoft-handover-passport' ) ),
+				$input['review_days'] ?? ( null !== $record && $record['review_days'] !== $this->plugin->settings()->reviewDays( (string) $def['section'] ) ? $record['review_days'] : '' )
+			);
+			echo '</fieldset>';
+		}
 
 		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'estasoft-handover-passport' ) . '</button> <a class="button" href="' . esc_url( $base ) . '">' . esc_html__( 'Cancel', 'estasoft-handover-passport' ) . '</a></p>';
 		echo '</form></div>';

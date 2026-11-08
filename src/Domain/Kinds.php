@@ -36,6 +36,7 @@ final class Kinds {
 	public const ASSET     = 'asset';
 	public const STACKNOTE = 'stack_note';
 	public const CHECKLIST = 'checklist';
+	public const INCIDENT  = 'incident';
 	public const HANDSTATE = 'handover_state';
 
 	/**
@@ -44,7 +45,7 @@ final class Kinds {
 	 * @return list<string>
 	 */
 	public static function registerKinds(): array {
-		return array( self::LICENCE, self::DOMAIN, self::ZONE, self::HOST, self::ENV, self::LAYER, self::SERVICE, self::BACKUP, self::ACCESS, self::URL, self::ASSET, self::STACKNOTE, self::CHECKLIST );
+		return array( self::LICENCE, self::DOMAIN, self::ZONE, self::HOST, self::ENV, self::LAYER, self::SERVICE, self::BACKUP, self::ACCESS, self::URL, self::ASSET, self::STACKNOTE, self::CHECKLIST, self::INCIDENT );
 	}
 
 	/**
@@ -128,6 +129,25 @@ final class Kinds {
 			'done'        => __( 'Done', 'estasoft-handover-passport' ),
 			'not_needed'  => __( 'Not needed', 'estasoft-handover-passport' ),
 		);
+	}
+
+	/**
+	 * Whether an asset belongs in the transfer tracker (OWN-3): its legal owner is not the client, or a status was set.
+	 *
+	 * @param string $legal_owner Legal owner key, or an empty string.
+	 * @param string $status      Transfer status key, or an empty string.
+	 */
+	public static function transferNeeded( string $legal_owner, string $status ): bool {
+		return '' !== $status || ! in_array( $legal_owner, array( 'client', '' ), true );
+	}
+
+	/**
+	 * Whether a transfer is finished: Done, or Not needed.
+	 *
+	 * @param string $status Transfer status key.
+	 */
+	public static function transferClosed( string $status ): bool {
+		return in_array( $status, array( 'done', 'not_needed' ), true );
 	}
 
 	/**
@@ -443,6 +463,29 @@ final class Kinds {
 					'owner' => self::f( 'text', __( 'Owner', 'estasoft-handover-passport' ) ),
 					'due'   => self::f( 'date', __( 'Due', 'estasoft-handover-passport' ) ),
 					'state' => self::f( 'select', __( 'State', 'estasoft-handover-passport' ), array( 'options' => self::checklistStates() ) ),
+				),
+			),
+			self::INCIDENT  => array(
+				'label'     => __( 'Incident', 'estasoft-handover-passport' ),
+				'plural'    => __( 'Incidents', 'estasoft-handover-passport' ),
+				'section'   => 'other',
+				'title'     => 'summary',
+				'subject'   => null,
+				'due'       => null,
+				'timeless'  => true,
+				'ownership' => false,
+				'vis'       => array( 0, 0 ),
+				'columns'   => array( 'summary', 'occurred_on', 'minutes_to_restore', 'runbook_used' ),
+				'fields'    => array(
+					'summary'            => self::f( 'text', __( 'What happened, in one line', 'estasoft-handover-passport' ), array( 'required' => true, 'max' => 160 ) ),
+					'occurred_on'        => self::f( 'date', __( 'Date', 'estasoft-handover-passport' ), array( 'required' => true ) ),
+					'what_happened'      => self::f( 'textarea', __( 'What happened', 'estasoft-handover-passport' ), array( 'max' => 3000, 'help' => __( 'In the order it happened. Plain text. Never paste a password or key here.', 'estasoft-handover-passport' ) ) ),
+					'impact'             => self::f( 'textarea', __( 'Impact', 'estasoft-handover-passport' ), array( 'max' => 2000, 'help' => __( 'Who or what was affected, and for how long.', 'estasoft-handover-passport' ) ) ),
+					'cause'              => self::f( 'textarea', __( 'Cause', 'estasoft-handover-passport' ), array( 'max' => 2000 ) ),
+					'fix'                => self::f( 'textarea', __( 'Fix', 'estasoft-handover-passport' ), array( 'max' => 3000 ) ),
+					'minutes_to_restore' => self::f( 'int', __( 'Time to restore (minutes)', 'estasoft-handover-passport' ), array( 'help' => __( 'From the moment it was noticed until the site worked again.', 'estasoft-handover-passport' ) ) ),
+					'runbook_used'       => self::f( 'text', __( 'Runbook used', 'estasoft-handover-passport' ), array( 'max' => 200, 'help' => __( 'The title of the runbook that was followed. Leave empty when none was.', 'estasoft-handover-passport' ) ) ),
+					'follow_ups'         => self::f( 'lines', __( 'Follow-ups', 'estasoft-handover-passport' ), array( 'max' => 10, 'help' => __( 'One per line: what will be done so it does not happen again.', 'estasoft-handover-passport' ) ) ),
 				),
 			),
 			self::DNS       => array(

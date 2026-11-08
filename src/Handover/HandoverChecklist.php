@@ -164,7 +164,7 @@ final class HandoverChecklist {
 			}
 			$owner  = (string) $record['legal_owner'];
 			$status = (string) ( $record['fields']['transfer_status'] ?? '' );
-			if ( ( 'client' === $owner || '' === $owner ) && '' === $status ) {
+			if ( ! Kinds::transferNeeded( $owner, $status ) ) {
 				continue;
 			}
 			$state = 'done' === $status ? self::DONE : ( 'not_needed' === $status ? self::NA : self::NOT_DONE );
