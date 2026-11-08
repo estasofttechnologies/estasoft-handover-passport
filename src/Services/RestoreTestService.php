@@ -95,11 +95,12 @@ final class RestoreTestService {
 	 *
 	 * @param array<string, mixed> $input   Posted values.
 	 * @param string               $channel Where it came from.
+	 * @param array<string, mixed> $trusted Values only code may set: step_log and runbook_version, when the test comes from a drill.
 	 * @return array<string, mixed> The stored row.
 	 * @throws ValidationError            When a value is invalid.
 	 * @throws \Estasoft\HandoverPassport\Security\SecretFound When a value looks like a secret.
 	 */
-	public function log( array $input, string $channel = 'screen' ): array {
+	public function log( array $input, string $channel = 'screen', array $trusted = array() ): array {
 		$str = static fn( string $key, int $max ): string => mb_substr( trim( sanitize_text_field( is_scalar( $input[ $key ] ?? null ) ? (string) $input[ $key ] : '' ) ), 0, $max );
 
 		$date = $str( 'test_date', 10 );
@@ -128,6 +129,9 @@ final class RestoreTestService {
 				$runbook_id = 0;
 			} else {
 				$runbook_version = (int) $runbook['current_version'];
+				if ( isset( $trusted['runbook_version'] ) && (int) $trusted['runbook_version'] > 0 && (int) $trusted['runbook_version'] <= $runbook_version ) {
+					$runbook_version = (int) $trusted['runbook_version'];
+				}
 			}
 		}
 
@@ -144,7 +148,7 @@ final class RestoreTestService {
 			'minutes'         => is_scalar( $input['minutes'] ?? null ) ? max( 0, min( 100000, absint( $input['minutes'] ) ) ) : 0,
 			'result'          => $result,
 			'problems'        => mb_substr( trim( sanitize_textarea_field( is_scalar( $input['problems'] ?? null ) ? (string) $input['problems'] : '' ) ), 0, 3000 ),
-			'step_log'        => array(),
+			'step_log'        => isset( $trusted['step_log'] ) && is_array( $trusted['step_log'] ) ? $trusted['step_log'] : array(),
 			'created_at'      => Clock::sql(),
 			'created_by'      => get_current_user_id(),
 		);

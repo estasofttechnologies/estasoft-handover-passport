@@ -51,7 +51,10 @@ use Estasoft\HandoverPassport\Services\CheckService;
 use Estasoft\HandoverPassport\Services\PeopleService;
 use Estasoft\HandoverPassport\Services\ReminderService;
 use Estasoft\HandoverPassport\Services\RecordService;
+use Estasoft\HandoverPassport\Services\DrillService;
+use Estasoft\HandoverPassport\Services\RestoreChecklist;
 use Estasoft\HandoverPassport\Services\RestoreTestService;
+use Estasoft\HandoverPassport\Services\RunbookPresenter;
 use Estasoft\HandoverPassport\Services\RunbookService;
 use Estasoft\HandoverPassport\Services\Retention;
 use Estasoft\HandoverPassport\Settings\Settings;
@@ -236,6 +239,13 @@ final class Plugin {
 	}
 
 	/**
+	 * Runbooks as text for reading, with the placeholders filled (RUN-4).
+	 */
+	public function runbookPresenter(): RunbookPresenter {
+		return $this->shared( 'runbook_presenter', fn(): RunbookPresenter => new RunbookPresenter( $this ) );
+	}
+
+	/**
 	 * Runbooks.
 	 */
 	public function runbooks(): RunbookService {
@@ -247,6 +257,20 @@ final class Plugin {
 	 */
 	public function restoreTests(): RestoreTestService {
 		return $this->shared( 'restore_tests', fn(): RestoreTestService => new RestoreTestService( new TestRepository(), new RunbookRepository(), $this->secretGuard(), $this->changeLog() ) );
+	}
+
+	/**
+	 * The checks to run after a restore: the critical addresses and the things only a person can check (URL-4).
+	 */
+	public function restoreChecklist(): RestoreChecklist {
+		return $this->shared( 'restore_checklist', fn(): RestoreChecklist => new RestoreChecklist( $this ) );
+	}
+
+	/**
+	 * Drills of runbooks (RUN-5).
+	 */
+	public function drills(): DrillService {
+		return $this->shared( 'drills', fn(): DrillService => new DrillService( new TestRepository(), $this->runbooks(), $this->runbookPresenter(), $this->restoreChecklist(), $this->restoreTests(), $this->secretGuard(), $this->changeLog() ) );
 	}
 
 	/**

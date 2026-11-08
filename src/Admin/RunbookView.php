@@ -10,10 +10,14 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Admin;
 
 use Estasoft\HandoverPassport\Domain\ValidationError;
+use Estasoft\HandoverPassport\Export\ExportResult;
+use Estasoft\HandoverPassport\Export\Placeholders;
+use Estasoft\HandoverPassport\Export\Render\PrintPage;
 use Estasoft\HandoverPassport\Plugin;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Security\SecretFound;
 use Estasoft\HandoverPassport\Services\RunbookService;
+use Estasoft\HandoverPassport\Support\Clock;
 use Estasoft\HandoverPassport\Support\Dates;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,7 +27,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class RunbookView {
 
-	public const ACTION = 'estasoft_hp_runbook';
+	public const ACTION       = 'estasoft_hp_runbook';
+	public const PRINT_ACTION = 'estasoft_hp_runbook_print';
 
 	private const BLANK_STEPS         = 3;
 	private const BLANK_PREREQUISITES = 2;
@@ -40,6 +45,64 @@ final class RunbookView {
 	 */
 	public function register(): void {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handle' ) );
+		add_action( 'admin_post_' . self::PRINT_ACTION, array( $this, 'printView' ) );
+	}
+
+	/**
+	 * The address of the print view of one runbook, or of every published one.
+	 *
+	 * @param int      $id      Runbook ID, or 0 for every published runbook.
+	 * @param int|null $version Earlier version, or null for the current one.
+	 */
+	public static function printUrl( int $id, ?int $version = null ): string {
+		$args = array( 'action' => self::PRINT_ACTION, 'id' => $id );
+		if ( null !== $version ) {
+			$args['version'] = $version;
+		}
+		return wp_nonce_url( add_query_arg( $args, admin_url( 'admin-post.php' ) ), self::PRINT_ACTION );
+	}
+
+	/**
+	 * The print view (RUN-7): large type, one runbook per page, no interface around it.
+	 */
+	public function printView(): void {
+		if ( ! Capabilities::can( Capabilities::VIEW ) ) {
+			wp_die( esc_html__( 'You do not have permission to view runbooks.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
+		}
+		check_admin_referer( self::PRINT_ACTION );
+		$id      = Request::int( 'id' );
+		$version = Request::int( 'version' );
+		$books   = array();
+		if ( $id > 0 ) {
+			$book = $this->plugin->runbookPresenter()->present( $id, $version > 0 ? $version : null );
+			if ( null === $book ) {
+				wp_die( esc_html__( 'That runbook, or that version of it, no longer exists.', 'estasoft-handover-passport' ), '', array( 'response' => 404 ) );
+			}
+			$books[] = $book;
+		} else {
+			foreach ( $this->plugin->runbooks()->all() as $runbook ) {
+				if ( 'published' === (string) $runbook['status'] ) {
+					$presented = $this->plugin->runbookPresenter()->present( (int) $runbook['id'] );
+					if ( null !== $presented ) {
+						$books[] = $presented;
+					}
+				}
+			}
+			if ( array() === $books ) {
+				wp_die( esc_html__( 'No runbook has been published yet, so there is nothing to print.', 'estasoft-handover-passport' ), '', array( 'response' => 404 ) );
+			}
+		}
+		$style = $this->plugin->exports()->style();
+		$site  = (string) $this->plugin->passport()->get( 'site_name', '' );
+		$site  = '' !== $site ? $site : (string) get_bloginfo( 'name' );
+		$now   = Clock::sql();
+		$body  = '';
+		foreach ( $books as $book ) {
+			$body .= PrintPage::runbook( $book, $style, $site, $now );
+		}
+		$title = 1 === count( $books ) ? (string) $books[0]['title'] : __( 'Runbooks', 'estasoft-handover-passport' );
+		$html  = PrintPage::document( $title . ' · ' . $site, $body, $style );
+		Download::send( new ExportResult( $html, 'runbook-print.html', 'text/html; charset=utf-8', 'print', 'runbook' ), true );
 	}
 
 	/**
@@ -50,6 +113,19 @@ final class RunbookView {
 		if ( 'new' === $view && Capabilities::can( Capabilities::EDIT ) ) {
 			$this->editor( 0 );
 			return;
+		}
+		if ( 'drill' === $view ) {
+			( new DrillView( $this->plugin ) )->render( Request::int( 'id' ) );
+			return;
+		}
+		if ( 'read' === $view ) {
+			$id = Request::int( 'id' );
+			$book = $this->plugin->runbookPresenter()->present( $id, Request::int( 'version' ) > 0 ? Request::int( 'version' ) : null );
+			if ( null !== $book ) {
+				$this->reader( $book );
+				return;
+			}
+			echo '<div class="notice notice-error" role="alert"><p>' . esc_html__( 'That runbook, or that version of it, no longer exists.', 'estasoft-handover-passport' ) . '</p></div>';
 		}
 		if ( 'edit' === $view ) {
 			$id = Request::int( 'id' );
@@ -102,6 +178,11 @@ final class RunbookView {
 					$notice = 'rehearsed';
 					$to     = add_query_arg( array( 'view' => 'edit', 'id' => $id ), $this->base() );
 					break;
+				case 'start_drill':
+					$drill = $this->plugin->drills()->start( $id );
+					$notice = 'drill_started';
+					$to     = DrillView::url( (int) $drill['id'] );
+					break;
 				case 'delete':
 					$service->delete( $id );
 					$notice = 'deleted';
@@ -114,6 +195,11 @@ final class RunbookView {
 					$notice = 'denied';
 			}
 		} catch ( ValidationError | SecretFound $e ) {
+			if ( 'start_drill' === $op ) {
+				View::say( $e->getMessage() );
+				wp_safe_redirect( add_query_arg( array( 'view' => 'read', 'id' => $id ), $this->base() ) );
+				exit;
+			}
 			$label = $e instanceof ValidationError ? $e->field() : (string) strtok( $e->field(), '.' );
 			$key   = 'Title' === $label || __( 'Title', 'estasoft-handover-passport' ) === $label ? 'title' : '_form';
 			FormState::put( $this->plugin->secretGuard(), 'runbook:' . $id, $this->input(), array( $key => $e->getMessage() ) );
@@ -182,6 +268,7 @@ final class RunbookView {
 		}
 
 		$roles = RunbookService::roles();
+		echo '<p><a class="button" href="' . esc_url( self::printUrl( 0 ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Print every published runbook', 'estasoft-handover-passport' ) . '</a> <span class="description">' . esc_html__( 'One runbook to a page, in large type, to keep with the site\'s paper files.', 'estasoft-handover-passport' ) . '</span></p>';
 		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
 		foreach ( array( __( 'Runbook', 'estasoft-handover-passport' ), __( 'Status', 'estasoft-handover-passport' ), __( 'Owner', 'estasoft-handover-passport' ), __( 'Steps', 'estasoft-handover-passport' ), __( 'Time', 'estasoft-handover-passport' ), __( 'Last reviewed', 'estasoft-handover-passport' ), __( 'Last rehearsed', 'estasoft-handover-passport' ) ) as $heading ) {
 			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
@@ -189,7 +276,8 @@ final class RunbookView {
 		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
 		foreach ( $runbooks as $runbook ) {
 			$edit = add_query_arg( array( 'view' => 'edit', 'id' => (int) $runbook['id'] ), $base );
-			echo '<tr><td><a href="' . esc_url( $edit ) . '"><strong>' . esc_html( (string) $runbook['title'] ) . '</strong></a>';
+			$read = add_query_arg( array( 'view' => 'read', 'id' => (int) $runbook['id'] ), $base );
+			echo '<tr><td><a href="' . esc_url( $read ) . '"><strong>' . esc_html( (string) $runbook['title'] ) . '</strong></a>';
 			if ( ! empty( $runbook['critical'] ) ) {
 				echo ' ' . View::badge( 'critical', __( 'Critical', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			}
@@ -199,7 +287,11 @@ final class RunbookView {
 			echo '<td>' . esc_html( (int) $runbook['estimated_minutes'] > 0 ? sprintf( /* translators: %d: minutes. */ _n( '%d minute', '%d minutes', (int) $runbook['estimated_minutes'], 'estasoft-handover-passport' ), (int) $runbook['estimated_minutes'] ) : '' ) . '</td>';
 			echo '<td>' . esc_html( $this->stampText( $runbook['last_reviewed'] ) ) . '</td>';
 			echo '<td>' . esc_html( $this->stampText( $runbook['last_rehearsed'] ) ) . '</td><td class="estasoft-hp-actions">';
-			echo '<a href="' . esc_url( $edit ) . '">' . ( $can_edit ? esc_html__( 'Edit', 'estasoft-handover-passport' ) : esc_html__( 'Open', 'estasoft-handover-passport' ) ) . '</a>';
+			echo '<a href="' . esc_url( $read ) . '">' . esc_html__( 'Open', 'estasoft-handover-passport' ) . '</a>';
+			if ( $can_edit ) {
+				echo ' · <a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>';
+			}
+			echo ' · <a href="' . esc_url( self::printUrl( (int) $runbook['id'] ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Print', 'estasoft-handover-passport' ) . '</a>';
 			if ( $can_edit ) {
 				echo ' <form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 				$this->hidden( 'delete', (int) $runbook['id'] );
@@ -208,7 +300,143 @@ final class RunbookView {
 			echo '</td></tr>';
 		}
 		echo '</tbody></table>';
+		( new DrillView( $this->plugin ) )->listing();
 		$this->deletedList( $service );
+	}
+
+	/**
+	 * A runbook to read on screen, with the placeholders filled from the Passport (RUN-4, RUN-6).
+	 *
+	 * @param array<string, mixed> $book A runbook from RunbookPresenter.
+	 */
+	private function reader( array $book ): void {
+		$id       = (int) $book['id'];
+		$base     = $this->base();
+		$can_edit = Capabilities::can( Capabilities::EDIT );
+		$version  = empty( $book['is_current'] ) ? (int) $book['version'] : null;
+
+		echo '<p><a href="' . esc_url( $base ) . '">&larr; ' . esc_html__( 'All runbooks', 'estasoft-handover-passport' ) . '</a></p>';
+		echo '<div class="estasoft-hp-reader"><h2>' . esc_html( (string) $book['title'] );
+		if ( ! empty( $book['critical'] ) ) {
+			echo ' ' . View::badge( 'critical', __( 'Critical', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		}
+		if ( 'published' !== (string) $book['status'] ) {
+			echo ' ' . View::badge( 'runbook-draft', __( 'Draft', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		}
+		echo '</h2>';
+
+		if ( null !== $version ) {
+			echo '<div class="notice notice-warning inline" role="status"><p>' . esc_html(
+				sprintf(
+					/* translators: 1: version number, 2: date. */
+					__( 'You are reading version %1$d, made on %2$s. It is kept as it was and is no longer the current version.', 'estasoft-handover-passport' ),
+					$version,
+					Dates::displayDate( Dates::datePart( (string) $book['version_made_at'] ) )
+				)
+			) . ' <a href="' . esc_url( add_query_arg( array( 'view' => 'read', 'id' => $id ), $base ) ) . '">' . esc_html__( 'Open the current version', 'estasoft-handover-passport' ) . '</a></p></div>';
+		}
+		if ( array() !== (array) $book['gaps'] ) {
+			$names = Placeholders::names();
+			$gaps  = array_map( static fn( string $name ): string => $name . ' (' . ( $names[ $name ] ?? '' ) . ')', (array) $book['gaps'] );
+			echo '<div class="notice notice-warning inline" role="status"><p>' . esc_html(
+				sprintf(
+					/* translators: %s: the details that are missing. */
+					__( 'The Passport does not hold these details yet, so they show as "not recorded" below: %s.', 'estasoft-handover-passport' ),
+					implode( '; ', $gaps )
+				)
+			) . '</p></div>';
+		}
+
+		View::facts(
+			array(
+				__( 'Version', 'estasoft-handover-passport' )        => 'v' . (int) $book['version'] . ( '' !== (string) $book['change_note'] ? ' — ' . (string) $book['change_note'] : '' ),
+				__( 'Done by', 'estasoft-handover-passport' )        => (string) $book['owner'],
+				__( 'Estimated time', 'estasoft-handover-passport' ) => (int) $book['estimated_minutes'] > 0 ? sprintf( /* translators: %d: minutes. */ _n( '%d minute', '%d minutes', (int) $book['estimated_minutes'], 'estasoft-handover-passport' ), (int) $book['estimated_minutes'] ) : '',
+				__( 'Last reviewed', 'estasoft-handover-passport' )  => $this->stampText( '' === (string) $book['last_reviewed'] ? null : (string) $book['last_reviewed'] ),
+				__( 'Last rehearsed', 'estasoft-handover-passport' ) => $this->stampText( '' === (string) $book['last_rehearsed'] ? null : (string) $book['last_rehearsed'] ),
+			)
+		);
+
+		echo '<p class="estasoft-hp-actions-row"><a class="button button-primary" href="' . esc_url( self::printUrl( $id, $version ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Print view', 'estasoft-handover-passport' ) . '</a> ';
+		if ( $can_edit && null === $version ) {
+			echo '<a class="button" href="' . esc_url( add_query_arg( array( 'view' => 'edit', 'id' => $id ), $base ) ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a> ';
+			if ( 'published' === (string) $book['status'] ) {
+				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
+				$this->hidden( 'start_drill', $id );
+				echo '<button type="submit" class="button">' . esc_html__( 'Start a drill', 'estasoft-handover-passport' ) . '</button></form>';
+			}
+		}
+		echo '</p>';
+
+		foreach ( array( 'purpose' => __( 'What it is for', 'estasoft-handover-passport' ), 'when_to_use' => __( 'When to use it', 'estasoft-handover-passport' ) ) as $key => $label ) {
+			if ( '' !== (string) $book[ $key ] ) {
+				echo '<h3>' . esc_html( $label ) . '</h3><p>' . nl2br( esc_html( (string) $book[ $key ] ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped before nl2br.
+			}
+		}
+		if ( array() !== (array) $book['prerequisites'] ) {
+			echo '<h3>' . esc_html__( 'Before you start', 'estasoft-handover-passport' ) . '</h3><ul class="ul-disc">';
+			foreach ( (array) $book['prerequisites'] as $row ) {
+				echo '<li>' . esc_html( (string) $row['what'] . ( '' !== (string) $row['who'] ? ' (' . (string) $row['who'] . ')' : '' ) ) . '</li>';
+			}
+			echo '</ul>';
+		}
+		echo '<h3>' . esc_html__( 'Steps', 'estasoft-handover-passport' ) . '</h3>';
+		if ( array() === (array) $book['steps'] ) {
+			echo '<p>' . esc_html__( 'This runbook has no steps yet.', 'estasoft-handover-passport' ) . '</p>';
+		} else {
+			echo '<ol class="estasoft-hp-readsteps">';
+			foreach ( (array) $book['steps'] as $step ) {
+				echo '<li' . ( ! empty( $step['warning'] ) ? ' class="estasoft-hp-readsteps__care"' : '' ) . '>';
+				if ( ! empty( $step['warning'] ) ) {
+					echo '<strong>' . esc_html__( 'Careful:', 'estasoft-handover-passport' ) . '</strong> ';
+				}
+				echo nl2br( esc_html( (string) $step['text'] ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped before nl2br.
+				$bits = array();
+				if ( '' !== (string) $step['who'] ) {
+					$bits[] = esc_html( (string) $step['who'] );
+				}
+				if ( (int) $step['minutes'] > 0 ) {
+					$bits[] = esc_html( sprintf( /* translators: %d: minutes. */ _n( '%d minute', '%d minutes', (int) $step['minutes'], 'estasoft-handover-passport' ), (int) $step['minutes'] ) );
+				}
+				if ( '' !== (string) $step['link'] ) {
+					$bits[] = '<a href="' . esc_url( (string) $step['link'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( (string) $step['link'] ) . '</a>';
+				}
+				if ( array() !== $bits ) {
+					echo '<br><span class="description">' . implode( ' · ', $bits ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Each part was escaped above.
+				}
+				echo '</li>';
+			}
+			echo '</ol>';
+		}
+		if ( array() !== (array) $book['verification'] ) {
+			echo '<h3>' . esc_html__( 'How to check it worked', 'estasoft-handover-passport' ) . '</h3><ul class="ul-disc">';
+			foreach ( (array) $book['verification'] as $line ) {
+				echo '<li>' . esc_html( (string) $line ) . '</li>';
+			}
+			echo '</ul>';
+		}
+		if ( '' !== (string) $book['rollback_text'] ) {
+			echo '<h3>' . esc_html__( 'If it goes wrong', 'estasoft-handover-passport' ) . '</h3><p>' . nl2br( esc_html( (string) $book['rollback_text'] ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped before nl2br.
+		}
+		echo '</div>';
+		if ( null === $version ) {
+			$this->versionList( $id );
+		}
+	}
+
+	/**
+	 * The placeholders a runbook can use, and what each stands for now.
+	 */
+	private function placeholderHelp(): void {
+		$values = $this->plugin->runbookPresenter()->values();
+		echo '<details class="estasoft-hp-card"><summary><strong>' . esc_html__( 'Details you can leave to the Passport', 'estasoft-handover-passport' ) . '</strong></summary>';
+		echo '<p class="description">' . esc_html__( 'Write a name in curly brackets, such as {registrar}, and it is replaced by what the Passport holds when the runbook is read, printed or put in a pack. Change the record once and every runbook stays right. Sensitive records never supply a value.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Write', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Meaning', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Now', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
+		foreach ( Placeholders::names() as $name => $meaning ) {
+			$value = (string) ( $values[ $name ] ?? '' );
+			echo '<tr><td><code>{' . esc_html( $name ) . '}</code></td><td>' . esc_html( $meaning ) . '</td><td>' . ( '' !== $value ? esc_html( $value ) : '<em>' . esc_html__( 'not recorded', 'estasoft-handover-passport' ) . '</em>' ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above.
+		}
+		echo '</tbody></table></details>';
 	}
 
 	/**
@@ -260,6 +488,10 @@ final class RunbookView {
 
 		echo '<p><a href="' . esc_url( $base ) . '">&larr; ' . esc_html__( 'All runbooks', 'estasoft-handover-passport' ) . '</a></p>';
 		echo '<h2>' . esc_html( $id > 0 ? (string) $existing['title'] : __( 'New runbook', 'estasoft-handover-passport' ) ) . '</h2>';
+		if ( $id > 0 ) {
+			echo '<p><a href="' . esc_url( add_query_arg( array( 'view' => 'read', 'id' => $id ), $base ) ) . '">' . esc_html__( 'Read it as it will appear', 'estasoft-handover-passport' ) . '</a> · <a href="' . esc_url( self::printUrl( $id ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Print view', 'estasoft-handover-passport' ) . '</a></p>';
+		}
+		$this->placeholderHelp();
 		if ( isset( $errors['_form'] ) ) {
 			echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html( $errors['_form'] ) . '</p></div>';
 		}
@@ -426,6 +658,7 @@ final class RunbookView {
 			if ( '' !== (string) $version['change_note'] ) {
 				echo ' — ' . esc_html( (string) $version['change_note'] );
 			}
+			echo ' · <a href="' . esc_url( add_query_arg( array( 'view' => 'read', 'id' => $id, 'version' => (int) $version['version'] ), $this->base() ) ) . '">' . esc_html__( 'Read', 'estasoft-handover-passport' ) . '</a>';
 			echo '</li>';
 		}
 		echo '</ul></div>';

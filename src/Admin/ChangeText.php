@@ -119,6 +119,15 @@ final class ChangeText {
 				return sprintf( __( 'Runbook deleted: %s', 'estasoft-handover-passport' ), $label );
 			case 'runbook_restored':
 				return sprintf( __( 'Runbook restored: %s', 'estasoft-handover-passport' ), $label );
+			case 'drill_started':
+				/* translators: %s: runbook title. */
+				return sprintf( __( 'Drill started: %s', 'estasoft-handover-passport' ), $label );
+			case 'drill_finished':
+				/* translators: 1: runbook title, 2: result such as Pass. */
+				return sprintf( __( 'Drill finished: %1$s (%2$s)', 'estasoft-handover-passport' ), $label, (string) ( $after['result'] ?? '' ) );
+			case 'drill_abandoned':
+				/* translators: %s: runbook title. */
+				return sprintf( __( 'Drill abandoned: %s', 'estasoft-handover-passport' ), $label );
 			case 'snapshot_created':
 				/* translators: %s: snapshot name. */
 				return sprintf( __( 'Snapshot made: %s', 'estasoft-handover-passport' ), $label );
@@ -171,6 +180,7 @@ final class ChangeText {
 			'record_deleted'            => __( 'Record deleted', 'estasoft-handover-passport' ),
 			'record_renewed'            => __( 'Record renewed', 'estasoft-handover-passport' ),
 			'maintenance_note'          => __( 'Maintenance note', 'estasoft-handover-passport' ),
+			'drill_finished'            => __( 'Drill finished', 'estasoft-handover-passport' ),
 			'finding_accepted'          => __( 'Finding accepted', 'estasoft-handover-passport' ),
 			'rule_disabled'             => __( 'Rule switched off', 'estasoft-handover-passport' ),
 			'snapshot_created'          => __( 'Snapshot made', 'estasoft-handover-passport' ),

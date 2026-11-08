@@ -140,6 +140,7 @@ final class View {
 			'runbook_created'  => __( 'Draft created. Check every step against how this site is built.', 'estasoft-handover-passport' ),
 			'runbook_invalid'  => __( 'The runbook was not saved. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
 			'rehearsed'        => __( 'Marked as rehearsed today.', 'estasoft-handover-passport' ),
+			'drill_started'    => __( 'The drill has started. Press Done as you finish each step.', 'estasoft-handover-passport' ),
 			'checklist_added'   => __( 'Item added to the checklist.', 'estasoft-handover-passport' ),
 			'checklist_updated' => __( 'Checklist updated.', 'estasoft-handover-passport' ),
 			'checklist_deleted' => __( 'Item removed from the checklist.', 'estasoft-handover-passport' ),

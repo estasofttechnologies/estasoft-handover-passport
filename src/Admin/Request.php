@@ -118,4 +118,28 @@ final class Request {
 		}
 		return array_slice( $out, 0, 200 );
 	}
+
+	/**
+	 * Posted cells in two levels such as notes[steps][3]. Every cell is returned as a raw string; the services validate them.
+	 * Call only after check_admin_referer().
+	 *
+	 * @param string $name Field name.
+	 * @return array<string, array<int, string>>
+	 */
+	public static function postedGrid( string $name ): array {
+		$raw = isset( $_POST[ $name ] ) && is_array( $_POST[ $name ] ) ? wp_unslash( $_POST[ $name ] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce is checked by the caller; the services validate and sanitise every cell.
+		$out = array();
+		$n   = 0;
+		foreach ( $raw as $group => $cells ) {
+			if ( ! is_array( $cells ) ) {
+				continue;
+			}
+			foreach ( $cells as $index => $value ) {
+				if ( is_scalar( $value ) && ++$n <= 400 ) {
+					$out[ sanitize_key( (string) $group ) ][ (int) $index ] = (string) $value;
+				}
+			}
+		}
+		return $out;
+	}
 }

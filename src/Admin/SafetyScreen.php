@@ -27,6 +27,8 @@ final class SafetyScreen extends Screen {
 	public function register(): void {
 		( new RestoreTestView( $this->plugin ) )->register();
 		( new RunbookView( $this->plugin ) )->register();
+		( new RestoreChecklistView( $this->plugin ) )->register();
+		( new DrillView( $this->plugin ) )->register();
 	}
 
 	/**
@@ -93,5 +95,6 @@ final class SafetyScreen extends Screen {
 		}
 		echo '</div>';
 		( new RegisterView( $this->plugin ) )->render( Kinds::URL, self::SLUG, $this->keep( $tab ) );
+		( new RestoreChecklistView( $this->plugin ) )->render( add_query_arg( array( 'page' => self::SLUG, 'tab' => $tab ), admin_url( 'admin.php' ) ) );
 	}
 }

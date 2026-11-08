@@ -443,3 +443,24 @@
 	white-space: pre-wrap;
 	font-family: inherit;
 }
+.estasoft-hp .estasoft-hp-reader {
+	max-width: 820px;
+}
+.estasoft-hp .estasoft-hp-readsteps {
+	margin: 0;
+	padding-inline-start: 24px;
+}
+.estasoft-hp .estasoft-hp-readsteps li {
+	margin: 0 0 10px;
+	padding-block: 2px;
+}
+.estasoft-hp .estasoft-hp-readsteps__care {
+	padding-inline-start: 8px;
+	border-inline-start: 4px solid #b32d2e;
+}
+.estasoft-hp .estasoft-hp-actions-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}

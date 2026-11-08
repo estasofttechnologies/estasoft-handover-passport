@@ -24,7 +24,8 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 * Lets you mark records Sensitive so only people with the right capability can see them.
 * Refuses to store passwords, keys and tokens in any field, so the Passport is safe to share.
 * Checks the record against the site and lists findings in plain words, each stating a fact and a date. A finding never says "safe", "secure" or "compliant".
-* Keeps restore tests, runbooks (with twelve ready-made templates and a version history) and a list of critical addresses, so the day something breaks is not the first day anyone looks for the steps.
+* Keeps restore tests, runbooks (with twelve ready-made templates, a version history and a large-type print view) and a list of critical addresses, so the day something breaks is not the first day anyone looks for the steps.
+* Lets you rehearse a runbook as a drill: each step gets a Done button that keeps the time and the person, followed by an after-restore checklist built from your critical addresses. A drill of a restore runbook can be kept as a restore test.
 * Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server".
 * Emails reminders before licence, domain, hosting and service dates, and can send a short weekly summary. Each reminder goes once per date and lead time.
 * Pauses reminders on a copy of the site, so a staging site does not send every reminder a second time.
