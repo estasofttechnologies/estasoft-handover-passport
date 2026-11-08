@@ -85,6 +85,15 @@ final class ChangeText {
 			case 'role_changed':
 				/* translators: %s: role name. */
 				return sprintf( __( 'People in the role "%s" changed', 'estasoft-handover-passport' ), $label );
+			case 'finding_accepted':
+				/* translators: %s: finding message. */
+				return sprintf( __( 'Finding accepted: %s', 'estasoft-handover-passport' ), $label ) . ( '' !== (string) $row['note'] ? ' (' . (string) $row['note'] . ')' : '' );
+			case 'rule_disabled':
+				/* translators: %s: rule ID. */
+				return sprintf( __( 'Rule %s switched off', 'estasoft-handover-passport' ), $label ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
+			case 'rule_enabled':
+				/* translators: %s: rule ID. */
+				return sprintf( __( 'Rule %s switched on', 'estasoft-handover-passport' ), $label );
 			case 'settings_changed':
 				return __( 'Settings changed', 'estasoft-handover-passport' ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
 			case 'maintenance_note':
@@ -119,6 +128,8 @@ final class ChangeText {
 			'record_edited'             => __( 'Record edited', 'estasoft-handover-passport' ),
 			'record_deleted'            => __( 'Record deleted', 'estasoft-handover-passport' ),
 			'maintenance_note'          => __( 'Maintenance note', 'estasoft-handover-passport' ),
+			'finding_accepted'          => __( 'Finding accepted', 'estasoft-handover-passport' ),
+			'rule_disabled'             => __( 'Rule switched off', 'estasoft-handover-passport' ),
 		);
 	}
 }

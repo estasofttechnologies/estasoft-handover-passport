@@ -47,7 +47,7 @@ final class View {
 		if ( '' === $key || ! isset( $map[ $key ] ) ) {
 			return;
 		}
-		$class = in_array( $key, array( 'scan_failed', 'denied' ), true ) ? 'notice-error' : 'notice-success';
+		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'check_refused' ), true ) ? 'notice-error' : 'notice-success';
 		echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible" role="status"><p>' . esc_html( $map[ $key ] ) . '</p></div>';
 	}
 
@@ -67,6 +67,19 @@ final class View {
 			'verified'    => __( 'Marked as verified today.', 'estasoft-handover-passport' ),
 			'denied'      => __( 'You do not have permission to change that record.', 'estasoft-handover-passport' ),
 			'note_added'  => __( 'Note added to the history.', 'estasoft-handover-passport' ),
+			'finding_snoozed'  => __( 'Finding snoozed.', 'estasoft-handover-passport' ),
+			'finding_accepted' => __( 'Finding accepted. The reason will appear in exports.', 'estasoft-handover-passport' ),
+			'finding_reopened' => __( 'Finding reopened.', 'estasoft-handover-passport' ),
+			'finding_reason'   => __( 'Say why before accepting a finding or switching off a rule.', 'estasoft-handover-passport' ),
+			'finding_secret'   => __( 'That text looks like a password, key or token. Passport never stores those, so nothing was saved.', 'estasoft-handover-passport' ),
+			'finding_gone'     => __( 'That finding no longer exists.', 'estasoft-handover-passport' ),
+			'rules_checked'    => __( 'Rules checked again.', 'estasoft-handover-passport' ),
+			'rule_off'         => __( 'Rule switched off.', 'estasoft-handover-passport' ),
+			'rule_on'          => __( 'Rule switched on.', 'estasoft-handover-passport' ),
+			'check_failed'     => __( 'The check could not run on this server.', 'estasoft-handover-passport' ),
+			'check_wait'       => __( 'That check ran a moment ago. Try again in a minute.', 'estasoft-handover-passport' ),
+			'check_refused'    => __( 'That address is not on this site, so it cannot be checked.', 'estasoft-handover-passport' ),
+			'check_done'       => __( 'Check finished.', 'estasoft-handover-passport' ),
 		);
 	}
 

@@ -240,3 +240,46 @@
 		overflow-x: auto;
 	}
 }
+
+/* Findings (M3). Levels are always shown in words as well as colour. */
+.estasoft-hp .estasoft-hp-badge--needs_fixing {
+	background: #fcf0f1;
+	border-color: #d63638;
+	color: #8a2424;
+}
+.estasoft-hp .estasoft-hp-badge--worth_fixing {
+	background: #fcf9e8;
+	border-color: #dba617;
+	color: #6e5700;
+}
+.estasoft-hp .estasoft-hp-badge--info {
+	background: #f0f6fc;
+	border-color: #72aee6;
+	color: #1d4f7c;
+}
+.estasoft-hp .estasoft-hp-findings td {
+	vertical-align: top;
+}
+.estasoft-hp .estasoft-hp-finding__rule {
+	color: #646970;
+	font-size: 12px;
+}
+.estasoft-hp .estasoft-hp-finding__tools summary {
+	cursor: pointer;
+}
+.estasoft-hp .estasoft-hp-finding__tools form {
+	margin-top: 8px;
+}
+.estasoft-hp .estasoft-hp-finding__tools label {
+	display: block;
+	margin-bottom: 4px;
+}
+.estasoft-hp .estasoft-hp-summary-counts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	margin: 0 0 12px;
+}
+.estasoft-hp .estasoft-hp-readiness li {
+	margin: 4px 0;
+}

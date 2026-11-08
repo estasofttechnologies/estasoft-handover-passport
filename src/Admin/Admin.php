@@ -62,6 +62,7 @@ final class Admin {
 		( new Actions( $this->plugin ) )->register();
 		( new PrivacyPolicy() )->register();
 		( new HistoryScreen( $this->plugin ) )->register();
+		( new FindingsScreen( $this->plugin ) )->register();
 		( new SettingsScreen( $this->plugin ) )->register();
 	}
 
@@ -94,6 +95,7 @@ final class Admin {
 			new SafetyScreen( $this->plugin ),
 			new PeopleScreen( $this->plugin ),
 			new HistoryScreen( $this->plugin ),
+			new FindingsScreen( $this->plugin ),
 			new SettingsScreen( $this->plugin ),
 		);
 		foreach ( $this->screens as $screen ) {
