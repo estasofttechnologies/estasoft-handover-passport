@@ -225,7 +225,7 @@ final class OverviewScreen {
 				$ready['ready'],
 				$ready['total']
 			);
-			echo View::kpi( sprintf( /* translators: 1: checks clear, 2: checks. */ __( '%1$d of %2$d', 'estasoft-handover-passport' ), $ready['ready'], $ready['total'] ), __( 'Handover checks', 'estasoft-handover-passport' ), View::bar( $ready['ready'], $ready['total'], $words ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kpi() and bar() escape their parts.
+			echo View::kpi( sprintf( /* translators: 1: the part that is done or clear, 2: the whole. */ __( '%1$d of %2$d', 'estasoft-handover-passport' ), $ready['ready'], $ready['total'] ), __( 'Handover checks', 'estasoft-handover-passport' ), View::bar( $ready['ready'], $ready['total'], $words ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kpi() and bar() escape their parts.
 		} else {
 			echo View::kpi( '0', __( 'Handover checks', 'estasoft-handover-passport' ), View::badge( 'unknown', __( 'Nothing to check yet', 'estasoft-handover-passport' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kpi() and badge() escape their parts.
 		}

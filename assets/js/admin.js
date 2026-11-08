@@ -76,11 +76,11 @@
 
 	// A table that scrolls sideways on a narrow screen can be reached and scrolled from the keyboard.
 	function markScrollableTables() {
-		Array.prototype.forEach.call( document.querySelectorAll( '.estasoft-hp .estasoft-hp-table' ), function ( table ) {
-			if ( table.scrollWidth > table.clientWidth + 1 ) {
-				table.setAttribute( 'tabindex', '0' );
+		Array.prototype.forEach.call( document.querySelectorAll( '.estasoft-hp .estasoft-hp-table, .estasoft-hp .scr' ), function ( box ) {
+			if ( box.scrollWidth > box.clientWidth + 1 ) {
+				box.setAttribute( 'tabindex', '0' );
 			} else {
-				table.removeAttribute( 'tabindex' );
+				box.removeAttribute( 'tabindex' );
 			}
 		} );
 	}

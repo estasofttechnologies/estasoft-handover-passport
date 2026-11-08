@@ -153,7 +153,7 @@ final class PeopleView {
 		$pattern = __( '%1$d of %2$d items', 'estasoft-handover-passport' );
 		echo '<div class="pgn"><span data-estasoft-count data-total="' . esc_attr( (string) count( $people ) ) . '" data-pattern="' . esc_attr( $pattern ) . '" aria-live="polite">' . esc_html(
 			sprintf(
-				/* translators: 1: shown, 2: total. */
+				/* translators: 1: number of items shown, 2: number of items. */
 				__( '%1$d of %2$d items', 'estasoft-handover-passport' ),
 				count( $people ),
 				count( $people )

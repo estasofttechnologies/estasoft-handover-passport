@@ -1518,7 +1518,8 @@ body.estasoft-hp-screen {
 
 .estasoft-hp .estasoft-hp-finding__tools summary,
 .estasoft-hp .estasoft-hp-snapshot__actions summary,
-.estasoft-hp .estasoft-hp-deleted summary {
+.estasoft-hp .estasoft-hp-deleted summary,
+.estasoft-hp details.estasoft-hp-card > summary {
 	padding-block: 3px; /* A target of at least 24 by 24 pixels (WCAG 2.2, 2.5.8). */
 	cursor: pointer;
 }

@@ -182,7 +182,7 @@ final class Sections {
 			'client'     => (string) ( $site['client'] ?? '' ),
 			'purpose'    => (string) ( $site['purpose'] ?? '' ),
 			'status'     => (string) ( $site['status_label'] ?? '' ),
-			'readiness'  => isset( $readiness['total'] ) ? sprintf( /* translators: 1: rules that are clear, 2: rules checked. */ __( '%1$d of %2$d', 'estasoft-handover-passport' ), (int) $readiness['ready'], (int) $readiness['total'] ) : '',
+			'readiness'  => isset( $readiness['total'] ) ? sprintf( /* translators: 1: the part that is done or clear, 2: the whole. */ __( '%1$d of %2$d', 'estasoft-handover-passport' ), (int) $readiness['ready'], (int) $readiness['total'] ) : '',
 			'wp_version' => $this->profile->usesVisibilityFlags() ? '' : (string) ( $site['wp_version'] ?? '' ),
 			'last_scan'  => $this->profile->usesVisibilityFlags() ? '' : substr( (string) ( $site['last_scan'] ?? '' ), 0, 10 ),
 		);

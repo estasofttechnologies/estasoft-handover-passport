@@ -51,7 +51,7 @@ final class ChecklistView {
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 
 		$figure = sprintf(
-			/* translators: 1: number of items done, 2: number of items counted. */
+			/* translators: 1: the part that is done or clear, 2: the whole. */
 			__( '%1$d of %2$d', 'estasoft-handover-passport' ),
 			$progress['done'],
 			$progress['total']

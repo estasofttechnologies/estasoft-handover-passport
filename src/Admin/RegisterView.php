@@ -467,7 +467,7 @@ final class RegisterView {
 
 		echo '<div class="estasoft-hp-form"><h2>' . esc_html(
 			null === $record ? sprintf(
-				/* translators: %s: kind label, for example "Licence". */
+				/* translators: %s: kind label, for example "licence". */
 				__( 'Add %s', 'estasoft-handover-passport' ),
 				self::lowerFirst( (string) $def['label'] )
 			) : (string) $record['title']
