@@ -2,7 +2,7 @@
 Contributors: estasofttechnologies
 Tags: documentation, handover, inventory, maintenance, agency
 Requires at least: 6.4
-Tested up to: 6.4
+Tested up to: 7.1
 Requires PHP: 8.1
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -33,8 +33,7 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 
 **Built for trust**
 
-* No account, no tracking, no ads, no upsell notices.
-* No account, no tracking and no data sent to ESTASOFT TECHNOLOGIES or any third party.
+* No account, no tracking, no ads and no upsell notices. Nothing is sent to ESTASOFT TECHNOLOGIES or any third party.
 * Scans read local data only. A DNS, certificate or address check runs only when you press its button, and it contacts only your own domain.
 * Nothing is added to the front end of your site, and nothing runs there.
 * Five capabilities control who can view, edit, export and configure. Administrators have them by default.

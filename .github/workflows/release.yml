@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Build the plugin zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that the versions agree
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          header="$(sed -n 's/^ \* Version:[[:space:]]*//p' estasoft-handover-passport.php | head -n1 | tr -d '[:space:]')"
+          constant="$(sed -n "s/^define( 'ESTASOFT_HP_VERSION', '\(.*\)' );/\1/p" estasoft-handover-passport.php | head -n1)"
+          stable="$(sed -n 's/^Stable tag:[[:space:]]*//p' readme.txt | head -n1 | tr -d '[:space:]')"
+          echo "tag=$tag header=$header constant=$constant stable=$stable"
+          test "$tag" = "$header" && test "$tag" = "$constant" && test "$tag" = "$stable"
+
+      - name: Syntax check
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null
+
+      - name: Build the zip
+        run: |
+          mkdir -p build/estasoft-handover-passport
+          rsync -a --exclude-from=.distignore --exclude='.distignore' ./ build/estasoft-handover-passport/
+          (cd build && zip -qr "estasoft-handover-passport.zip" estasoft-handover-passport)
+          unzip -l build/estasoft-handover-passport.zip | tail -n1
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/estasoft-handover-passport.zip \
+            --title "$GITHUB_REF_NAME" \
+            --notes "See CHANGELOG.md for what changed."

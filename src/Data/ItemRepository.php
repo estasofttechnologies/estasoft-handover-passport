@@ -112,7 +112,7 @@ class ItemRepository extends Repository {
 			return array();
 		}
 		$marks = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-		$sql   = $this->db()->prepare( "SELECT id FROM {$this->table()} WHERE sensitive = 1 AND id IN ({$marks})", ...$ids ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Fixed table name; one placeholder per ID.
+		$sql   = $this->db()->prepare( "SELECT id FROM {$this->table()} WHERE `sensitive` = 1 AND id IN ({$marks})", ...$ids ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Fixed table name; one placeholder per ID.
 		return array_map( 'intval', (array) $this->db()->get_col( $sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared above.
 	}
 
@@ -136,7 +136,7 @@ class ItemRepository extends Repository {
 	 * @return array<int, int>
 	 */
 	public function allSensitiveIds(): array {
-		$sql = "SELECT id FROM {$this->table()} WHERE sensitive = 1";
+		$sql = "SELECT id FROM {$this->table()} WHERE `sensitive` = 1";
 		return array_map( 'intval', (array) $this->db()->get_col( $sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed table name, no input.
 	}
 

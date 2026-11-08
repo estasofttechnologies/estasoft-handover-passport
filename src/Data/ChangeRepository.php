@@ -188,7 +188,7 @@ class ChangeRepository extends Repository {
 			$params[] = $like;
 		}
 		if ( ! empty( $filters['visible_only'] ) ) {
-			$parts[] = 'sensitive = 0';
+			$parts[] = '`sensitive` = 0';
 			$hidden  = array_values( array_unique( array_map( 'intval', (array) ( $filters['hidden_items'] ?? array() ) ) ) );
 			if ( array() !== $hidden ) {
 				$parts[] = "NOT (subject_type = 'item' AND subject_id IN (" . implode( ',', array_fill( 0, count( $hidden ), '%d' ) ) . '))';

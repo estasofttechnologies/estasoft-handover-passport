@@ -239,7 +239,7 @@ final class RegisterView {
 
 		echo '<div class="estasoft-hp-form"><h2>' . esc_html(
 			null === $record ? sprintf(
-			/* translators: %s: kind label. */
+				/* translators: %s: kind label, for example "Licence". */
 				__( 'Add %s', 'estasoft-handover-passport' ),
 				mb_strtolower( (string) $def['label'] )
 			) : (string) $record['title']

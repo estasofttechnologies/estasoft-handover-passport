@@ -6,7 +6,7 @@ Built and maintained by [ESTASOFT TECHNOLOGIES](https://estasoft.com).
 
 ## Requirements
 
-- WordPress 6.4 or later
+- WordPress 6.4 or later (tested on 6.4 and 7.1)
 - PHP 8.1 or later (`json`, `mbstring`)
 
 ## Install

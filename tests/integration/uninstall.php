@@ -96,15 +96,15 @@ $leftovers = static function () use ( $wpdb ): int {
 	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s", $like, '\_transient\_' . $like, '\_transient\_timeout\_' . $like ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
 };
 
-// The SQLite driver used for local tests accepts DROP TABLE and does nothing. On such a site, run that one statement
-// on a second connection so the test still sees the table go. On MySQL or MariaDB the statement runs as it is.
+// The older SQLite driver accepts DROP TABLE and does nothing. On such a site, run that one statement on a second
+// connection so the test still sees the table go. The current SQLite driver, MySQL and MariaDB run it as it is.
 $drops = array();
 add_filter(
 	'query',
 	static function ( $sql ) use ( &$drops ) {
 		if ( 1 === preg_match( '/^\s*DROP TABLE IF EXISTS\s+`?([A-Za-z0-9_]+)`?\s*$/i', (string) $sql, $hit ) ) {
 			$drops[] = $hit[1];
-			if ( defined( 'FQDB' ) ) {
+			if ( defined( 'FQDB' ) && ! class_exists( 'WP_MySQL_On_SQLite' ) ) {
 				( new PDO( 'sqlite:' . FQDB ) )->exec( 'DROP TABLE IF EXISTS "' . $hit[1] . '"' );
 				return 'SELECT 1';
 			}

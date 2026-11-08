@@ -34,6 +34,19 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - REST API under `estasoft-passport/v1`: the summary, records, people, runbooks, restore tests, findings, change log, DNS/certificate/address checks and scans. Collections page with `page` and `per_page` (at most 100) and return totals in headers; every route publishes a schema; errors carry `estasoft_hp_` codes that never repeat what was sent; Sensitive records and fields are left out for people without the capability. See `docs/REST-API.md`.
 - A shared summary of counts and dates used by the API and `wp estasoft-passport status`.
 
+- Handover: a checklist that fills itself from the Passport, snapshots fixed by a SHA-256 fingerprint, a compare view, successor notes and an export log.
+- Export packs as PDF, HTML, Markdown, JSON, CSV and a calendar file (dated items only), each with a client, an emergency or a full profile; Sensitive records are left out unless the person exporting may see them and asks for them. `wp estasoft-passport snapshot` and `export`.
+- A bundled PDF library with its own namespace prefix, so it cannot clash with another plugin; an optional TrueType font for Chinese, Japanese and Korean text.
+- Runbook reading view and a large-type print view, drills with a Done button that keeps the time and the person, and an after-restore checklist built from the critical addresses.
+- Incident records and an ownership transfer tracker that feeds the handover checklist.
+- The change log can be downloaded as CSV (a cell that starts like a formula is neutralised).
+- WordPress personal-data export and erase tools, with a plain account of what an erase cannot change (saved snapshots, free text in records).
+- Uninstall: an opt-in setting removes every table, option, transient, user meta, scheduled task, capability and the plugin's temporary folder when the plugin is deleted.
+- A translation template (`languages/estasoft-handover-passport.pot`), plugin directory icons and banners, and a release workflow that builds the zip from a version tag.
+
+### Fixed
+- The tables could not be created on MySQL and MariaDB: `sensitive` is a reserved word there. The column is now written with backticks in the schema and in every query, and a unit test refuses any column named with a reserved word without quotes.
+
 ### Changed
 - Scanning is limited to once a minute from the Scan now button, WP-CLI and the REST API alike, and the notices for scans, checks and test emails say how many seconds are left.
 - `wp estasoft-passport status` leaves Sensitive records out of its counts unless `--user` holds the Sensitive capability.
