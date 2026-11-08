@@ -39,8 +39,9 @@ final class RegisterView {
 	 * @param string                $page  Menu slug.
 	 * @param array<string, string> $query Extra query arguments that keep the tab, for example tab=licences.
 	 * @param bool                  $header_action True when the screen already shows the Add button in its page header.
+	 * @param bool                  $heading       True to print the register's name even when the button is in the header.
 	 */
-	public function render( string $kind, string $page, array $query = array(), bool $header_action = false ): void {
+	public function render( string $kind, string $page, array $query = array(), bool $header_action = false, bool $heading = false ): void {
 		$def = Kinds::get( $kind );
 		if ( null === $def ) {
 			return;
@@ -61,7 +62,7 @@ final class RegisterView {
 				$this->confirmDelete( $kind, $base, $id );
 				break;
 			default:
-				$this->listing( $kind, $def, $base, $header_action );
+				$this->listing( $kind, $def, $base, $header_action, $heading );
 		}
 	}
 
@@ -72,8 +73,9 @@ final class RegisterView {
 	 * @param array<string, mixed> $def           Schema.
 	 * @param string               $base          Base URL of the screen.
 	 * @param bool                 $header_action True when the screen keeps the Add button in its page header.
+	 * @param bool                 $heading       True to print the register's name even when the button is in the header.
 	 */
-	private function listing( string $kind, array $def, string $base, bool $header_action ): void {
+	private function listing( string $kind, array $def, string $base, bool $header_action, bool $heading ): void {
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 		$records  = $this->plugin->records()->listKind( $kind, Capabilities::canSeeSensitive() );
 		$people   = $this->peopleNames();
@@ -82,10 +84,10 @@ final class RegisterView {
 		$today    = Clock::today();
 
 		echo '<div class="estasoft-hp-register" id="register-' . esc_attr( $kind ) . '">';
-		if ( ! $header_action ) {
+		if ( ! $header_action || $heading ) {
 			echo '<div class="estasoft-hp-register__head"><h2>' . esc_html( (string) $def['plural'] ) . '</h2>';
-			if ( $can_edit ) {
-				echo '<a class="btn pri" href="' . esc_url( $add_url ) . '">' . Icons::svg( 'plus', 16 ) . esc_html( self::addLabel( $def ) ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
+			if ( $can_edit && ! $header_action ) {
+				echo '<a class="btn" href="' . esc_url( $add_url ) . '">' . Icons::svg( 'plus', 16 ) . esc_html( self::addLabel( $def ) ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 			}
 			echo '</div>';
 		}
@@ -95,11 +97,11 @@ final class RegisterView {
 		if ( array() === $records ) {
 			echo '<div class="estasoft-hp-empty"><p>' . esc_html( $this->emptyText( $kind, $def ) ) . '</p>';
 			if ( $can_edit ) {
-				echo '<p><a class="btn pri" href="' . esc_url( $add_url ) . '">' . esc_html(
+				echo '<p><a class="btn' . ( $header_action ? ' pri' : '' ) . '" href="' . esc_url( $add_url ) . '">' . esc_html(
 					sprintf(
 						/* translators: %s: kind label. */
 						__( 'Add the first %s', 'estasoft-handover-passport' ),
-						mb_strtolower( (string) $def['label'] )
+						self::lowerFirst( (string) $def['label'] )
 					)
 				) . '</a></p>';
 			}
@@ -174,7 +176,7 @@ final class RegisterView {
 		echo '<div class="pgn"><span data-estasoft-count data-total="' . esc_attr( (string) count( $records ) ) . '" data-pattern="' . esc_attr( $pattern ) . '" aria-live="polite">' . esc_html(
 			sprintf(
 				/* translators: 1: shown, 2: total. */
-				__( '%1$d of %2$d items', 'estasoft-handover-passport' ),
+				_n( '%1$d of %2$d item', '%1$d of %2$d items', count( $records ), 'estasoft-handover-passport' ),
 				count( $records ),
 				count( $records )
 			)
@@ -182,6 +184,15 @@ final class RegisterView {
 		echo '</div></section>';
 		$this->deletedList( $kind, $base, $can_edit );
 		echo '</div>';
+	}
+
+	/**
+	 * A label in running text: the first letter in lower case, the rest as written so that an acronym such as DNS stays.
+	 *
+	 * @param string $label Label.
+	 */
+	private static function lowerFirst( string $label ): string {
+		return mb_strtolower( mb_substr( $label, 0, 1 ) ) . mb_substr( $label, 1 );
 	}
 
 	/**
@@ -193,7 +204,7 @@ final class RegisterView {
 		return sprintf(
 			/* translators: %s: kind label, for example "licence". */
 			__( 'Add %s', 'estasoft-handover-passport' ),
-			mb_strtolower( (string) $def['label'] )
+			self::lowerFirst( (string) $def['label'] )
 		);
 	}
 
@@ -212,7 +223,7 @@ final class RegisterView {
 		$label = sprintf(
 			/* translators: %s: plural kind label. */
 			__( 'Search %s', 'estasoft-handover-passport' ),
-			mb_strtolower( (string) $def['plural'] )
+			self::lowerFirst( (string) $def['plural'] )
 		);
 		echo '<div class="tb"><label class="screen-reader-text" for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>';
 		echo '<input class="fld" type="search" id="' . esc_attr( $id ) . '" data-estasoft-find placeholder="' . esc_attr( $label ) . '" autocomplete="off">';
@@ -458,7 +469,7 @@ final class RegisterView {
 			null === $record ? sprintf(
 				/* translators: %s: kind label, for example "Licence". */
 				__( 'Add %s', 'estasoft-handover-passport' ),
-				mb_strtolower( (string) $def['label'] )
+				self::lowerFirst( (string) $def['label'] )
 			) : (string) $record['title']
 		) . '</h2>';
 
@@ -710,7 +721,7 @@ final class RegisterView {
 		return $hints[ $kind ] ?? sprintf(
 			/* translators: %s: plural kind label. */
 			__( 'No %s recorded yet.', 'estasoft-handover-passport' ),
-			mb_strtolower( (string) $def['plural'] )
+			self::lowerFirst( (string) $def['plural'] )
 		);
 	}
 

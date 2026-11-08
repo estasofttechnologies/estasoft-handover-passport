@@ -42,7 +42,7 @@ final class StackView {
 			$facts = \Estasoft\HandoverPassport\Scan\ScanService::redact( $facts );
 		}
 		if ( array() === $facts ) {
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'Nothing has been scanned yet. Run a scan from the Overview screen to list the plugins, themes and server details.', 'estasoft-handover-passport' ) . '</p></div>';
+			echo '<section class="card"><div class="bdy"><div class="empty">' . Icons::svg( 'search', 32 ) . '<h2>' . esc_html__( 'Nothing has been scanned yet', 'estasoft-handover-passport' ) . '</h2><p>' . esc_html__( 'Run a scan from the Overview screen to list the plugins, themes and server details.', 'estasoft-handover-passport' ) . '</p></div></div></section>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 			return;
 		}
 
@@ -56,13 +56,9 @@ final class StackView {
 		$sub  = Request::key( 'sub', 'plugins' );
 		$sub  = isset( $subs[ $sub ] ) ? $sub : 'plugins';
 
-		echo '<ul class="subsubsub estasoft-hp-sub">';
-		$i = 0;
-		foreach ( $subs as $key => $label ) {
-			$url = add_query_arg( array( 'page' => $page, 'tab' => 'stack', 'sub' => $key ), admin_url( 'admin.php' ) );
-			echo '<li>' . ( $i++ > 0 ? ' | ' : '' ) . '<a href="' . esc_url( $url ) . '"' . ( $key === $sub ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
-		}
-		echo '</ul><div class="clear"></div>';
+		echo '<div class="row">';
+		$this->segment( $subs, $sub, add_query_arg( array( 'page' => $page, 'tab' => 'stack' ), admin_url( 'admin.php' ) ), 'sub', __( 'Parts of the stack', 'estasoft-handover-passport' ) );
+		echo '</div>';
 
 		$base = add_query_arg( array( 'page' => $page, 'tab' => 'stack', 'sub' => $sub ), admin_url( 'admin.php' ) );
 		switch ( $sub ) {
@@ -103,7 +99,7 @@ final class StackView {
 			$debug[] = $name . ': ' . ( $on ? __( 'on', 'estasoft-handover-passport' ) : __( 'off', 'estasoft-handover-passport' ) );
 		}
 
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'WordPress', 'estasoft-handover-passport' ) . '</h2>';
+		View::cardStart( __( 'WordPress', 'estasoft-handover-passport' ) );
 		View::facts(
 			array(
 				__( 'Version', 'estasoft-handover-passport' )             => (string) ( $core['wp_version'] ?? '' ),
@@ -119,7 +115,8 @@ final class StackView {
 				__( 'Multisite', 'estasoft-handover-passport' )           => View::yesNo( ! empty( $core['multisite'] ) ),
 			)
 		);
-		echo '</div><div class="estasoft-hp-card"><h2>' . esc_html__( 'Server', 'estasoft-handover-passport' ) . '</h2>';
+		View::cardEnd();
+		View::cardStart( __( 'Server', 'estasoft-handover-passport' ) );
 		View::facts(
 			array(
 				__( 'PHP', 'estasoft-handover-passport' ) => $php . ( null !== $php_end ? ' (' . sprintf(
@@ -141,9 +138,9 @@ final class StackView {
 				__( 'Database size', 'estasoft-handover-passport' ) => View::size( isset( $resources['db_bytes'] ) ? (int) $resources['db_bytes'] : null ),
 			)
 		);
-		echo '</div>';
+		View::cardEnd();
 		if ( array() !== $sensitive ) {
-			echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Sensitive details', 'estasoft-handover-passport' ) . '</h2>';
+			View::cardStart( __( 'Sensitive details', 'estasoft-handover-passport' ), '<span class="tag sens">' . Icons::svg( 'lock', 12 ) . esc_html__( 'Sensitive', 'estasoft-handover-passport' ) . '</span>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup.
 			View::facts(
 				array(
 					__( 'Table prefix', 'estasoft-handover-passport' )   => (string) ( $sensitive['table_prefix'] ?? '' ),
@@ -153,7 +150,7 @@ final class StackView {
 					__( 'Server address', 'estasoft-handover-passport' ) => (string) ( $sensitive['server_ip'] ?? '' ),
 				)
 			);
-			echo '</div>';
+			View::cardEnd();
 		}
 	}
 
@@ -173,7 +170,6 @@ final class StackView {
 			'outside'  => __( 'Not from WordPress.org', 'estasoft-handover-passport' ),
 		);
 		$filter  = isset( $filters[ $filter ] ) ? $filter : 'all';
-		$this->filterLinks( $filters, $filter, $base );
 
 		$inactive_since = $this->inactiveSince( 'plugin_deactivated' );
 		$can_edit       = Capabilities::can( Capabilities::EDIT );
@@ -186,25 +182,26 @@ final class StackView {
 			}
 			$rows[ (string) $slug ] = $plugin;
 		}
+		View::bareCardStart();
+		echo '<div class="tb">';
+		$this->segment( $filters, $filter, $base, 'filter', __( 'Show plugins that are', 'estasoft-handover-passport' ) );
+		echo '</div>';
 		if ( array() === $rows ) {
-			echo '<p>' . esc_html__( 'No plugins match this filter.', 'estasoft-handover-passport' ) . '</p>';
+			echo '<div class="empty"><p>' . esc_html__( 'No plugins match this filter.', 'estasoft-handover-passport' ) . '</p></div>';
+			View::cardEnd();
 			return;
 		}
-
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
-		foreach ( array( __( 'Plugin', 'estasoft-handover-passport' ), __( 'Version', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Source', 'estasoft-handover-passport' ), __( 'Licence', 'estasoft-handover-passport' ), __( 'What it does here', 'estasoft-handover-passport' ) ) as $heading ) {
-			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
-		}
-		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
+		$this->tableStart( __( 'Plugins', 'estasoft-handover-passport' ), array( __( 'Plugin', 'estasoft-handover-passport' ), __( 'Version', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Source', 'estasoft-handover-passport' ), __( 'Licence', 'estasoft-handover-passport' ), __( 'What it does here', 'estasoft-handover-passport' ) ), true );
 
 		foreach ( $rows as $slug => $plugin ) {
 			$note    = $this->plugin->records()->items()->bySubject( Kinds::STACKNOTE, 'plugin:' . strtolower( $slug ) );
 			$outside = array_key_exists( 'wporg', $plugin ) && false === $plugin['wporg'];
 			$name    = (string) $plugin['name'];
 
-			echo '<tr><td><strong>' . esc_html( $name ) . '</strong>';
+			$labels = array( __( 'Plugin', 'estasoft-handover-passport' ), __( 'Version', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Source', 'estasoft-handover-passport' ), __( 'Licence', 'estasoft-handover-passport' ), __( 'What it does here', 'estasoft-handover-passport' ) );
+			echo '<tr><td class="t1" data-label="' . esc_attr( $labels[0] ) . '"><b>' . esc_html( $name ) . '</b>';
 			if ( ! empty( $plugin['update'] ) ) {
-				echo '<br><span class="estasoft-hp-muted">' . esc_html(
+				echo '<span class="sub">' . esc_html(
 					sprintf(
 						/* translators: %s: version number. */
 						__( 'Update to %s available', 'estasoft-handover-passport' ),
@@ -212,13 +209,13 @@ final class StackView {
 					)
 				) . '</span>';
 			}
-			echo '</td><td>' . esc_html( (string) $plugin['version'] ) . '</td><td>';
+			echo '</td><td data-label="' . esc_attr( $labels[1] ) . '">' . esc_html( (string) $plugin['version'] ) . '</td><td data-label="' . esc_attr( $labels[2] ) . '">';
 			if ( ! empty( $plugin['active'] ) ) {
 				echo View::badge( 'active', empty( $plugin['network'] ) ? __( 'Active', 'estasoft-handover-passport' ) : __( 'Network active', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			} else {
 				echo View::badge( 'unknown', __( 'Inactive', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 				if ( isset( $inactive_since[ $name ] ) ) {
-					echo '<br><span class="estasoft-hp-muted">' . esc_html(
+					echo '<span class="sub">' . esc_html(
 						sprintf(
 							/* translators: %s: date. */
 							__( 'since %s. Consider removing it.', 'estasoft-handover-passport' ),
@@ -227,19 +224,20 @@ final class StackView {
 					) . '</span>';
 				}
 			}
-			echo '</td><td>' . esc_html( $outside ? __( 'Not from WordPress.org', 'estasoft-handover-passport' ) : ( true === ( $plugin['wporg'] ?? null ) ? __( 'WordPress.org', 'estasoft-handover-passport' ) : __( 'Unknown', 'estasoft-handover-passport' ) ) ) . '</td>';
-			echo '<td>' . $this->licenceCell( strtolower( $slug ), $name, $outside, $can_edit ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- licenceCell() escapes its output.
-			echo '<td>' . esc_html( null === $note ? '' : (string) ( $note['data']['what_it_does'] ?? '' ) );
+			echo '</td><td data-label="' . esc_attr( $labels[3] ) . '">' . esc_html( $outside ? __( 'Not from WordPress.org', 'estasoft-handover-passport' ) : ( true === ( $plugin['wporg'] ?? null ) ? __( 'WordPress.org', 'estasoft-handover-passport' ) : __( 'Unknown', 'estasoft-handover-passport' ) ) ) . '</td>';
+			echo '<td data-label="' . esc_attr( $labels[4] ) . '">' . $this->licenceCell( strtolower( $slug ), $name, $outside, $can_edit ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- licenceCell() escapes its output.
+			echo '<td data-label="' . esc_attr( $labels[5] ) . '">' . esc_html( null === $note ? '' : (string) ( $note['data']['what_it_does'] ?? '' ) );
 			if ( null !== $note && 'yes' === ( $note['data']['custom_code'] ?? '' ) ) {
 				echo ' ' . View::badge( 'draft', __( 'Custom code', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			}
-			echo '</td><td>';
+			echo '</td><td class="act" data-label="">';
 			if ( $can_edit ) {
-				echo '<a href="' . esc_url( $this->noteLink( $base, 'plugin:' . $slug, $name, $note ) ) . '">' . esc_html__( 'Notes', 'estasoft-handover-passport' ) . '</a>';
+				echo '<a class="btn sm" href="' . esc_url( $this->noteLink( $base, 'plugin:' . $slug, $name, $note ) ) . '">' . esc_html__( 'Notes', 'estasoft-handover-passport' ) . '</a>';
 			}
 			echo '</td></tr>';
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		View::cardEnd();
 	}
 
 	/**
@@ -251,18 +249,16 @@ final class StackView {
 	private function themes( array $themes, string $base ): void {
 		$inactive_since = $this->inactiveSince( 'theme_switched' );
 		$can_edit       = Capabilities::can( Capabilities::EDIT );
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
-		foreach ( array( __( 'Theme', 'estasoft-handover-passport' ), __( 'Version', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Parent', 'estasoft-handover-passport' ), __( 'Licence', 'estasoft-handover-passport' ), __( 'What it does here', 'estasoft-handover-passport' ) ) as $heading ) {
-			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
-		}
-		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
+		$labels         = array( __( 'Theme', 'estasoft-handover-passport' ), __( 'Version', 'estasoft-handover-passport' ), __( 'State', 'estasoft-handover-passport' ), __( 'Parent', 'estasoft-handover-passport' ), __( 'Licence', 'estasoft-handover-passport' ), __( 'What it does here', 'estasoft-handover-passport' ) );
+		View::bareCardStart();
+		$this->tableStart( __( 'Themes', 'estasoft-handover-passport' ), $labels, true );
 		foreach ( $themes as $slug => $theme ) {
 			$note    = $this->plugin->records()->items()->bySubject( Kinds::STACKNOTE, 'theme:' . strtolower( (string) $slug ) );
 			$outside = array_key_exists( 'wporg', $theme ) && false === $theme['wporg'];
 			$custom  = '' !== (string) ( $theme['parent'] ?? '' ) || ( null !== $note && 'yes' === ( $note['data']['custom_code'] ?? '' ) );
-			echo '<tr><td><strong>' . esc_html( (string) $theme['name'] ) . '</strong>';
+			echo '<tr><td class="t1" data-label="' . esc_attr( $labels[0] ) . '"><b>' . esc_html( (string) $theme['name'] ) . '</b>';
 			if ( ! empty( $theme['update'] ) ) {
-				echo '<br><span class="estasoft-hp-muted">' . esc_html(
+				echo '<span class="sub">' . esc_html(
 					sprintf(
 						/* translators: %s: version number. */
 						__( 'Update to %s available', 'estasoft-handover-passport' ),
@@ -270,20 +266,21 @@ final class StackView {
 					)
 				) . '</span>';
 			}
-			echo '</td><td>' . esc_html( (string) $theme['version'] ) . '</td><td>';
+			echo '</td><td data-label="' . esc_attr( $labels[1] ) . '">' . esc_html( (string) $theme['version'] ) . '</td><td data-label="' . esc_attr( $labels[2] ) . '">';
 			echo View::badge( ! empty( $theme['active'] ) ? 'active' : 'unknown', ! empty( $theme['active'] ) ? __( 'Active', 'estasoft-handover-passport' ) : __( 'Inactive', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-			echo '</td><td>' . esc_html( (string) ( $theme['parent'] ?? '' ) );
+			echo '</td><td data-label="' . esc_attr( $labels[3] ) . '">' . esc_html( (string) ( $theme['parent'] ?? '' ) );
 			if ( $custom ) {
 				echo ' ' . View::badge( 'draft', __( 'Custom code', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			}
-			echo '</td><td>' . $this->licenceCell( strtolower( (string) $slug ), (string) $theme['name'], $outside, $can_edit ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- licenceCell() escapes its output.
-			echo '<td>' . esc_html( null === $note ? '' : (string) ( $note['data']['what_it_does'] ?? '' ) ) . '</td><td>';
+			echo '</td><td data-label="' . esc_attr( $labels[4] ) . '">' . $this->licenceCell( strtolower( (string) $slug ), (string) $theme['name'], $outside, $can_edit ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- licenceCell() escapes its output.
+			echo '<td data-label="' . esc_attr( $labels[5] ) . '">' . esc_html( null === $note ? '' : (string) ( $note['data']['what_it_does'] ?? '' ) ) . '</td><td class="act" data-label="">';
 			if ( $can_edit ) {
-				echo '<a href="' . esc_url( $this->noteLink( $base, 'theme:' . $slug, (string) $theme['name'], $note ) ) . '">' . esc_html__( 'Notes', 'estasoft-handover-passport' ) . '</a>';
+				echo '<a class="btn sm" href="' . esc_url( $this->noteLink( $base, 'theme:' . $slug, (string) $theme['name'], $note ) ) . '">' . esc_html__( 'Notes', 'estasoft-handover-passport' ) . '</a>';
 			}
 			echo '</td></tr>';
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		View::cardEnd();
 	}
 
 	/**
@@ -293,27 +290,28 @@ final class StackView {
 	 * @param array<string, array<string, mixed>> $dropins Drop-ins.
 	 */
 	private function muPlugins( array $mu, array $dropins ): void {
-		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Must-use plugins', 'estasoft-handover-passport' ) . '</h2>';
+		View::cardStart( __( 'Must-use plugins', 'estasoft-handover-passport' ), '', true );
 		if ( array() === $mu ) {
-			echo '<p>' . esc_html__( 'None. Must-use plugins load before every other plugin and cannot be switched off from the Plugins screen.', 'estasoft-handover-passport' ) . '</p>';
+			echo '<div class="empty"><p>' . esc_html__( 'None. Must-use plugins load before every other plugin and cannot be switched off from the Plugins screen.', 'estasoft-handover-passport' ) . '</p></div>';
 		} else {
-			echo '<ul>';
+			echo '<ul class="lst">';
 			foreach ( $mu as $file => $item ) {
-				echo '<li><strong>' . esc_html( (string) ( ! empty( $item['name'] ) ? $item['name'] : $file ) ) . '</strong> ' . esc_html( (string) $item['version'] ) . ' <span class="estasoft-hp-muted">' . esc_html( (string) $file ) . '</span> ' . View::badge( 'draft', __( 'May hold custom code', 'estasoft-handover-passport' ) ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+				echo '<li><div class="gr"><b>' . esc_html( (string) ( ! empty( $item['name'] ) ? $item['name'] : $file ) ) . '</b> ' . esc_html( (string) $item['version'] ) . '<span class="sub t2 cap">' . esc_html( (string) $file ) . '</span></div>' . View::badge( 'draft', __( 'May hold custom code', 'estasoft-handover-passport' ) ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			}
 			echo '</ul>';
 		}
-		echo '</div><div class="estasoft-hp-card"><h2>' . esc_html__( 'Drop-ins', 'estasoft-handover-passport' ) . '</h2>';
+		View::cardEnd();
+		View::cardStart( __( 'Drop-ins', 'estasoft-handover-passport' ), '', true );
 		if ( array() === $dropins ) {
-			echo '<p>' . esc_html__( 'None.', 'estasoft-handover-passport' ) . '</p>';
+			echo '<div class="empty"><p>' . esc_html__( 'None.', 'estasoft-handover-passport' ) . '</p></div>';
 		} else {
-			echo '<ul>';
+			echo '<ul class="lst">';
 			foreach ( $dropins as $file => $item ) {
-				echo '<li><strong>' . esc_html( (string) $file ) . '</strong> — ' . esc_html( (string) $item['name'] ) . '</li>';
+				echo '<li><div class="gr"><b>' . esc_html( (string) $file ) . '</b><span class="sub t2 cap">' . esc_html( (string) $item['name'] ) . '</span></div></li>';
 			}
 			echo '</ul>';
 		}
-		echo '</div>';
+		View::cardEnd();
 	}
 
 	/**
@@ -323,7 +321,7 @@ final class StackView {
 	 */
 	private function cron( array $cron ): void {
 		if ( array() === $cron ) {
-			echo '<p>' . esc_html__( 'No recurring scheduled tasks were found.', 'estasoft-handover-passport' ) . '</p>';
+			echo '<section class="card"><div class="bdy"><div class="empty"><h2>' . esc_html__( 'No scheduled tasks', 'estasoft-handover-passport' ) . '</h2><p>' . esc_html__( 'No recurring scheduled tasks were found.', 'estasoft-handover-passport' ) . '</p></div></div></section>';
 			return;
 		}
 		$groups = array();
@@ -332,14 +330,16 @@ final class StackView {
 			$groups[ $owner ][] = $task;
 		}
 		ksort( $groups );
-		echo '<p class="description">' . esc_html__( 'The owner is a guess from the name of the task.', 'estasoft-handover-passport' ) . '</p>';
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Task', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Owner (guess)', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Repeats', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Next run', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
+		$labels = array( __( 'Task', 'estasoft-handover-passport' ), __( 'Owner (guess)', 'estasoft-handover-passport' ), __( 'Repeats', 'estasoft-handover-passport' ), __( 'Next run', 'estasoft-handover-passport' ) );
+		View::bareCardStart();
+		$this->tableStart( __( 'Scheduled tasks', 'estasoft-handover-passport' ), $labels );
 		foreach ( $groups as $owner => $tasks ) {
 			foreach ( $tasks as $task ) {
-				echo '<tr><td><code>' . esc_html( (string) $task['hook'] ) . '</code></td><td>' . esc_html( (string) $owner ) . '</td><td>' . esc_html( (string) $task['schedule'] ) . '</td><td>' . esc_html( Dates::display( gmdate( 'Y-m-d H:i:s', (int) $task['next_run'] ), true ) ) . '</td></tr>';
+				echo '<tr><td class="t1" data-label="' . esc_attr( $labels[0] ) . '"><code>' . esc_html( (string) $task['hook'] ) . '</code></td><td data-label="' . esc_attr( $labels[1] ) . '">' . esc_html( (string) $owner ) . '</td><td data-label="' . esc_attr( $labels[2] ) . '">' . esc_html( (string) $task['schedule'] ) . '</td><td data-label="' . esc_attr( $labels[3] ) . '">' . esc_html( Dates::display( gmdate( 'Y-m-d H:i:s', (int) $task['next_run'] ), true ) ) . '</td></tr>';
 			}
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		View::cardEnd( '<span class="t2 cap">' . esc_html__( 'The owner is a guess from the name of the task.', 'estasoft-handover-passport' ) . '</span>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped here.
 	}
 
 	/**
@@ -415,18 +415,37 @@ final class StackView {
 	}
 
 	/**
-	 * Filter links above a list.
+	 * A row of links that read as one control: which part of a screen, or which filter, is on.
 	 *
-	 * @param array<string, string> $filters Filter key => label.
-	 * @param string                $current Current filter.
-	 * @param string                $base    Base URL.
+	 * @param array<string, string> $items   Key => label.
+	 * @param string                $current Key that is on.
+	 * @param string                $base    Address to add the choice to.
+	 * @param string                $param   Query argument that carries the choice.
+	 * @param string                $label   What the control is for, for assistive technology.
 	 */
-	private function filterLinks( array $filters, string $current, string $base ): void {
-		echo '<ul class="subsubsub estasoft-hp-filter">';
-		$i = 0;
-		foreach ( $filters as $key => $label ) {
-			echo '<li>' . ( $i++ > 0 ? ' | ' : '' ) . '<a href="' . esc_url( add_query_arg( 'filter', $key, $base ) ) . '"' . ( $key === $current ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
+	private function segment( array $items, string $current, string $base, string $param, string $label ): void {
+		echo '<nav class="seg" aria-label="' . esc_attr( $label ) . '">';
+		foreach ( $items as $key => $text ) {
+			echo '<a href="' . esc_url( add_query_arg( $param, (string) $key, $base ) ) . '"' . ( (string) $key === $current ? ' class="on" aria-current="page"' : '' ) . '>' . esc_html( $text ) . '</a>';
 		}
-		echo '</ul><div class="clear"></div>';
+		echo '</nav>';
+	}
+
+	/**
+	 * Open a table with a caption and column headings. The last column is for actions, so it has no heading.
+	 *
+	 * @param string             $caption Words for assistive technology.
+	 * @param array<int, string> $heads   Column headings.
+	 * @param bool               $actions Whether a last column holds actions.
+	 */
+	private function tableStart( string $caption, array $heads, bool $actions = false ): void {
+		echo '<div class="scr"><table class="tbl cards"><caption class="sr">' . esc_html( $caption ) . '</caption><thead><tr>';
+		foreach ( $heads as $heading ) {
+			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
+		}
+		if ( $actions ) {
+			echo '<th scope="col"><span class="sr">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th>';
+		}
+		echo '</tr></thead><tbody>';
 	}
 }

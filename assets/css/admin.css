@@ -1039,9 +1039,13 @@ body.estasoft-hp-screen {
 	gap: 8px;
 	padding: 40px 16px;
 	text-align: center;
+}
+
+.estasoft-hp .estasoft-hp-empty {
 	background: var(--sf);
-	border: 1px dashed var(--bdc);
+	border: 1px solid var(--bd2);
 	border-radius: 8px;
+	box-shadow: 0 1px 2px rgba(33, 37, 41, 0.08);
 }
 
 .estasoft-hp .empty h2 {
@@ -2012,4 +2016,31 @@ body.estasoft-hp-screen {
 
 .rtl .estasoft-hp svg.flip {
 	transform: scaleX(-1);
+}
+
+/* Domain panels: the domain name in the card head, its checks beside it. */
+.estasoft-hp .estasoft-hp-domain > .hd h3 {
+	flex: 1 1 auto;
+	margin: 0;
+	font-size: 16px;
+	line-height: 22px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-domain > .hd .estasoft-hp-inline {
+	margin: 0;
+}
+
+.estasoft-hp .estasoft-hp-domain > .bdy h4 {
+	margin: 16px 0 4px;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.estasoft-hp .estasoft-hp-domain > .bdy h4:first-child {
+	margin-top: 0;
+}
+
+.estasoft-hp .estasoft-hp-register__head + .t2 {
+	margin: 0 0 12px;
 }

@@ -45,7 +45,7 @@ final class DomainView {
 			return;
 		}
 
-		$register->render( Kinds::DOMAIN, $slug, $keep );
+		$register->render( Kinds::DOMAIN, $slug, $keep, true, true );
 		$base    = add_query_arg( array_merge( array( 'page' => $slug ), $keep ), admin_url( 'admin.php' ) );
 		$domains = array();
 		foreach ( $this->plugin->records()->listKind( Kinds::DOMAIN, Capabilities::canSeeSensitive() ) as $record ) {
@@ -54,8 +54,8 @@ final class DomainView {
 			}
 		}
 		if ( array() !== $domains ) {
-			echo '<h2>' . esc_html__( 'What this server sees', 'estasoft-handover-passport' ) . '</h2>';
-			echo '<p class="description">' . esc_html__( 'Press a button to read the records or the certificate from this server. Nothing is checked when a page loads, and each check runs at most once a minute.', 'estasoft-handover-passport' ) . '</p>';
+			echo '<div class="estasoft-hp-register__head"><h2>' . esc_html__( 'What this server sees', 'estasoft-handover-passport' ) . '</h2></div>';
+			echo '<p class="t2">' . esc_html__( 'Press a button to read the records or the certificate from this server. Nothing is checked when a page loads, and each check runs at most once a minute.', 'estasoft-handover-passport' ) . '</p>';
 			foreach ( $domains as $record ) {
 				$this->panel( $record, $base, $register );
 			}
@@ -78,15 +78,14 @@ final class DomainView {
 		$host     = $this->siteHost( $domain );
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 
-		echo '<div class="estasoft-hp-card estasoft-hp-domain"><h3>' . esc_html( $domain ) . '</h3>';
+		echo '<section class="card estasoft-hp-domain"><div class="hd"><h3>' . esc_html( $domain ) . '</h3>';
 		if ( $can_edit ) {
-			echo '<p class="estasoft-hp-buttons">';
 			$this->button( $register, 'check', (int) $record['id'], $base, __( 'Check DNS', 'estasoft-handover-passport' ) );
 			if ( '' !== $host ) {
 				$this->button( $register, 'check_ssl', (int) $record['id'], $base, __( 'Check certificate', 'estasoft-handover-passport' ) );
 			}
-			echo '</p>';
 		}
+		echo '</div><div class="bdy">';
 
 		echo '<h4>' . esc_html__( 'DNS records', 'estasoft-handover-passport' ) . '</h4>';
 		if ( null === $dns || ! is_array( $dns['data'] ) ) {
@@ -106,7 +105,7 @@ final class DomainView {
 				$this->certificateFacts( (array) $cert['data'], $host );
 			}
 		}
-		echo '</div>';
+		echo '</div></section>';
 	}
 
 	/**
@@ -136,7 +135,7 @@ final class DomainView {
 	private function button( RegisterView $register, string $op, int $id, string $base, string $label ): void {
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 		$register->hidden( $op, 'item', $id, $base, Kinds::DOMAIN );
-		echo '<button type="submit" class="button">' . esc_html( $label ) . '</button></form> ';
+		echo '<button type="submit" class="btn sm">' . esc_html( $label ) . '</button></form>';
 	}
 
 	/**

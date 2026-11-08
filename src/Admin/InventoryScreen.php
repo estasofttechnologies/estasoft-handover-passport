@@ -81,6 +81,10 @@ final class InventoryScreen extends Screen {
 				return $this->addAction( Kinds::LICENCE, $tab );
 			case 'services':
 				return $this->addAction( Kinds::SERVICE, $tab );
+			case 'domains':
+				return $this->addAction( Kinds::DOMAIN, $tab );
+			case 'hosting':
+				return $this->addAction( Kinds::HOST, $tab );
 			default:
 				return null;
 		}
@@ -131,7 +135,7 @@ final class InventoryScreen extends Screen {
 			return;
 		}
 		foreach ( $kinds as $kind ) {
-			$register->render( $kind, self::SLUG, $keep );
+			$register->render( $kind, self::SLUG, $keep, Kinds::HOST === $kind, true );
 		}
 	}
 }
