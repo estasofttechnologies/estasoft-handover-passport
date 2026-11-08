@@ -102,7 +102,7 @@ final class OverviewScreen {
 		if ( Capabilities::can( Capabilities::EDIT ) ) {
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 			echo '<input type="hidden" name="action" value="' . esc_attr( Admin::SCAN_ACTION ) . '">';
-			wp_nonce_field( Admin::SCAN_ACTION );
+			Form::nonce( Admin::SCAN_ACTION );
 			echo '<button type="submit" class="button button-primary">' . esc_html__( 'Scan now', 'estasoft-handover-passport' ) . '</button>';
 			echo '</form>';
 		}

@@ -358,7 +358,7 @@ final class RegisterView {
 		echo '<input type="hidden" name="id" value="' . esc_attr( (string) $id ) . '">';
 		echo '<input type="hidden" name="kind" value="' . esc_attr( $kind ) . '">';
 		echo '<input type="hidden" name="return" value="' . esc_url( $return ) . '">';
-		wp_nonce_field( Actions::ACTION, '_wpnonce', false );
+		Form::nonce( Actions::ACTION, false );
 	}
 
 	/**

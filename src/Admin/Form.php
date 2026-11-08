@@ -113,4 +113,18 @@ final class Form {
 		}
 		echo '</div>';
 	}
+
+	/**
+	 * Print the security token for a form without an element id, so a page with
+	 * many forms stays valid HTML.
+	 *
+	 * @param string $action Nonce action.
+	 * @param bool   $referer Whether to add the referer field.
+	 */
+	public static function nonce( string $action, bool $referer = true ): void {
+		echo '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp_create_nonce( $action ) ) . '">';
+		if ( $referer ) {
+			wp_referer_field();
+		}
+	}
 }

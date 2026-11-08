@@ -135,7 +135,7 @@ final class HistoryScreen extends Screen {
 				echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html( (string) reset( $errors ) ) . '</p></div>';
 			}
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::NOTE_ACTION ) . '">';
-			wp_nonce_field( self::NOTE_ACTION );
+			Form::nonce( self::NOTE_ACTION );
 			Form::row( 'note_date', array( 'type' => 'date', 'label' => __( 'Date', 'estasoft-handover-passport' ) ), $input['note_date'] ?? Clock::today() );
 			Form::row( 'note_type', array( 'type' => 'select', 'label' => __( 'Type', 'estasoft-handover-passport' ), 'options' => $types, 'required' => true ), $input['note_type'] ?? '' );
 			Form::row( 'note_asset', array( 'type' => 'text', 'label' => __( 'About (optional)', 'estasoft-handover-passport' ), 'help' => __( 'For example a plugin, a domain or a server.', 'estasoft-handover-passport' ), 'max' => 120 ), $input['note_asset'] ?? '' );

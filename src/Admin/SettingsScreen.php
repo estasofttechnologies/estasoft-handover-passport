@@ -55,9 +55,32 @@ final class SettingsScreen extends Screen {
 	 */
 	protected function tabs(): array {
 		return array(
-			'general' => __( 'General', 'estasoft-handover-passport' ),
-			'access'  => __( 'Who can do what', 'estasoft-handover-passport' ),
-			'privacy' => __( 'Privacy and data', 'estasoft-handover-passport' ),
+			'general'   => __( 'General', 'estasoft-handover-passport' ),
+			'findings'  => __( 'Findings', 'estasoft-handover-passport' ),
+			'reminders' => __( 'Reminders', 'estasoft-handover-passport' ),
+			'access'    => __( 'Who can do what', 'estasoft-handover-passport' ),
+			'privacy'   => __( 'Privacy and data', 'estasoft-handover-passport' ),
+		);
+	}
+
+	/**
+	 * Threshold fields: setting key => label, smallest, largest, default.
+	 *
+	 * @return array<string, array{0: string, 1: int, 2: int, 3: int}>
+	 */
+	public static function thresholdFields(): array {
+		return array(
+			'eol_warn_days'       => array( __( 'Warn about a version that stops being supported within (days)', 'estasoft-handover-passport' ), 1, 730, 90 ),
+			'update_age_days'     => array( __( 'An update is overdue after it has waited (days)', 'estasoft-handover-passport' ), 1, 365, 30 ),
+			'licence_warn_days'   => array( __( 'A licence is flagged when it ends within (days)', 'estasoft-handover-passport' ), 1, 365, 60 ),
+			'licence_lead_days'   => array( __( 'A licence "renews soon" this many days before its date', 'estasoft-handover-passport' ), 0, 365, 30 ),
+			'domain_warn_days'    => array( __( 'A domain is flagged when it expires within (days)', 'estasoft-handover-passport' ), 1, 365, 30 ),
+			'ssl_warn_days'       => array( __( 'A certificate is flagged when it expires within (days)', 'estasoft-handover-passport' ), 1, 180, 21 ),
+			'hosting_warn_days'   => array( __( 'A hosting plan is flagged when it renews within (days)', 'estasoft-handover-passport' ), 1, 365, 30 ),
+			'restore_test_days'   => array( __( 'A restore test is overdue after (days)', 'estasoft-handover-passport' ), 1, 1095, 180 ),
+			'backup_confirm_days' => array( __( 'A backup is unconfirmed after (days)', 'estasoft-handover-passport' ), 1, 365, 45 ),
+			'scan_stale_hours'    => array( __( 'The scan is late after (hours)', 'estasoft-handover-passport' ), 1, 720, 48 ),
+			'access_review_days'  => array( __( 'An access entry is unreviewed after (days)', 'estasoft-handover-passport' ), 1, 3650, 90 ),
 		);
 	}
 
@@ -89,9 +112,13 @@ final class SettingsScreen extends Screen {
 	protected function tab( string $tab ): void {
 		$settings = $this->plugin->settings();
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '"><input type="hidden" name="tab" value="' . esc_attr( $tab ) . '">';
-		wp_nonce_field( self::ACTION );
+		Form::nonce( self::ACTION );
 
-		if ( 'access' === $tab ) {
+		if ( 'findings' === $tab ) {
+			$this->findingsTab( $settings );
+		} elseif ( 'reminders' === $tab ) {
+			$this->remindersTab( $settings );
+		} elseif ( 'access' === $tab ) {
 			$this->accessTab( $settings->get( 'capability_grants', array() ) );
 		} elseif ( 'privacy' === $tab ) {
 			$this->privacyTab( (bool) $settings->get( 'delete_on_uninstall', false ), (array) $settings->get( 'retention', array() ) );
@@ -121,9 +148,42 @@ final class SettingsScreen extends Screen {
 		echo '</fieldset>';
 
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Lead times', 'estasoft-handover-passport' ) . '</legend>';
-		Form::row( 'licence_lead_days', array( 'type' => 'int', 'label' => __( 'A licence "renews soon" this many days before its date', 'estasoft-handover-passport' ) ), $settings->get( 'thresholds.licence_lead_days', 30 ) );
 		Form::row( 'backup_confirm', array( 'type' => 'int', 'label' => __( 'A backup should be confirmed every (days)', 'estasoft-handover-passport' ) ), $settings->get( 'backup_confirm', 30 ) );
 		Form::row( 'access_review_days', array( 'type' => 'int', 'label' => __( 'Access entries should be reviewed every (days)', 'estasoft-handover-passport' ) ), $settings->get( 'access_review_days', 90 ) );
+		echo '</fieldset>';
+	}
+
+	/**
+	 * Thresholds the rules use and the recovery targets (FND-4, BKP-5).
+	 *
+	 * @param \Estasoft\HandoverPassport\Settings\Settings $settings Settings.
+	 */
+	private function findingsTab( $settings ): void {
+		echo '<p class="description">' . esc_html__( 'These numbers decide when a finding opens. Changing them re-checks the rules straight away. Individual rules can be switched off from the Findings screen.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'When a finding opens', 'estasoft-handover-passport' ) . '</legend>';
+		foreach ( self::thresholdFields() as $key => $def ) {
+			Form::row( 'th_' . $key, array( 'type' => 'int', 'label' => $def[0] ), $settings->get( 'thresholds.' . $key, $def[3] ) );
+		}
+		echo '</fieldset>';
+
+		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Recovery targets', 'estasoft-handover-passport' ) . '</legend>';
+		echo '<p class="description">' . esc_html__( 'Leave blank if nobody has agreed a target. Restore tests are compared with these numbers when they are set.', 'estasoft-handover-passport' ) . '</p>';
+		Form::row( 'recovery_data_loss_hours', array( 'type' => 'int', 'label' => __( 'Most data that may be lost (hours)', 'estasoft-handover-passport' ) ), $settings->get( 'recovery.data_loss_hours' ) ?? '' );
+		Form::row( 'recovery_downtime_hours', array( 'type' => 'int', 'label' => __( 'Longest the site may be down (hours)', 'estasoft-handover-passport' ) ), $settings->get( 'recovery.downtime_hours' ) ?? '' );
+		echo '</fieldset>';
+	}
+
+	/**
+	 * Reminder e-mail settings (RMD-1..5).
+	 *
+	 * @param \Estasoft\HandoverPassport\Settings\Settings $settings Settings.
+	 */
+	private function remindersTab( $settings ): void {
+		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Reminders', 'estasoft-handover-passport' ) . '</legend>';
+		Form::checkbox( 'reminders_enabled', __( 'Send reminder e-mails', 'estasoft-handover-passport' ), (bool) $settings->get( 'reminders_enabled', true ), __( 'One e-mail per date at each lead time below. Nothing is sent once the date is renewed or the record is removed.', 'estasoft-handover-passport' ) );
+		Form::row( 'reminder_days', array( 'type' => 'text', 'label' => __( 'Lead times (days before the date, comma separated)', 'estasoft-handover-passport' ), 'max' => 60 ), implode( ', ', array_map( 'strval', (array) $settings->get( 'reminder_days', array( 60, 30, 14, 7, 1, 0 ) ) ) ) );
+		Form::row( 'reminder_emails', array( 'type' => 'lines', 'label' => __( 'Who receives them (one address per line)', 'estasoft-handover-passport' ), 'help' => __( 'The account holder and payer on each record are added automatically when they have an address.', 'estasoft-handover-passport' ) ), (array) $settings->get( 'reminder_emails', array() ) );
+		Form::checkbox( 'digest_enabled', __( 'Also send a weekly summary on Mondays at 08:00', 'estasoft-handover-passport' ), (bool) $settings->get( 'digest_enabled', false ), __( 'A short list of what needs attention. Off by default.', 'estasoft-handover-passport' ) );
 		echo '</fieldset>';
 	}
 
@@ -217,7 +277,43 @@ final class SettingsScreen extends Screen {
 		$int      = static fn( string $name, int $min, int $max, int $fallback ): int => '' !== Request::post( $name ) ? max( $min, min( $max, absint( Request::post( $name ) ) ) ) : $fallback;
 		$changed  = array();
 
-		if ( 'access' === $tab ) {
+		if ( 'findings' === $tab ) {
+			$thresholds = array();
+			foreach ( self::thresholdFields() as $key => $def ) {
+				$thresholds[ $key ] = $int( 'th_' . $key, $def[1], $def[2], (int) $settings->get( 'thresholds.' . $key, $def[3] ) );
+			}
+			$recovery = array();
+			foreach ( array( 'data_loss_hours' => 'recovery_data_loss_hours', 'downtime_hours' => 'recovery_downtime_hours' ) as $key => $field ) {
+				$recovery[ $key ] = '' === Request::post( $field ) ? null : max( 0, min( 8760, absint( Request::post( $field ) ) ) );
+			}
+			$settings->update( array( 'thresholds' => $thresholds, 'recovery' => $recovery ) );
+			$changed[] = __( 'finding thresholds', 'estasoft-handover-passport' );
+		} elseif ( 'reminders' === $tab ) {
+			$days = array();
+			foreach ( explode( ',', Request::post( 'reminder_days' ) ) as $part ) {
+				$part = trim( $part );
+				if ( '' !== $part && ctype_digit( $part ) && (int) $part <= 365 ) {
+					$days[ (int) $part ] = (int) $part;
+				}
+			}
+			rsort( $days );
+			$emails = array();
+			foreach ( preg_split( '/\R/', Request::postedTextarea( 'reminder_emails' ) ) ?: array() as $line ) {
+				$address = sanitize_email( $line );
+				if ( '' !== $address && is_email( $address ) ) {
+					$emails[ strtolower( $address ) ] = $address;
+				}
+			}
+			$settings->update(
+				array(
+					'reminders_enabled' => '1' === Request::post( 'reminders_enabled' ),
+					'reminder_days'     => array_values( array() === $days ? array( 60, 30, 14, 7, 1, 0 ) : $days ),
+					'reminder_emails'   => array_values( array_slice( $emails, 0, 20 ) ),
+					'digest_enabled'    => '1' === Request::post( 'digest_enabled' ),
+				)
+			);
+			$changed[] = __( 'reminders', 'estasoft-handover-passport' );
+		} elseif ( 'access' === $tab ) {
 			$raw    = isset( $_POST['grants'] ) && is_array( $_POST['grants'] ) ? wp_unslash( $_POST['grants'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce checked above; each value is matched against fixed lists below.
 			$grants = array();
 			$roles  = array_keys( wp_roles()->get_names() );
@@ -260,12 +356,14 @@ final class SettingsScreen extends Screen {
 					'scan_limit'         => $int( 'scan_limit', 5, 120, 20 ),
 					'backup_confirm'     => $int( 'backup_confirm', 1, 365, 30 ),
 					'access_review_days' => $int( 'access_review_days', 1, 3650, 90 ),
-					'thresholds'         => array( 'licence_lead_days' => $int( 'licence_lead_days', 0, 365, 30 ) ),
 				)
 			);
 			$changed[] = __( 'review intervals and scan', 'estasoft-handover-passport' );
 		}
 
+		if ( in_array( $tab, array( 'findings', 'general' ), true ) || '' === $tab ) {
+			$this->plugin->findings()->queue();
+		}
 		$this->plugin->changeLog()->add( 'settings_changed', 'settings', 0, __( 'Settings', 'estasoft-handover-passport' ), array(), array(), implode( ', ', $changed ), 'wordpress' );
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => $tab ?: 'general', 'estasoft_hp_notice' => 'saved' ), admin_url( 'admin.php' ) ) );
 		exit;
