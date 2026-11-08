@@ -112,6 +112,9 @@ final class SnapshotView {
 			}
 			echo '</ul>';
 		}
+		if ( Capabilities::can( Capabilities::VIEW ) ) {
+			echo '<p><a href="' . esc_url( add_query_arg( array( 'page' => HistoryScreen::SLUG, 'tab' => 'changes', 'since_snapshot' => $id ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'See what changed since this snapshot', 'estasoft-handover-passport' ) . '</a></p>';
+		}
 		if ( $can_export ) {
 			$this->buttons( $id, $base );
 		}

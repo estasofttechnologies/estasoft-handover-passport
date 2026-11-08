@@ -73,16 +73,29 @@ final class HistoryScreen extends Screen {
 	 * The change log with filters.
 	 */
 	private function changes(): void {
-		$kind    = Request::key( 'kind' );
-		$page_no = max( 1, Request::int( 'paged' ) );
-		$filters = array();
+		$kind      = Request::key( 'kind' );
+		$page_no   = max( 1, Request::int( 'paged' ) );
+		$filters   = array();
+		$snapshots = $this->plugin->snapshots()->all();
+		$since     = null;
 		if ( '' !== $kind && array_key_exists( $kind, ChangeText::filterKinds() ) ) {
 			$filters['kind'] = $kind;
+		}
+		$since_id = Request::int( 'since_snapshot' );
+		foreach ( $snapshots as $snapshot ) {
+			if ( (int) $snapshot['id'] === $since_id ) {
+				$since   = $snapshot;
+				$filters = $filters + $this->sinceFilter( $snapshot );
+				break;
+			}
 		}
 		$repo  = $this->plugin->changeLog()->repo();
 		$total = $repo->countFor( $filters );
 		$rows  = $this->plugin->changeLog()->forViewer( $repo->search( $filters, self::PER_PAGE, ( $page_no - 1 ) * self::PER_PAGE ), Capabilities::canSeeSensitive() );
 		$base  = add_query_arg( array( 'page' => self::SLUG, 'tab' => 'changes' ), admin_url( 'admin.php' ) );
+		if ( null !== $since ) {
+			$base = add_query_arg( 'since_snapshot', (string) $since_id, $base );
+		}
 
 		echo '<form method="get" action="' . esc_url( admin_url( 'admin.php' ) ) . '" class="estasoft-hp-filterbar">';
 		echo '<input type="hidden" name="page" value="' . esc_attr( self::SLUG ) . '"><input type="hidden" name="tab" value="changes">';
@@ -90,10 +103,31 @@ final class HistoryScreen extends Screen {
 		foreach ( ChangeText::filterKinds() as $key => $label ) {
 			echo '<option value="' . esc_attr( $key ) . '"' . selected( $kind, $key, false ) . '>' . esc_html( $label ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
 		}
-		echo '</select> <button type="submit" class="button">' . esc_html__( 'Filter', 'estasoft-handover-passport' ) . '</button></form>';
+		echo '</select>';
+		if ( array() !== $snapshots ) {
+			echo ' <label for="estasoft-hp-since">' . esc_html__( 'Since snapshot', 'estasoft-handover-passport' ) . '</label> <select id="estasoft-hp-since" name="since_snapshot"><option value="">' . esc_html__( 'Any time', 'estasoft-handover-passport' ) . '</option>';
+			foreach ( $snapshots as $snapshot ) {
+				echo '<option value="' . esc_attr( (string) $snapshot['id'] ) . '"' . selected( $since_id, (int) $snapshot['id'], false ) . '>' . esc_html( (string) $snapshot['name'] . ' · ' . Dates::display( (string) $snapshot['created_at'], true ) . ' UTC' ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed attribute.
+			}
+			echo '</select>';
+		}
+		echo ' <button type="submit" class="button">' . esc_html__( 'Filter', 'estasoft-handover-passport' ) . '</button></form>';
 
+		if ( null !== $since ) {
+			echo '<p class="description">' . esc_html(
+				sprintf(
+					/* translators: 1: snapshot name, 2: date and time. */
+					__( 'Showing what changed after the snapshot “%1$s”, made %2$s UTC.', 'estasoft-handover-passport' ),
+					(string) $since['name'],
+					Dates::display( (string) $since['created_at'], true )
+				)
+			) . '</p>';
+		}
 		if ( array() === $rows ) {
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'No changes are logged yet. Updates, new administrators and edits to records appear here with who made them.', 'estasoft-handover-passport' ) . '</p></div>';
+			$empty = null !== $since
+				? __( 'Nothing has changed since this snapshot.', 'estasoft-handover-passport' )
+				: __( 'No changes are logged yet. Updates, new administrators and edits to records appear here with who made them.', 'estasoft-handover-passport' );
+			echo '<div class="estasoft-hp-empty"><p>' . esc_html( $empty ) . '</p></div>';
 			return;
 		}
 		echo '<table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'When', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'What', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Who', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Source', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
@@ -117,6 +151,21 @@ final class HistoryScreen extends Screen {
 				)
 			) . '</div></div>';
 		}
+	}
+
+	/**
+	 * The filter that leaves only what was logged after a snapshot was made. The log entry written when the snapshot was
+	 * made is used when it still exists, so that entry itself is never counted; otherwise the time of the snapshot is.
+	 *
+	 * @param array<string, mixed> $snapshot Snapshot row.
+	 * @return array<string, mixed>
+	 */
+	private function sinceFilter( array $snapshot ): array {
+		$made = $this->plugin->changeLog()->repo()->search( array( 'kind' => 'snapshot_created', 'subject_type' => 'snapshot', 'subject_id' => (int) $snapshot['id'] ), 1 );
+		if ( array() !== $made ) {
+			return array( 'after_id' => (int) $made[0]['id'] );
+		}
+		return array( 'since' => (string) $snapshot['created_at'] );
 	}
 
 	/**

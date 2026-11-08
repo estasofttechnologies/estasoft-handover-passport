@@ -203,6 +203,17 @@ $check( 'the log keeps its name, hash and time', 1 === count( $deleted ) && $has
 $e = $throws( fn() => $snaps->delete( $tech_none ) );
 $check( 'deleting a missing snapshot is refused', $e instanceof ValidationError );
 
+// Changes since a snapshot (CHG-5): the log can be cut after the entry written when the snapshot was made.
+$repo_log = $plugin->changeLog()->repo();
+$made     = $repo_log->search( array( 'kind' => 'snapshot_created', 'subject_type' => 'snapshot', 'subject_id' => $tech_id ), 1 );
+$check( 'the snapshot has its own log entry', 1 === count( $made ) );
+$after = $repo_log->search( array( 'after_id' => (int) ( $made[0]['id'] ?? 0 ) ), 500 );
+$check( 'after_id keeps only later entries', array() !== $after && array() === array_filter( $after, static fn( array $x ): bool => (int) $x['id'] <= (int) $made[0]['id'] ) );
+$check( 'after_id leaves out the entry of the snapshot itself', array() === array_filter( $after, static fn( array $x ): bool => 'snapshot_created' === $x['kind'] && (int) $x['subject_id'] === $tech_id ) );
+$check( 'the count agrees with the list', $repo_log->countFor( array( 'after_id' => (int) $made[0]['id'] ) ) === count( $after ) );
+$check( 'after_id combines with kind', array() === array_filter( $repo_log->search( array( 'after_id' => (int) $made[0]['id'], 'kind' => 'snapshot_acknowledged' ), 50 ), static fn( array $x ): bool => 'snapshot_acknowledged' !== $x['kind'] ) );
+$check( 'an after_id past the newest entry gives nothing', array() === $repo_log->search( array( 'after_id' => PHP_INT_MAX ), 5 ) );
+
 // Checklist (HND-1).
 $list  = $plugin->handover()->items();
 $check( 'the checklist has items', count( $list ) > 0 );

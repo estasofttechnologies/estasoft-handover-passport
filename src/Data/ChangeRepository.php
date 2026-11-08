@@ -31,7 +31,7 @@ class ChangeRepository extends Repository {
 	/**
 	 * Entries with optional filters, newest first.
 	 *
-	 * The filters are kind, kinds, since, subject_type, subject_id, batch_id, search (text in the label or note) and
+	 * The filters are kind, kinds, since, after_id (only entries logged after the one with this number), subject_type, subject_id, batch_id, search (text in the label or note) and
 	 * visible_only, which leaves out every entry that would be masked for someone without the Sensitive capability; with
 	 * it, hidden_items lists the numbers of the records that are Sensitive now.
 	 *
@@ -87,6 +87,10 @@ class ChangeRepository extends Repository {
 		if ( ! empty( $filters['since'] ) ) {
 			$parts[]  = 'changed_at > %s';
 			$params[] = (string) $filters['since'];
+		}
+		if ( ! empty( $filters['after_id'] ) ) {
+			$parts[]  = 'id > %d';
+			$params[] = (int) $filters['after_id'];
 		}
 		if ( ! empty( $filters['subject_type'] ) ) {
 			$parts[]  = 'subject_type = %s';
