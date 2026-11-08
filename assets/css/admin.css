@@ -78,3 +78,165 @@
 		padding: 4px 14px 14px;
 	}
 }
+
+/* Tabs, registers and forms */
+.estasoft-hp .estasoft-hp-tabs {
+	margin-bottom: 16px;
+}
+
+.estasoft-hp .estasoft-hp-register {
+	max-width: 1200px;
+	margin: 0 0 24px;
+}
+
+.estasoft-hp .estasoft-hp-register__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 8px 0;
+}
+
+.estasoft-hp .estasoft-hp-register__head h2 {
+	margin: 0;
+}
+
+.estasoft-hp .estasoft-hp-empty {
+	max-width: 720px;
+	padding: 20px 24px;
+	background: #fff;
+	border: 1px dashed #8c8f94;
+	border-radius: 4px;
+}
+
+.estasoft-hp .estasoft-hp-table td,
+.estasoft-hp .estasoft-hp-table th {
+	vertical-align: top;
+}
+
+.estasoft-hp .estasoft-hp-actions {
+	white-space: nowrap;
+}
+
+.estasoft-hp .estasoft-hp-inline {
+	display: inline;
+	margin: 0;
+}
+
+.estasoft-hp .estasoft-hp-danger,
+.estasoft-hp .estasoft-hp-error,
+.estasoft-hp .estasoft-hp-gap {
+	color: #b32d2e;
+}
+
+.estasoft-hp .estasoft-hp-form {
+	max-width: 780px;
+	padding: 4px 20px 8px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.estasoft-hp .estasoft-hp-fieldset {
+	margin: 0 0 18px;
+	padding: 0 0 6px;
+	border: 0;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.estasoft-hp .estasoft-hp-fieldset legend {
+	margin-bottom: 10px;
+	padding: 0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-field {
+	margin: 0 0 14px;
+}
+
+.estasoft-hp .estasoft-hp-field > label {
+	display: block;
+	margin-bottom: 4px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-field--check > label {
+	font-weight: 400;
+}
+
+.estasoft-hp .estasoft-hp-field.has-error input,
+.estasoft-hp .estasoft-hp-field.has-error textarea,
+.estasoft-hp .estasoft-hp-field.has-error select {
+	border-color: #b32d2e;
+}
+
+.estasoft-hp .estasoft-hp-req {
+	color: #b32d2e;
+}
+
+.estasoft-hp .estasoft-hp-tag {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 0 6px;
+	border: 1px solid #996800;
+	border-radius: 3px;
+	background: #fcf9e8;
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-deleted {
+	margin-top: 12px;
+}
+
+.estasoft-hp .estasoft-hp-order {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.estasoft-hp .estasoft-hp-list {
+	margin: 0 0 12px 18px;
+	list-style: disc;
+}
+
+.estasoft-hp .estasoft-hp-defs dt {
+	margin-top: 8px;
+	font-weight: 600;
+}
+
+.estasoft-hp .estasoft-hp-defs dd {
+	margin: 2px 0 0;
+}
+
+.estasoft-hp .estasoft-hp-filterbar {
+	margin: 8px 0 12px;
+}
+
+.estasoft-hp .estasoft-hp-badge--stale,
+.estasoft-hp .estasoft-hp-badge--expired {
+	border-color: #b32d2e;
+	background: #fcf0f1;
+}
+
+.estasoft-hp .estasoft-hp-badge--due,
+.estasoft-hp .estasoft-hp-badge--renews_soon {
+	border-color: #996800;
+	background: #fcf9e8;
+}
+
+.estasoft-hp .estasoft-hp-badge--verified {
+	border-color: #2e7d32;
+	background: #edf7ee;
+}
+
+:focus-visible {
+	outline-offset: 2px;
+}
+
+@media (max-width: 782px) {
+	.estasoft-hp .estasoft-hp-table {
+		display: block;
+		overflow-x: auto;
+	}
+}

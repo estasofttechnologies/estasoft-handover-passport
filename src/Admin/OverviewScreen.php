@@ -163,67 +163,8 @@ final class OverviewScreen {
 		}
 		echo '<table class="widefat striped"><thead><tr><th scope="col">' . esc_html__( 'When', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'What', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Who', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
 		foreach ( $rows as $row ) {
-			echo '<tr><td>' . esc_html( Dates::display( (string) $row['changed_at'], true ) ) . '</td><td>' . esc_html( $this->describe( $row ) ) . '</td><td>' . esc_html( (string) $row['actor_label'] ) . '</td></tr>';
+			echo '<tr><td>' . esc_html( Dates::display( (string) $row['changed_at'], true ) ) . '</td><td>' . esc_html( ChangeText::describe( $row ) ) . '</td><td>' . esc_html( (string) $row['actor_label'] ) . '</td></tr>';
 		}
 		echo '</tbody></table></div>';
-	}
-
-	/**
-	 * One line for a change-log row.
-	 *
-	 * @param array<string, mixed> $row Row.
-	 */
-	private function describe( array $row ): string {
-		$label  = (string) $row['subject_label'];
-		$before = (array) $row['before_data'];
-		$after  = (array) $row['after_data'];
-		switch ( (string) $row['kind'] ) {
-			case 'plugin_updated':
-			case 'theme_updated':
-				/* translators: 1: name, 2: old version, 3: new version. */
-				return sprintf( __( '%1$s updated from %2$s to %3$s', 'estasoft-handover-passport' ), $label, (string) ( $before['version'] ?? '' ), (string) ( $after['version'] ?? '' ) );
-			case 'plugin_added':
-			case 'theme_added':
-				/* translators: %s: name. */
-				return sprintf( __( '%s added', 'estasoft-handover-passport' ), $label );
-			case 'plugin_removed':
-			case 'theme_removed':
-				/* translators: %s: name. */
-				return sprintf( __( '%s removed', 'estasoft-handover-passport' ), $label );
-			case 'plugin_activated':
-				/* translators: %s: name. */
-				return sprintf( __( '%s switched on', 'estasoft-handover-passport' ), $label );
-			case 'plugin_deactivated':
-				/* translators: %s: name. */
-				return sprintf( __( '%s switched off', 'estasoft-handover-passport' ), $label );
-			case 'theme_switched':
-				/* translators: %s: theme name. */
-				return sprintf( __( 'Theme changed to %s', 'estasoft-handover-passport' ), $label );
-			case 'administrator_added':
-				/* translators: %s: person's name. */
-				return sprintf( __( '%s became an administrator', 'estasoft-handover-passport' ), $label );
-			case 'wordpress_version_changed':
-			case 'php_version_changed':
-			case 'site_address_changed':
-				/* translators: 1: what changed, 2: old value, 3: new value. */
-				return sprintf( __( '%1$s changed from %2$s to %3$s', 'estasoft-handover-passport' ), $label, (string) ( $before['value'] ?? '' ), (string) ( $after['value'] ?? '' ) );
-			case 'record_added':
-				/* translators: %s: record title. */
-				return sprintf( __( 'Added: %s', 'estasoft-handover-passport' ), $label );
-			case 'record_edited':
-				/* translators: %s: record title. */
-				return sprintf( __( 'Edited: %s', 'estasoft-handover-passport' ), $label );
-			case 'record_deleted':
-				/* translators: %s: record title. */
-				return sprintf( __( 'Deleted: %s', 'estasoft-handover-passport' ), $label );
-			case 'record_restored':
-				/* translators: %s: record title. */
-				return sprintf( __( 'Restored: %s', 'estasoft-handover-passport' ), $label );
-			case 'record_verified':
-				/* translators: %s: record title. */
-				return sprintf( __( 'Verified: %s', 'estasoft-handover-passport' ), $label );
-			default:
-				return $label;
-		}
 	}
 }

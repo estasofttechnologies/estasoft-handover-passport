@@ -22,6 +22,8 @@ final class Admin {
 
 	public const MENU_SLUG = 'estasoft-passport';
 	public const SCAN_ACTION = 'estasoft_hp_scan_now';
+	public const DISMISS_ACTION = 'estasoft_hp_dismiss';
+	public const DISMISS_META = 'estasoft_hp_dismissed';
 
 	/**
 	 * Hook suffixes of the screens that belong to Passport, used to load assets only there (WPI-8).
@@ -29,6 +31,13 @@ final class Admin {
 	 * @var list<string>
 	 */
 	private array $screen_hooks = array();
+
+	/**
+	 * Screens that handle their own form posts.
+	 *
+	 * @var list<Screen>
+	 */
+	private array $screens = array();
 
 	/**
 	 * Constructor.
@@ -48,6 +57,12 @@ final class Admin {
 		add_filter( 'plugin_action_links_' . ESTASOFT_HP_BASENAME, array( $this, 'actionLinks' ) );
 		add_filter( 'plugin_row_meta', array( $this, 'rowMeta' ), 10, 2 );
 		add_action( 'admin_init', array( $this, 'welcomeRedirect' ) );
+		add_action( 'admin_post_' . self::DISMISS_ACTION, array( $this, 'handleDismiss' ) );
+
+		( new Actions( $this->plugin ) )->register();
+		( new PrivacyPolicy() )->register();
+		( new HistoryScreen( $this->plugin ) )->register();
+		( new SettingsScreen( $this->plugin ) )->register();
 	}
 
 	/**
@@ -73,6 +88,24 @@ final class Admin {
 			self::MENU_SLUG,
 			array( $overview, 'render' )
 		);
+
+		$this->screens = array(
+			new InventoryScreen( $this->plugin ),
+			new SafetyScreen( $this->plugin ),
+			new PeopleScreen( $this->plugin ),
+			new HistoryScreen( $this->plugin ),
+			new SettingsScreen( $this->plugin ),
+		);
+		foreach ( $this->screens as $screen ) {
+			$this->screen_hooks[] = (string) add_submenu_page(
+				self::MENU_SLUG,
+				$screen->title(),
+				$screen->title(),
+				$screen->capability(),
+				$screen->slug(),
+				array( $screen, 'render' )
+			);
+		}
 	}
 
 	/**
@@ -99,19 +132,55 @@ final class Admin {
 
 		$error = (string) get_option( Upgrader::ERROR_OPTION, '' );
 		if ( '' !== $error ) {
-			echo '<div class="notice notice-error"><p>' . esc_html(
+			$this->notice(
+				'upgrade_error',
+				'notice-error',
 				sprintf(
 					/* translators: %s: short error code. */
 					__( 'Passport could not finish an update of its data. Your records were not changed. Code: %s', 'estasoft-handover-passport' ),
 					$error
 				)
-			) . '</p></div>';
+			);
 		}
 
 		$hours = $this->plugin->scanService()->hoursSinceLast();
 		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON && ( null === $hours || $hours > (int) $this->plugin->settings()->get( 'thresholds.scan_stale_hours', 48 ) ) ) {
-			echo '<div class="notice notice-warning"><p>' . esc_html__( 'WordPress cron is switched off and the last scan is old. Ask your host to run WordPress cron from the server, or run "wp estasoft-passport scan" on a schedule.', 'estasoft-handover-passport' ) . '</p></div>';
+			$this->notice( 'cron_off', 'notice-warning', __( 'WordPress cron is switched off and the last scan is old. Ask your host to run WordPress cron from the server, or run "wp estasoft-passport scan" on a schedule.', 'estasoft-handover-passport' ) );
 		}
+	}
+
+	/**
+	 * Print a notice that can be dismissed and stays dismissed for that person (ADM-6).
+	 *
+	 * @param string $id    Notice ID.
+	 * @param string $class Notice class.
+	 * @param string $text  Message.
+	 */
+	private function notice( string $id, string $class, string $text ): void {
+		$dismissed = (array) get_user_meta( get_current_user_id(), self::DISMISS_META, true );
+		if ( in_array( $id, $dismissed, true ) ) {
+			return;
+		}
+		$url = wp_nonce_url( add_query_arg( array( 'action' => self::DISMISS_ACTION, 'notice' => $id ), admin_url( 'admin-post.php' ) ), self::DISMISS_ACTION );
+		echo '<div class="notice ' . esc_attr( $class ) . '"><p>' . esc_html( $text ) . ' <a href="' . esc_url( $url ) . '">' . esc_html__( 'Dismiss', 'estasoft-handover-passport' ) . '</a></p></div>';
+	}
+
+	/**
+	 * Remember that a person dismissed a notice.
+	 */
+	public function handleDismiss(): void {
+		if ( ! Capabilities::can( Capabilities::VIEW ) ) {
+			wp_die( esc_html__( 'You do not have permission to do that.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
+		}
+		check_admin_referer( self::DISMISS_ACTION );
+		$id        = Request::key( 'notice' );
+		$dismissed = array_filter( (array) get_user_meta( get_current_user_id(), self::DISMISS_META, true ) );
+		if ( '' !== $id && ! in_array( $id, $dismissed, true ) ) {
+			$dismissed[] = $id;
+			update_user_meta( get_current_user_id(), self::DISMISS_META, array_values( $dismissed ) );
+		}
+		wp_safe_redirect( wp_get_referer() ?: admin_url( 'admin.php?page=' . self::MENU_SLUG ) );
+		exit;
 	}
 
 	/**
