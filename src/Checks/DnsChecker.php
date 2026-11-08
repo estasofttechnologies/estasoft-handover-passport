@@ -71,10 +71,12 @@ final class DnsChecker {
 		$a    = $this->values( $read( $domain, 'A' ), 'ip' );
 		$aaaa = $this->values( $read( $domain, 'AAAA' ), 'ipv6' );
 		$ns   = $this->values( $read( $domain, 'NS' ), 'target' );
-		$mx   = array();
+		$mx_rows = array();
 		foreach ( $read( $domain, 'MX' ) as $row ) {
-			$mx[] = (int) ( $row['pri'] ?? 0 ) . ' ' . strtolower( rtrim( (string) ( $row['target'] ?? '' ), '.' ) );
+			$mx_rows[] = array( (int) ( $row['pri'] ?? 0 ), strtolower( rtrim( (string) ( $row['target'] ?? '' ), '.' ) ) );
 		}
+		usort( $mx_rows, static fn( array $a, array $b ): int => $a[0] <=> $b[0] ?: strcmp( $a[1], $b[1] ) );
+		$mx = array_values( array_unique( array_map( static fn( array $row ): string => $row[0] . ' ' . $row[1], $mx_rows ) ) );
 		$txt = $this->txt( $read( $domain, 'TXT' ) );
 		$caa = array();
 		foreach ( $read( $domain, 'CAA' ) as $row ) {
