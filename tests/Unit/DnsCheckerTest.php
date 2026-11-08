@@ -71,8 +71,13 @@ final class DnsCheckerTest extends TestCase {
 		$this->assertTrue( DnsChecker::isEmptyFailure( $snap ) );
 	}
 
-	public function test_a_domain_with_no_records_and_no_errors_is_not_a_failure(): void {
+	public function test_a_snapshot_with_no_record_of_any_kind_counts_as_not_read(): void {
 		$snap = $this->checker( array() )->snapshot( 'example.com' );
+		$this->assertTrue( DnsChecker::isEmptyFailure( $snap ), 'A resolver that answers nothing must not replace an earlier snapshot.' );
+	}
+
+	public function test_a_snapshot_with_only_text_records_is_a_reading(): void {
+		$snap = $this->checker( array( 'example.com|TXT' => array( array( 'txt' => 'hello' ) ) ) )->snapshot( 'example.com' );
 		$this->assertFalse( DnsChecker::isEmptyFailure( $snap ) );
 	}
 

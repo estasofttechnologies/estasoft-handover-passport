@@ -345,3 +345,27 @@
 	border-color: #72aee6;
 	color: #1d4f7c;
 }
+
+.estasoft-hp .estasoft-hp-domain h4,
+.estasoft-hp .estasoft-hp-domain h5 {
+	margin: 16px 0 6px;
+}
+.estasoft-hp .estasoft-hp-buttons form {
+	margin-right: 8px;
+}
+.estasoft-hp .estasoft-hp-badge--zone-matches {
+	background: #edfaef;
+	border-color: #00a32a;
+	color: #0a5a1c;
+}
+.estasoft-hp .estasoft-hp-badge--zone-differs,
+.estasoft-hp .estasoft-hp-badge--zone-missing {
+	background: #fcf9e8;
+	border-color: #dba617;
+	color: #6e5700;
+}
+.estasoft-hp .estasoft-hp-badge--zone-skipped {
+	background: #f0f0f1;
+	border-color: #8c8f94;
+	color: #50575e;
+}

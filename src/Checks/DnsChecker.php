@@ -148,12 +148,18 @@ final class DnsChecker {
 	}
 
 	/**
-	 * Whether a snapshot looks like a failed lookup (every lookup errored and nothing came back).
+	 * Whether a snapshot says nothing: no record of any kind came back. That is what a server with no working
+	 * resolver returns, and it must not replace an earlier snapshot or be reported as "everything was removed".
 	 *
 	 * @param array<string, mixed> $snapshot Snapshot fields.
 	 */
 	public static function isEmptyFailure( array $snapshot ): bool {
-		return array() !== (array) ( $snapshot['errors'] ?? array() ) && array() === (array) $snapshot['a'] && array() === (array) $snapshot['ns'] && array() === (array) $snapshot['mx'];
+		foreach ( array( 'a', 'aaaa', 'ns', 'mx', 'txt', 'caa' ) as $type ) {
+			if ( array() !== (array) ( $snapshot[ $type ] ?? array() ) ) {
+				return false;
+			}
+		}
+		return '' === (string) ( $snapshot['cname_www'] ?? '' );
 	}
 
 	/**

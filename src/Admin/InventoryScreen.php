@@ -68,7 +68,7 @@ final class InventoryScreen extends Screen {
 				$register->render( Kinds::LICENCE, self::SLUG, $keep );
 				break;
 			case 'domains':
-				$register->render( Kinds::DOMAIN, self::SLUG, $keep );
+				( new DomainView( $this->plugin ) )->render( self::SLUG, $keep );
 				break;
 			case 'hosting':
 				$this->hosting( $register, $keep );
