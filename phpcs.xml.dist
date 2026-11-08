@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<ruleset name="Estasoft Handover Passport">
+	<description>Coding standards for Estasoft Handover Passport.</description>
+
+	<file>.</file>
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/tests/*</exclude-pattern>
+	<exclude-pattern>/.wordpress-org/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="ps"/>
+	<arg name="parallel" value="8"/>
+
+	<config name="minimum_wp_version" value="6.4"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="estasoft-handover-passport"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="estasoft_hp"/>
+				<element value="ESTASOFT_HP"/>
+				<element value="Estasoft\HandoverPassport"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Class files follow PSR-4 (src/Foo/Bar.php), not the WordPress class-foo.php convention. -->
+	<rule ref="WordPress.Files.FileName">
+		<properties>
+			<property name="strict_class_file_names" value="false"/>
+		</properties>
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+	</rule>
+
+	<!-- Short array syntax and modern PHP are allowed (PHP 8.1 minimum). -->
+	<rule ref="Generic.Arrays.DisallowShortArraySyntax.Found">
+		<severity>0</severity>
+	</rule>
+	<rule ref="Universal.Arrays.DisallowShortArraySyntax.Found">
+		<severity>0</severity>
+	</rule>
+</ruleset>
