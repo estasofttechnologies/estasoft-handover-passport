@@ -1,0 +1,30 @@
+<?php
+
+namespace Estasoft\HandoverPassport\Vendor\DeepCopy\Filter\Doctrine;
+
+use Estasoft\HandoverPassport\Vendor\DeepCopy\Filter\Filter;
+use Estasoft\HandoverPassport\Vendor\DeepCopy\Reflection\ReflectionHelper;
+use Doctrine\Common\Collections\ArrayCollection;
+
+/**
+ * @final
+ */
+class DoctrineEmptyCollectionFilter implements Filter
+{
+    /**
+     * Sets the object property to an empty doctrine collection.
+     *
+     * @param object $object
+     * @param string $property
+     * @param callable|null $objectCopier
+     */
+    public function apply(object $object, string $property, ?callable $objectCopier)
+    {
+        $reflectionProperty = ReflectionHelper::getProperty($object, $property);
+        if (PHP_VERSION_ID < 80100) {
+            $reflectionProperty->setAccessible(true);
+        }
+
+        $reflectionProperty->setValue($object, new ArrayCollection());
+    }
+} 

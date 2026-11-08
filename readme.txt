@@ -74,6 +74,18 @@ By default, nothing: the data stays in the database. A setting turns on full rem
 
 People with the `estasoft_hp_view` capability. Administrators have it by default. A separate capability controls who can see Sensitive records.
 
+= Which other software does it include? =
+
+The PDF pack is made by mPDF 8.3.2 (GPL-2.0-only) together with FPDI, DeepCopy and the PSR packages, in the `lib/pdf` folder, with their namespaces renamed so they cannot clash with another plugin. The PDF font is DejaVu Sans (free licence, see `lib/pdf/licenses`). The library never contacts a website and cannot read files outside the plugin. The source and licences of every file are in `lib/pdf`, and `bin/build-pdf-lib.php` rebuilds the folder from the original packages.
+
+= The PDF shows empty boxes for Chinese, Japanese or Korean text. =
+
+The bundled font covers Latin, Cyrillic, Greek, Hebrew and Arabic. For Chinese, Japanese or Korean, put one TrueType font file in `wp-content/uploads/estasoft-handover-passport-fonts/` and the plugin uses it for those characters. Until then, use the HTML pack, which uses your reader's own fonts.
+
+= The PDF cannot be made on my server. =
+
+The PDF needs the PHP extensions GD and mbstring and enough memory. When it cannot be made, the Export screen says why and offers the HTML pack and a print view you can save as PDF from your browser.
+
 == Privacy ==
 
 The plugin stores a record of the site and the names and work email addresses of the people you enter. Nothing is sent to ESTASOFT TECHNOLOGIES or any third party.

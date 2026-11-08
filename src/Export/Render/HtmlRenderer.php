@@ -24,6 +24,13 @@ final class HtmlRenderer implements Renderer {
 	public const MODE_PDF   = 'pdf';
 
 	/**
+	 * Whether the pack being written is the one-page sheet.
+	 *
+	 * @var bool
+	 */
+	private bool $one_page = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param string $mode MODE_FILE for a download, MODE_PRINT for the print view, MODE_PDF for the PDF library.
@@ -44,15 +51,8 @@ final class HtmlRenderer implements Renderer {
 
 	public function render( array $content, PackStyle $style, string $hash, string $label ): string {
 		$title    = Layout::title( $content, $style );
-		$one_page = 'emergency' === (string) ( $content['profile']['audience'] ?? '' ) || 'emergency' === (string) ( $content['profile']['key'] ?? '' );
-		$body     = $this->cover( $content, $style, $title ) . $this->notes( $content, $style ) . $this->contents( $content, $style );
-		foreach ( Layout::sections( $content ) as $section ) {
-			$body .= $this->section( $section, $style );
-		}
-		$body .= $this->leftOut( $content, $style ) . $this->sensitiveList( $content, $style );
-		if ( self::MODE_PDF !== $this->mode ) {
-			$body .= '<div class="foot">' . $this->esc( self::footerLine( $content, $style, $hash, $label ) ) . $this->credit( $style ) . '</div>';
-		}
+		$one_page = self::isOnePage( $content );
+		$body     = implode( '', $this->parts( $content, $style, $hash, $label ) );
 		$print_button = '';
 		if ( self::MODE_PRINT === $this->mode ) {
 			$print_button = '<p class="noprint muted">' . $this->esc( __( 'Use your browser\'s Print command and choose Save as PDF to keep a copy.', 'estasoft-handover-passport' ) ) . '</p>';
@@ -60,8 +60,49 @@ final class HtmlRenderer implements Renderer {
 		return '<!DOCTYPE html><html lang="' . $this->esc( $style->language ) . '" dir="' . $this->esc( $style->direction ) . '"><head><meta charset="utf-8">'
 			. '<meta name="viewport" content="width=device-width, initial-scale=1">'
 			. '<meta name="generator" content="Estasoft Handover Passport">'
-			. '<title>' . $this->esc( $title ) . '</title><style>' . $this->css( $style, $one_page ) . '</style></head><body' . ( $one_page ? ' class="onepage"' : '' ) . '>'
+			. '<title>' . $this->esc( $title ) . '</title><style>' . $this->stylesheet( $style, $one_page ) . '</style></head><body' . ( $one_page ? ' class="onepage"' : '' ) . '>'
 			. $print_button . $body . '</body></html>';
+	}
+
+	/**
+	 * The body in pieces: the cover, the notes, the contents list, each chapter, then the closing lists. The PDF is
+	 * written one piece at a time so it can stop within its memory and time budget (EXP-11).
+	 *
+	 * @param array<string, mixed> $content Pack content.
+	 * @param PackStyle            $style   Style.
+	 * @param string               $hash    SHA-256 of the canonical content.
+	 * @param string               $label   Snapshot name or pack name.
+	 * @return list<string>
+	 */
+	public function parts( array $content, PackStyle $style, string $hash, string $label ): array {
+		$this->one_page = self::isOnePage( $content );
+		$parts          = array( $this->cover( $content, $style, Layout::title( $content, $style ) ) );
+		foreach ( array( $this->notes( $content, $style ), $this->contents( $content, $style ) ) as $part ) {
+			if ( '' !== $part ) {
+				$parts[] = $part;
+			}
+		}
+		foreach ( Layout::sections( $content ) as $section ) {
+			$parts[] = $this->section( $section, $style );
+		}
+		foreach ( array( $this->leftOut( $content, $style ), $this->sensitiveList( $content, $style ) ) as $part ) {
+			if ( '' !== $part ) {
+				$parts[] = $part;
+			}
+		}
+		if ( self::MODE_PDF !== $this->mode ) {
+			$parts[] = '<div class="foot">' . $this->esc( self::footerLine( $content, $style, $hash, $label ) ) . $this->credit( $style ) . '</div>';
+		}
+		return $parts;
+	}
+
+	/**
+	 * Whether the pack is the one-page Emergency sheet.
+	 *
+	 * @param array<string, mixed> $content Pack content.
+	 */
+	public static function isOnePage( array $content ): bool {
+		return 'emergency' === (string) ( $content['profile']['audience'] ?? '' ) || 'emergency' === (string) ( $content['profile']['key'] ?? '' );
 	}
 
 	/**
@@ -348,7 +389,7 @@ final class HtmlRenderer implements Renderer {
 	 * @param PackStyle $style    Style.
 	 * @param bool      $one_page Whether the page is the one-page Emergency sheet.
 	 */
-	private function css( PackStyle $style, bool $one_page ): string {
+	public function stylesheet( PackStyle $style, bool $one_page ): string {
 		$brand = 1 === preg_match( '/^#[0-9a-f]{6}$/i', $style->brand_color ) ? $style->brand_color : '#2f4858';
 		$font  = self::MODE_PDF === $this->mode ? '"DejaVu Sans", sans-serif' : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 		$size  = $one_page ? '9pt' : '10.5pt';
@@ -363,7 +404,7 @@ final class HtmlRenderer implements Renderer {
 			. 'table{border-collapse:collapse;width:100%;margin:5pt 0}'
 			. 'table.grid th,table.grid td{border:1px solid #c9d1d9;padding:' . ( $one_page ? '2pt 4pt' : '4pt 6pt' ) . ';vertical-align:top;text-align:' . $start . ';font-size:' . ( $one_page ? '8.5pt' : '9.5pt' ) . '}'
 			. 'table.grid th{background:#eef1f4}'
-			. 'table.facts{width:auto}table.facts th,table.facts td,table.kv th,table.kv td{padding:2pt 8pt 2pt 0;vertical-align:top;text-align:' . $start . ';border:0}'
+			. 'table.facts{width:' . ( self::MODE_PDF === $this->mode ? '100%' : 'auto' ) . '}table.facts th,table.facts td,table.kv th,table.kv td{padding:2pt 8pt 2pt 0;vertical-align:top;text-align:' . $start . ';border:0}'
 			. 'table.facts th,table.kv th{color:#57606a;font-weight:normal;width:30%}'
 			. '.card{border:1px solid #c9d1d9;padding:6pt 8pt;margin:6pt 0;page-break-inside:avoid}.card h3{margin:0 0 4pt}'
 			. '.tag{background:#fbe9e7;color:#8a1c0c;border:1px solid #e6a79c;padding:0 4pt;font-size:8pt;font-weight:normal}'
@@ -371,8 +412,9 @@ final class HtmlRenderer implements Renderer {
 			. '.cover{margin-bottom:' . ( $one_page ? '6pt' : '18pt' ) . '}.cover-text{font-size:11pt}'
 			. '.foot{margin-top:24pt;border-top:1px solid #c9d1d9;padding-top:6pt;font-size:8.5pt;color:#57606a}'
 			. 'a{color:' . $brand . '}'
+			. ( self::MODE_PDF === $this->mode ? 'h2,h3{page-break-after:avoid}' : '' )
 			. '@media print{.noprint{display:none}a{color:inherit;text-decoration:none}tr{page-break-inside:avoid}h2,h3{page-break-after:avoid}body{max-width:none;padding:0}}'
-			. '@page{size:' . ( PackStyle::LETTER === $style->page_size ? 'Letter' : 'A4' ) . ';margin:16mm}';
+			. ( self::MODE_PDF === $this->mode ? '' : '@page{size:' . ( PackStyle::LETTER === $style->page_size ? 'Letter' : 'A4' ) . ';margin:16mm}' );
 		return $css;
 	}
 }

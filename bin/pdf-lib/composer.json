@@ -1,0 +1,19 @@
+{
+	"name": "estasofttechnologies/estasoft-handover-passport-pdf-lib",
+	"description": "Pins the PDF library that bin/build-pdf-lib.php copies into lib/pdf. Not shipped with the plugin.",
+	"type": "project",
+	"license": "GPL-2.0-only",
+	"require": {
+		"php": ">=8.1",
+		"ext-gd": "*",
+		"ext-mbstring": "*",
+		"mpdf/mpdf": "8.3.2"
+	},
+	"config": {
+		"platform": {
+			"php": "8.1.0"
+		},
+		"sort-packages": true,
+		"allow-plugins": {}
+	}
+}

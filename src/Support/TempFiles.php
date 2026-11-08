@@ -52,6 +52,40 @@ final class TempFiles {
 	}
 
 	/**
+	 * A new, empty folder with a random name inside the protected folder, for a library that wants a place to work.
+	 * Returns an empty string when no safe place exists.
+	 */
+	public static function createDir(): string {
+		$dir = self::dir();
+		if ( '' === $dir ) {
+			return '';
+		}
+		$path = $dir . '/' . bin2hex( random_bytes( 12 ) );
+		return wp_mkdir_p( $path ) ? $path : '';
+	}
+
+	/**
+	 * Delete a folder made by createDir() and everything in it. A path outside the folder is left alone.
+	 *
+	 * @param string $path Path from createDir().
+	 */
+	public static function discardDir( string $path ): void {
+		$dir = self::dir();
+		if ( '' === $path || '' === $dir || 0 !== strpos( $path, $dir . '/' ) || false !== strpos( $path, '..' ) || ! is_dir( $path ) ) {
+			return;
+		}
+		$items = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $path, \FilesystemIterator::SKIP_DOTS ), \RecursiveIteratorIterator::CHILD_FIRST );
+		foreach ( $items as $item ) {
+			if ( $item->isDir() && ! $item->isLink() ) {
+				rmdir( $item->getPathname() ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Inside the private export folder.
+			} else {
+				wp_delete_file( $item->getPathname() );
+			}
+		}
+		rmdir( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Inside the private export folder.
+	}
+
+	/**
 	 * Delete one file made here. A path outside the folder is left alone.
 	 *
 	 * @param string $path Path from create().
@@ -80,11 +114,17 @@ final class TempFiles {
 		$gone = 0;
 		foreach ( glob( $dir . '/*' ) ?: array() as $path ) {
 			$name = basename( $path );
-			if ( ! is_file( $path ) || 'index.php' === $name || 'web.config' === $name ) {
+			if ( 'index.php' === $name || 'web.config' === $name ) {
 				continue;
 			}
 			$time = filemtime( $path );
-			if ( false !== $time && time() - $time > $max_age ) {
+			if ( false === $time || time() - $time <= $max_age ) {
+				continue;
+			}
+			if ( is_dir( $path ) ) {
+				self::discardDir( $path );
+				++$gone;
+			} elseif ( is_file( $path ) ) {
 				wp_delete_file( $path );
 				++$gone;
 			}
