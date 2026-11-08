@@ -10,9 +10,11 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Services;
 
 use Estasoft\HandoverPassport\Data\ChangeRepository;
+use Estasoft\HandoverPassport\Data\FindingRepository;
 use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Data\LinkRepository;
 use Estasoft\HandoverPassport\Data\PeopleRepository;
+use Estasoft\HandoverPassport\Data\ReminderRepository;
 use Estasoft\HandoverPassport\Settings\Settings;
 use Estasoft\HandoverPassport\Support\Clock;
 
@@ -31,13 +33,17 @@ final class Retention {
 	 * @param PeopleRepository $people   People.
 	 * @param LinkRepository   $links    Links.
 	 * @param ChangeRepository $changes  Change log.
+	 * @param FindingRepository $findings Findings.
+	 * @param ReminderRepository $reminders Sent reminders.
 	 */
 	public function __construct(
 		private Settings $settings,
 		private ItemRepository $items,
 		private PeopleRepository $people,
 		private LinkRepository $links,
-		private ChangeRepository $changes
+		private ChangeRepository $changes,
+		private FindingRepository $findings,
+		private ReminderRepository $reminders
 	) {}
 
 	/**
@@ -57,6 +63,12 @@ final class Retention {
 
 		$months = max( 1, (int) $this->settings->get( 'retention.changes_months', 24 ) );
 		$this->changes->purgeBefore( $now->modify( sprintf( '-%d months', $months ) )->format( 'Y-m-d H:i:s' ) );
+
+		$findings_months = max( 1, (int) $this->settings->get( 'retention.findings_months', 12 ) );
+		$this->findings->purgeResolvedBefore( $now->modify( sprintf( '-%d months', $findings_months ) )->format( 'Y-m-d H:i:s' ) );
+
+		$reminder_months = max( 1, (int) $this->settings->get( 'retention.reminders_months', 12 ) );
+		$this->reminders->purgeBefore( $now->modify( sprintf( '-%d months', $reminder_months ) )->format( 'Y-m-d H:i:s' ) );
 
 		/**
 		 * Fires after the daily clean-up so later parts of the plugin can trim their own data.

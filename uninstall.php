@@ -41,6 +41,10 @@ function estasoft_hp_uninstall_site(): void {
 		'estasoft_hp_upgrade_lock',
 		'estasoft_hp_scan_lock',
 		'estasoft_hp_update_seen',
+		'estasoft_hp_findings_meta',
+		'estasoft_hp_snapshot_check',
+		'estasoft_hp_reminder_health',
+		'estasoft_hp_copy_guard',
 	);
 	foreach ( $options as $option ) {
 		delete_option( $option );

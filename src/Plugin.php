@@ -14,10 +14,13 @@ use Estasoft\HandoverPassport\Changes\ChangeCapture;
 use Estasoft\HandoverPassport\Changes\ChangeLog;
 use Estasoft\HandoverPassport\Cli\ScanCommand;
 use Estasoft\HandoverPassport\Data\ChangeRepository;
+use Estasoft\HandoverPassport\Data\FindingRepository;
 use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Data\LinkRepository;
 use Estasoft\HandoverPassport\Data\PeopleRepository;
+use Estasoft\HandoverPassport\Data\ReminderRepository;
 use Estasoft\HandoverPassport\Data\ScanRepository;
+use Estasoft\HandoverPassport\Findings\FindingService;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Install\Upgrader;
 use Estasoft\HandoverPassport\Passport\Passport;
@@ -84,6 +87,8 @@ final class Plugin {
 		add_action( Schedule::SCAN, array( $this, 'runScheduledScan' ) );
 		add_action( Schedule::EVENT_SCAN, array( $this, 'runEventScan' ) );
 		add_action( Schedule::RETENTION, array( $this, 'runRetention' ) );
+		add_action( 'estasoft_hp_record_saved', array( $this, 'queueFindings' ), 20, 0 );
+		add_action( 'estasoft_hp_scan_completed', array( $this, 'queueFindings' ), 20, 0 );
 
 		if ( is_admin() ) {
 			( new Admin( $this ) )->register();
@@ -97,10 +102,18 @@ final class Plugin {
 	}
 
 	/**
-	 * Cron callback for the daily scan.
+	 * Ask for the rules to run once at the end of this request (FND-3).
+	 */
+	public function queueFindings(): void {
+		$this->findings()->queue();
+	}
+
+	/**
+	 * Cron callback for the daily scan. The rules and the snapshot hashes are checked right after it.
 	 */
 	public function runScheduledScan(): void {
 		$this->scanService()->run( 'scheduled' );
+		$this->findings()->run( true );
 	}
 
 	/**
@@ -114,7 +127,7 @@ final class Plugin {
 	 * Cron callback for the daily clean-up.
 	 */
 	public function runRetention(): void {
-		( new Retention( $this->settings(), new ItemRepository(), new PeopleRepository(), new LinkRepository(), new ChangeRepository() ) )->run();
+		( new Retention( $this->settings(), new ItemRepository(), new PeopleRepository(), new LinkRepository(), new ChangeRepository(), new FindingRepository(), new ReminderRepository() ) )->run();
 	}
 
 	/**
@@ -163,6 +176,13 @@ final class Plugin {
 			'people',
 			fn(): PeopleService => new PeopleService( new PeopleRepository(), new LinkRepository(), $this->secretGuard(), $this->changeLog(), $this->settings() )
 		);
+	}
+
+	/**
+	 * Findings service.
+	 */
+	public function findings(): FindingService {
+		return $this->shared( 'findings', fn(): FindingService => new FindingService( $this, new FindingRepository(), $this->changeLog() ) );
 	}
 
 	/**
