@@ -4,7 +4,7 @@
  *
  * Passport keeps its data unless the person switched on "Delete everything when the plugin is
  * deleted" in Settings. That setting is off by default, so deleting the plugin never destroys
- * a client's record by accident (PRV-5).
+ * a client's record by accident (PRV-8).
  *
  * @package Estasoft\HandoverPassport
  */
@@ -13,6 +13,29 @@ declare(strict_types=1);
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
+}
+
+/**
+ * Delete a folder and everything in it.
+ *
+ * @param string $dir Folder path.
+ */
+function estasoft_hp_remove_folder( string $dir ): void {
+	if ( ! is_dir( $dir ) || is_link( $dir ) ) {
+		return;
+	}
+	foreach ( (array) scandir( $dir ) as $name ) {
+		if ( '.' === $name || '..' === $name ) {
+			continue;
+		}
+		$path = $dir . '/' . $name;
+		if ( is_dir( $path ) && ! is_link( $path ) ) {
+			estasoft_hp_remove_folder( $path );
+		} else {
+			wp_delete_file( $path );
+		}
+	}
+	rmdir( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Our own folder, at uninstall.
 }
 
 /**
@@ -49,6 +72,19 @@ function estasoft_hp_uninstall_site(): void {
 	);
 	foreach ( $options as $option ) {
 		delete_option( $option );
+	}
+
+	// Anything else this plugin saved in the options table: short-lived messages, form state and rate limits.
+	$like = $wpdb->esc_like( 'estasoft_hp_' ) . '%';
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s", $like, '\_transient\_' . $like, '\_transient\_timeout\_' . $like ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Our own prefix; the options table name comes from WordPress.
+
+	// The notices a person dismissed.
+	delete_metadata( 'user', 0, 'estasoft_hp_dismissed', '', true );
+
+	// The private working folder for files that are being made.
+	$uploads = wp_upload_dir( null, false );
+	if ( empty( $uploads['error'] ) && ! empty( $uploads['basedir'] ) ) {
+		estasoft_hp_remove_folder( rtrim( (string) $uploads['basedir'], '/\\' ) . '/estasoft-handover-passport-tmp' );
 	}
 
 	foreach ( array( 'estasoft_hp_daily_scan', 'estasoft_hp_daily_reminders', 'estasoft_hp_daily_retention', 'estasoft_hp_weekly_digest', 'estasoft_hp_weekly_urls', 'estasoft_hp_monthly_copy', 'estasoft_hp_event_scan' ) as $hook ) {
