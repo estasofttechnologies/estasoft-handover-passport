@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-08T16:42:55+00:00\n"
+"POT-Creation-Date: 2026-11-08T17:01:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: estasoft-handover-passport\n"
@@ -699,71 +699,71 @@ msgstr ""
 msgid "Remind me"
 msgstr ""
 
-#: src/Admin/Admin.php:83
 #: src/Admin/Admin.php:84
+#: src/Admin/Admin.php:85
 #: src/Admin/DashboardWidget.php:51
 #: src/Admin/OverviewScreen.php:54
 #: src/Admin/SiteHealth.php:223
 msgid "Passport"
 msgstr ""
 
-#: src/Admin/Admin.php:94
 #: src/Admin/Admin.php:95
+#: src/Admin/Admin.php:96
 msgid "Overview"
 msgstr ""
 
 #. translators: %s: short error code.
-#: src/Admin/Admin.php:159
+#: src/Admin/Admin.php:160
 #, php-format
 msgid "Passport could not finish an update of its data. Your records were not changed. Code: %s"
 msgstr ""
 
-#: src/Admin/Admin.php:169
+#: src/Admin/Admin.php:170
 msgid "WordPress cron is switched off and the last scan is old. Ask your host to run WordPress cron from the server, or run \"wp estasoft-passport scan\" on a schedule."
 msgstr ""
 
-#: src/Admin/Admin.php:179
+#: src/Admin/Admin.php:180
 msgid "This site is marked as a copy. Reminders, emailed copies and scheduled checks are off here, so they are not sent a second time."
 msgstr ""
 
-#: src/Admin/Admin.php:186
+#: src/Admin/Admin.php:187
 msgid "Is this a copy of the site?"
 msgstr ""
 
 #. translators: 1: address the Passport was set up on, 2: address of this site now.
-#: src/Admin/Admin.php:190
+#: src/Admin/Admin.php:191
 #, php-format
 msgid "Passport was set up at %1$s and this site is now at %2$s. Reminders, emailed copies and scheduled checks are paused until you say which it is."
 msgstr ""
 
-#: src/Admin/Admin.php:198
+#: src/Admin/Admin.php:199
 msgid "This site moved"
 msgstr ""
 
-#: src/Admin/Admin.php:199
+#: src/Admin/Admin.php:200
 msgid "This is a copy"
 msgstr ""
 
-#: src/Admin/Admin.php:200
+#: src/Admin/Admin.php:201
 msgid "Moved keeps everything and takes the new address. Copy keeps reminders off on this site."
 msgstr ""
 
-#: src/Admin/Admin.php:202
+#: src/Admin/Admin.php:203
 msgid "Ask someone who can change Passport settings to answer."
 msgstr ""
 
-#: src/Admin/Admin.php:212
+#: src/Admin/Admin.php:213
 #: src/Admin/SettingsScreen.php:199
 #: src/Admin/SettingsScreen.php:315
 #: src/Admin/SettingsScreen.php:498
 msgid "You do not have permission to change settings."
 msgstr ""
 
-#: src/Admin/Admin.php:238
+#: src/Admin/Admin.php:239
 msgid "Dismiss"
 msgstr ""
 
-#: src/Admin/Admin.php:246
+#: src/Admin/Admin.php:247
 #: src/Admin/FindingsScreen.php:334
 #: src/Admin/FindingsScreen.php:366
 #: src/Admin/FindingsScreen.php:392
@@ -771,16 +771,16 @@ msgstr ""
 msgid "You do not have permission to do that."
 msgstr ""
 
-#: src/Admin/Admin.php:265
+#: src/Admin/Admin.php:266
 msgid "You do not have permission to run a scan."
 msgstr ""
 
-#: src/Admin/Admin.php:288
+#: src/Admin/Admin.php:289
 #: src/Admin/SiteHealth.php:229
 msgid "Open Passport"
 msgstr ""
 
-#: src/Admin/Admin.php:303
+#: src/Admin/Admin.php:304
 msgid "Documentation"
 msgstr ""
 
@@ -839,8 +839,8 @@ msgstr ""
 #: src/Admin/ChecklistView.php:96
 #: src/Admin/DrillView.php:234
 #: src/Admin/DrillView.php:252
-#: src/Admin/HistoryScreen.php:284
-#: src/Admin/HistoryScreen.php:330
+#: src/Admin/HistoryScreen.php:290
+#: src/Admin/HistoryScreen.php:336
 #: src/Admin/SnapshotView.php:97
 #: src/Admin/SnapshotView.php:156
 #: src/Admin/SnapshotView.php:192
@@ -1678,8 +1678,8 @@ msgid "Not compared"
 msgstr ""
 
 #: src/Admin/DomainView.php:288
-#: src/Admin/HistoryScreen.php:266
-#: src/Admin/HistoryScreen.php:284
+#: src/Admin/HistoryScreen.php:272
+#: src/Admin/HistoryScreen.php:290
 msgid "Type"
 msgstr ""
 
@@ -1972,7 +1972,7 @@ msgid "Note for item %d"
 msgstr ""
 
 #: src/Admin/DrillView.php:252
-#: src/Admin/HistoryScreen.php:284
+#: src/Admin/HistoryScreen.php:290
 msgid "By"
 msgstr ""
 
@@ -2700,12 +2700,12 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:255
+#: src/Admin/HistoryScreen.php:261
 msgid "Add a note"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:261
-#: src/Admin/HistoryScreen.php:284
+#: src/Admin/HistoryScreen.php:267
+#: src/Admin/HistoryScreen.php:290
 #: src/Admin/OverviewScreen.php:289
 #: src/Admin/RestoreTestView.php:84
 #: src/Admin/SnapshotView.php:298
@@ -2717,80 +2717,80 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:269
+#: src/Admin/HistoryScreen.php:275
 msgid "For something that broke, a short note is fine. To record the cause, the fix and how long it took, use the Incidents tab."
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:273
+#: src/Admin/HistoryScreen.php:279
 msgid "About (optional)"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:273
+#: src/Admin/HistoryScreen.php:279
 msgid "For example a plugin, a domain or a server."
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:274
+#: src/Admin/HistoryScreen.php:280
 msgid "What was done"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:274
+#: src/Admin/HistoryScreen.php:280
 #: src/Domain/Kinds.php:82
 msgid "Plain text. Never paste a password or key here."
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:275
+#: src/Admin/HistoryScreen.php:281
 msgid "Add note"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:279
+#: src/Admin/HistoryScreen.php:285
 msgid "Maintenance log"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:281
+#: src/Admin/HistoryScreen.php:287
 msgid "Notes about work done on the site, such as updates, fixes and migrations, appear here. Agencies can use this as a maintenance log."
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:284
+#: src/Admin/HistoryScreen.php:290
 msgid "About"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:299
+#: src/Admin/HistoryScreen.php:305
 msgid "Update"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:300
+#: src/Admin/HistoryScreen.php:306
 #: src/Domain/Kinds.php:485
 msgid "Fix"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:301
+#: src/Admin/HistoryScreen.php:307
 msgid "Configuration"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:302
+#: src/Admin/HistoryScreen.php:308
 #: src/Domain/Kinds.php:469
 msgid "Incident"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:303
+#: src/Admin/HistoryScreen.php:309
 msgid "Migration"
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:312
+#: src/Admin/HistoryScreen.php:318
 msgid "You do not have permission to add notes."
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:325
+#: src/Admin/HistoryScreen.php:331
 msgid "Pick a type and say what was done."
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:327
+#: src/Admin/HistoryScreen.php:333
 #: src/Domain/Fields.php:46
 #: src/Services/RecordService.php:196
 msgid "Use a real date in the form YYYY-MM-DD."
 msgstr ""
 
-#: src/Admin/HistoryScreen.php:331
+#: src/Admin/HistoryScreen.php:337
 #: src/Admin/PeopleScreen.php:127
 #: src/Export/Sections.php:411
 msgid "Asset"
@@ -3707,6 +3707,26 @@ msgstr ""
 
 #: src/Admin/PrivacyPolicy.php:50
 msgid "We keep a record of this website for the people who run it. It lists the names, work email addresses, phone numbers and roles of the people who look after the site, and the names of the people who change it. This record is stored on this website only and is not sent to any other company. To ask what we hold about you, or to have it removed, contact us."
+msgstr ""
+
+#: src/Admin/QuickAdd.php:51
+msgid "Passport: add"
+msgstr ""
+
+#: src/Admin/QuickAdd.php:77
+msgid "Passport: licence"
+msgstr ""
+
+#: src/Admin/QuickAdd.php:81
+msgid "Passport: domain"
+msgstr ""
+
+#: src/Admin/QuickAdd.php:85
+msgid "Passport: person"
+msgstr ""
+
+#: src/Admin/QuickAdd.php:89
+msgid "Passport: maintenance note"
 msgstr ""
 
 #. translators: %s: kind label, for example "Licence".
@@ -9135,23 +9155,23 @@ msgstr ""
 msgid "The backup record used, or 0."
 msgstr ""
 
-#: src/Security/Capabilities.php:32
+#: src/Security/Capabilities.php:42
 msgid "See the Passport screens and every record that is not Sensitive"
 msgstr ""
 
-#: src/Security/Capabilities.php:33
+#: src/Security/Capabilities.php:43
 msgid "See and edit Sensitive records (server paths, IP addresses, administrator and account emails)"
 msgstr ""
 
-#: src/Security/Capabilities.php:34
+#: src/Security/Capabilities.php:44
 msgid "Add, change, verify and delete records, run scans and checks, run drills, add restore tests"
 msgstr ""
 
-#: src/Security/Capabilities.php:35
+#: src/Security/Capabilities.php:45
 msgid "Create snapshots, download exports, send emailed copies, record acknowledgements"
 msgstr ""
 
-#: src/Security/Capabilities.php:36
+#: src/Security/Capabilities.php:46
 msgid "Change settings, review intervals, rules, export profiles, delete snapshots, grant these capabilities to other roles"
 msgstr ""
 

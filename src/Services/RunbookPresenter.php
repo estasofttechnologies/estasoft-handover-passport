@@ -101,7 +101,8 @@ final class RunbookPresenter {
 		}
 		$prerequisites = array();
 		foreach ( (array) $source['prerequisites'] as $row ) {
-			$prerequisites[] = array( 'what' => $fill( (string) ( $row['what'] ?? '' ) ), 'who' => (string) ( $row['who'] ?? '' ) );
+			$who             = (string) ( $row['who'] ?? '' );
+			$prerequisites[] = array( 'what' => $fill( (string) ( $row['what'] ?? '' ) ), 'who' => (string) ( $roles[ $who ] ?? $who ) ); // A template names a role; a person may type a name instead.
 		}
 		$present         = array(
 			'id'                => $id,

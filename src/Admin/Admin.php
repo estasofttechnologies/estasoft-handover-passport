@@ -71,6 +71,7 @@ final class Admin {
 		( new HandoverScreen( $this->plugin ) )->register();
 		( new SetupScreen( $this->plugin ) )->register();
 		( new DashboardWidget( $this->plugin ) )->register();
+		( new QuickAdd() )->register();
 	}
 
 	/**

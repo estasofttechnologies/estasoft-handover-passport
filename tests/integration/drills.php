@@ -230,6 +230,16 @@ foreach ( array( 'drill_started', 'drill_finished', 'drill_abandoned', 'restore_
 	$check( "log: {$kind} is written", in_array( $kind, $logged, true ) );
 }
 
+// A template names a role in its prerequisites; the reading and print views show the role's name, and a typed name stays as typed.
+$contact = $plugin->runbooks()->createFromTemplate( 'contact_tree' );
+$shown   = $plugin->runbookPresenter()->present( (int) $contact['id'] );
+$check( 'present: a prerequisite from a template shows the role in words', null !== $shown && 'Day-to-day admin' === $shown['prerequisites'][0]['who'] );
+$typed = $plugin->runbooks()->update( (int) $contact['id'], array( 'prerequisites' => array( array( 'what' => 'The vault is shared', 'who' => 'Marcus' ) ) ) );
+$shown = $plugin->runbookPresenter()->present( (int) $contact['id'] );
+$check( 'present: a prerequisite with a typed name keeps it', null !== $shown && 'Marcus' === $shown['prerequisites'][0]['who'], json_encode( $shown['prerequisites'] ?? null ) );
+$plugin->runbooks()->delete( (int) $contact['id'] );
+$plugin->runbooks()->repo()->delete( (int) $contact['id'] );
+
 $cleanup();
 $check( 'cleanup: no drill is left behind', array() === $drills->all( 0, 500 ) );
 $check( 'cleanup: no restore test made from a drill is left behind', $tests_at_start === count( $plugin->restoreTests()->all() ) );
