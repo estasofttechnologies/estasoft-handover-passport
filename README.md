@@ -21,7 +21,7 @@ composer install
 
 ## Use
 
-After activation, open **Passport** in the admin menu and press **Scan now**.
+After activation, **Passport** opens its setup guide: seven short steps, each of which can be skipped and picked up again from the Overview. The first step is **Scan now**.
 
 ```bash
 wp estasoft-passport scan

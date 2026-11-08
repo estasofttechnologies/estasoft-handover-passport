@@ -59,6 +59,7 @@ use Estasoft\HandoverPassport\Services\RunbookPresenter;
 use Estasoft\HandoverPassport\Services\RunbookService;
 use Estasoft\HandoverPassport\Services\Retention;
 use Estasoft\HandoverPassport\Settings\Settings;
+use Estasoft\HandoverPassport\Setup\SetupService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -346,6 +347,13 @@ final class Plugin {
 	 */
 	public function handoverStatus(): StatusService {
 		return $this->shared( 'handover_status', fn(): StatusService => new StatusService( $this->passport(), $this->changeLog() ) );
+	}
+
+	/**
+	 * The setup guide.
+	 */
+	public function setup(): SetupService {
+		return $this->shared( 'setup', fn(): SetupService => new SetupService( $this ) );
 	}
 
 	/**

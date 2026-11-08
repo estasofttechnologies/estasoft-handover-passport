@@ -464,3 +464,57 @@
 	gap: 8px;
 	align-items: center;
 }
+
+/* Setup guide */
+.estasoft-hp .estasoft-hp-steps {
+	list-style: none;
+	margin: 1em 0;
+	padding: 0;
+	max-width: 52em;
+}
+
+.estasoft-hp .estasoft-hp-step {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-left-width: 4px;
+	margin: 0 0 12px;
+	padding: 4px 16px 12px;
+}
+
+.estasoft-hp .estasoft-hp-step--done {
+	border-left-color: #00a32a;
+}
+
+.estasoft-hp .estasoft-hp-step--skipped {
+	border-left-color: #dba617;
+}
+
+.estasoft-hp .estasoft-hp-step--todo {
+	border-left-color: #2271b1;
+}
+
+.estasoft-hp .estasoft-hp-step h2 {
+	font-size: 1.15em;
+}
+
+.estasoft-hp .estasoft-hp-step-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.estasoft-hp .estasoft-hp-step-actions .estasoft-hp-inline-form {
+	display: inline;
+	margin: 0;
+}
+
+.estasoft-hp .estasoft-hp-logo-preview img {
+	display: block;
+	max-width: 240px;
+	max-height: 120px;
+	margin: 6px 0;
+	border: 1px solid #c3c4c7;
+	padding: 4px;
+	background: #fff;
+}

@@ -64,6 +64,7 @@ final class OverviewScreen {
 		echo '</p>';
 
 		$this->scanBox( $latest );
+		$this->setupCard();
 
 		if ( array() === $facts ) {
 			echo '<p>' . esc_html__( 'No scan has finished yet. Press Scan now to record this site.', 'estasoft-handover-passport' ) . '</p>';
@@ -80,6 +81,30 @@ final class OverviewScreen {
 		$this->stack( $facts );
 		$this->recentChanges();
 		View::close();
+	}
+
+	/**
+	 * Steps of the setup guide that are not done, as things to do (ONB-3).
+	 */
+	private function setupCard(): void {
+		$left = array();
+		foreach ( $this->plugin->setup()->steps() as $key => $info ) {
+			if ( \Estasoft\HandoverPassport\Setup\SetupService::DONE !== $info['state'] ) {
+				$left[ $key ] = $info['state'];
+			}
+		}
+		if ( array() === $left ) {
+			return;
+		}
+		$copy     = SetupScreen::copy();
+		$can_edit = Capabilities::can( Capabilities::EDIT );
+		echo '<div class="estasoft-hp-card estasoft-hp-setup-card"><h2>' . esc_html__( 'Finish setting up', 'estasoft-handover-passport' ) . '</h2><ul>';
+		foreach ( $left as $key => $state ) {
+			$title = $copy[ $key ]['title'];
+			$words = \Estasoft\HandoverPassport\Setup\SetupService::SKIPPED === $state ? __( 'Skipped', 'estasoft-handover-passport' ) : __( 'To do', 'estasoft-handover-passport' );
+			echo '<li>' . ( $can_edit ? '<a href="' . esc_url( SetupScreen::url( 'estasoft-hp-step-' . $key ) ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title ) ) . ' ' . View::badge( 'setup-' . $state, $words ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+		}
+		echo '</ul></div>';
 	}
 
 	/**

@@ -43,6 +43,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - WordPress personal-data export and erase tools, with a plain account of what an erase cannot change (saved snapshots, free text in records).
 - Uninstall: an opt-in setting removes every table, option, transient, user meta, scheduled task, capability and the plugin's temporary folder when the plugin is deleted.
 - A translation template (`languages/estasoft-handover-passport.pot`), plugin directory icons and banners, and a release workflow that builds the zip from a version tag.
+- A setup guide of seven steps (scan, about the site, people, domains and hosting, licences, backups, review). Each step can be skipped and picked up again; a step counts as done when the Passport already holds what it asks for. Skipped and unfinished steps appear on the Overview as things to do. The first visit after activation opens the guide for people who may edit.
+- The about step records the site name, who it belongs to, what it is for, the person's role, a brand colour and a logo from the Media Library. A change to these details is written to the change log.
+- For the kind of site chosen (brochure, WooCommerce store, membership, multilingual, blog) the backups step can add draft runbooks and the addresses worth watching, once, without duplicating what the Passport already holds.
 
 ### Fixed
 - The tables could not be created on MySQL and MariaDB: `sensitive` is a reserved word there. The column is now written with backticks in the schema and in every query, and a unit test refuses any column named with a reserved word without quotes.

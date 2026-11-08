@@ -68,6 +68,7 @@ final class Admin {
 		( new SettingsScreen( $this->plugin ) )->register();
 		( new SafetyScreen( $this->plugin ) )->register();
 		( new HandoverScreen( $this->plugin ) )->register();
+		( new SetupScreen( $this->plugin ) )->register();
 	}
 
 	/**
@@ -95,6 +96,7 @@ final class Admin {
 		);
 
 		$this->screens = array(
+			new SetupScreen( $this->plugin ),
 			new InventoryScreen( $this->plugin ),
 			new SafetyScreen( $this->plugin ),
 			new PeopleScreen( $this->plugin ),
@@ -126,6 +128,9 @@ final class Admin {
 		}
 		wp_enqueue_style( 'estasoft-hp-admin', ESTASOFT_HP_URL . 'assets/css/admin.css', array(), ESTASOFT_HP_VERSION );
 		wp_enqueue_script( 'estasoft-hp-admin', ESTASOFT_HP_URL . 'assets/js/admin.js', array(), ESTASOFT_HP_VERSION, true );
+		if ( str_ends_with( (string) $hook, '_page_' . SetupScreen::SLUG ) && current_user_can( 'upload_files' ) ) {
+			wp_enqueue_media();
+		}
 	}
 
 	/**
@@ -301,6 +306,10 @@ final class Admin {
 			return;
 		}
 		delete_transient( \Estasoft\HandoverPassport\Install\Activator::REDIRECT_TRANSIENT );
+		if ( Capabilities::can( Capabilities::EDIT ) && ! $this->plugin->setup()->complete() ) {
+			wp_safe_redirect( SetupScreen::url() );
+			exit;
+		}
 		if ( Capabilities::can( Capabilities::VIEW ) ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=' . self::MENU_SLUG ) );
 			exit;

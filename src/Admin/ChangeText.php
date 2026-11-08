@@ -153,6 +153,8 @@ final class ChangeText {
 				return sprintf( __( 'Passport status changed from %1$s to %2$s', 'estasoft-handover-passport' ), (string) ( $before['status'] ?? '' ), (string) ( $after['status'] ?? $label ) ) . ( '' !== (string) $row['note'] ? ' (' . (string) $row['note'] . ')' : '' );
 			case 'successor_notes_changed':
 				return __( 'Notes to the successor were changed', 'estasoft-handover-passport' );
+			case 'passport_details_changed':
+				return __( 'Details of the Passport were changed', 'estasoft-handover-passport' );
 			case 'checklist_marked':
 				/* translators: %s: checklist item. */
 				return sprintf( __( 'Handover checklist updated: %s', 'estasoft-handover-passport' ), $label ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
@@ -199,6 +201,7 @@ final class ChangeText {
 			'snapshot_deleted'          => __( 'Snapshot deleted', 'estasoft-handover-passport' ),
 			'status_changed'            => __( 'Status changed', 'estasoft-handover-passport' ),
 			'successor_notes_changed'   => __( 'Notes to the successor changed', 'estasoft-handover-passport' ),
+			'passport_details_changed'  => __( 'Details of the Passport changed', 'estasoft-handover-passport' ),
 		);
 	}
 }
