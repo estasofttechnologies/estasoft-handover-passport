@@ -24,13 +24,28 @@ if ( ! function_exists( '__' ) ) {
 
 if ( ! function_exists( 'apply_filters' ) ) {
 	/**
-	 * Filter stand-in: returns the value unchanged.
+	 * Filter stand-in: runs the callbacks a test registered in $GLOBALS['estasoft_hp_test_filters'].
 	 *
 	 * @param string $hook  Hook name.
 	 * @param mixed  $value Value.
 	 */
 	function apply_filters( $hook, $value ) {
+		foreach ( $GLOBALS['estasoft_hp_test_filters'][ $hook ] ?? array() as $callback ) {
+			$value = $callback( $value );
+		}
 		return $value;
+	}
+}
+
+if ( ! function_exists( 'do_action' ) ) {
+	/**
+	 * Action stand-in: records the call so a test can look at it.
+	 *
+	 * @param string $hook Hook name.
+	 * @param mixed  ...$args Arguments.
+	 */
+	function do_action( $hook, ...$args ) {
+		$GLOBALS['estasoft_hp_test_actions'][] = array( $hook, $args );
 	}
 }
 
