@@ -18,6 +18,7 @@ use Estasoft\HandoverPassport\Plugin;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Security\SecretFound;
 use Estasoft\HandoverPassport\Services\PeopleService;
+use Estasoft\HandoverPassport\Support\Clock;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,6 +28,14 @@ defined( 'ABSPATH' ) || exit;
 final class Actions {
 
 	public const ACTION = 'estasoft_hp_record';
+
+	/**
+	 * Date field that a one-press button sets to today, by kind (BKP-3, ACC-4).
+	 */
+	private const STAMPS = array(
+		Kinds::BACKUP => 'last_confirmed',
+		Kinds::ACCESS => 'last_reviewed',
+	);
 
 	/**
 	 * Constructor.
@@ -57,7 +66,7 @@ final class Actions {
 		$kind   = sanitize_key( Request::post( 'kind' ) );
 		$return = $this->returnUrl();
 
-		if ( ! in_array( $op, array( 'save', 'delete', 'undelete', 'verify', 'move' ), true ) || ! in_array( $target, array( 'item', 'person', 'role' ), true ) ) {
+		if ( ! in_array( $op, array( 'save', 'delete', 'undelete', 'verify', 'move', 'stamp', 'check', 'check_ssl', 'check_urls' ), true ) || ! in_array( $target, array( 'item', 'person', 'role' ), true ) ) {
 			wp_safe_redirect( $return );
 			exit;
 		}
@@ -111,10 +120,86 @@ final class Actions {
 			case 'undelete':
 				$records->undelete( $id );
 				return 'restored';
+			case 'stamp':
+				$record = $records->get( $id, true );
+				$field  = self::STAMPS[ (string) ( $record['kind'] ?? '' ) ] ?? '';
+				if ( '' === $field ) {
+					return 'denied';
+				}
+				$records->update( $id, array( $field => Clock::today() ) );
+				return Kinds::BACKUP === $record['kind'] ? 'confirmed' : 'reviewed';
+			case 'check':
+			case 'check_ssl':
+			case 'check_urls':
+				return $this->check( $op, $id, $records->get( $id, true ) );
 			default:
 				$records->verify( $id );
 				return 'verified';
 		}
+	}
+
+	/**
+	 * Start a DNS, certificate or address check and turn its result into a notice key.
+	 *
+	 * @param string                    $op     check, check_ssl or check_urls.
+	 * @param int                       $id     Record ID, or 0 for all addresses.
+	 * @param array<string, mixed>|null $record The record, if any.
+	 * @return string Notice key.
+	 */
+	private function check( string $op, int $id, ?array $record ): string {
+		$checks = $this->plugin->checks();
+		if ( 'check_urls' === $op ) {
+			$out = $checks->allUrls();
+			if ( 0 === $out['checked'] + $out['refused'] + $out['waited'] ) {
+				return 'urls_none';
+			}
+			if ( 0 === $out['checked'] + $out['refused'] ) {
+				return 'check_wait'; // Every address was checked within the last minute.
+			}
+			return $out['failed'] > 0 || $out['refused'] > 0 ? 'urls_failed' : 'urls_done';
+		}
+		if ( null === $record ) {
+			return 'denied';
+		}
+		$kind = (string) $record['kind'];
+		if ( 'check' === $op && Kinds::URL === $kind ) {
+			$one = $checks->url( $id );
+			if ( 'wait' === $one['status'] ) {
+				return 'check_wait';
+			}
+			if ( 'refused' === $one['status'] ) {
+				return 'check_refused';
+			}
+			return 'ok' === $one['status'] && ! empty( $one['result']['ok'] ) ? 'url_ok' : 'url_failed';
+		}
+		if ( Kinds::DOMAIN !== $kind ) {
+			return 'denied';
+		}
+		$domain = strtolower( (string) ( $record['fields']['domain'] ?? '' ) );
+		if ( 'check' === $op ) {
+			$one = $checks->dns( $domain, 'screen' );
+			return array(
+				'ok'      => 'dns_done',
+				'wait'    => 'check_wait',
+				'invalid' => 'dns_invalid',
+			)[ $one['status'] ] ?? 'dns_failed';
+		}
+		$host = '';
+		foreach ( array( $domain, 'www.' . $domain ) as $candidate ) {
+			if ( in_array( $candidate, $checks->siteHosts(), true ) ) {
+				$host = $candidate;
+				break;
+			}
+		}
+		if ( '' === $host ) {
+			return 'ssl_refused';
+		}
+		$one = $checks->ssl( $host );
+		return array(
+			'ok'      => 'ssl_done',
+			'wait'    => 'check_wait',
+			'refused' => 'ssl_refused',
+		)[ $one['status'] ] ?? 'ssl_failed';
 	}
 
 	/**

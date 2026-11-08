@@ -19,7 +19,9 @@ use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Data\LinkRepository;
 use Estasoft\HandoverPassport\Data\PeopleRepository;
 use Estasoft\HandoverPassport\Data\ReminderRepository;
+use Estasoft\HandoverPassport\Data\RunbookRepository;
 use Estasoft\HandoverPassport\Data\ScanRepository;
+use Estasoft\HandoverPassport\Data\TestRepository;
 use Estasoft\HandoverPassport\Findings\FindingService;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Install\Upgrader;
@@ -28,8 +30,11 @@ use Estasoft\HandoverPassport\Rest\Routes;
 use Estasoft\HandoverPassport\Scan\Collector;
 use Estasoft\HandoverPassport\Scan\ScanService;
 use Estasoft\HandoverPassport\Security\SecretGuard;
+use Estasoft\HandoverPassport\Services\CheckService;
 use Estasoft\HandoverPassport\Services\PeopleService;
 use Estasoft\HandoverPassport\Services\RecordService;
+use Estasoft\HandoverPassport\Services\RestoreTestService;
+use Estasoft\HandoverPassport\Services\RunbookService;
 use Estasoft\HandoverPassport\Services\Retention;
 use Estasoft\HandoverPassport\Settings\Settings;
 
@@ -183,6 +188,27 @@ final class Plugin {
 	 */
 	public function findings(): FindingService {
 		return $this->shared( 'findings', fn(): FindingService => new FindingService( $this, new FindingRepository(), $this->changeLog() ) );
+	}
+
+	/**
+	 * Runbooks.
+	 */
+	public function runbooks(): RunbookService {
+		return $this->shared( 'runbooks', fn(): RunbookService => new RunbookService( new RunbookRepository(), $this->secretGuard(), $this->changeLog() ) );
+	}
+
+	/**
+	 * Restore tests.
+	 */
+	public function restoreTests(): RestoreTestService {
+		return $this->shared( 'restore_tests', fn(): RestoreTestService => new RestoreTestService( new TestRepository(), new RunbookRepository(), $this->secretGuard(), $this->changeLog() ) );
+	}
+
+	/**
+	 * Checks of DNS, certificates and critical addresses.
+	 */
+	public function checks(): CheckService {
+		return $this->shared( 'checks', fn(): CheckService => new CheckService( $this ) );
 	}
 
 	/**

@@ -94,6 +94,24 @@ final class ChangeText {
 			case 'rule_enabled':
 				/* translators: %s: rule ID. */
 				return sprintf( __( 'Rule %s switched on', 'estasoft-handover-passport' ), $label );
+			case 'dns_changed':
+				return sprintf( __( 'DNS records of %s changed between checks', 'estasoft-handover-passport' ), $label );
+			case 'restore_test_logged':
+				return sprintf( __( 'Restore test logged: %s', 'estasoft-handover-passport' ), $label );
+			case 'restore_test_deleted':
+				return sprintf( __( 'Restore test removed: %s', 'estasoft-handover-passport' ), $label );
+			case 'runbook_added':
+				return sprintf( __( 'Runbook added: %s', 'estasoft-handover-passport' ), $label );
+			case 'runbook_edited':
+				return sprintf( __( 'Runbook edited: %s', 'estasoft-handover-passport' ), $label );
+			case 'runbook_reviewed':
+				return sprintf( __( 'Runbook reviewed: %s', 'estasoft-handover-passport' ), $label );
+			case 'runbook_rehearsed':
+				return sprintf( __( 'Runbook rehearsed: %s', 'estasoft-handover-passport' ), $label );
+			case 'runbook_deleted':
+				return sprintf( __( 'Runbook deleted: %s', 'estasoft-handover-passport' ), $label );
+			case 'runbook_restored':
+				return sprintf( __( 'Runbook restored: %s', 'estasoft-handover-passport' ), $label );
 			case 'settings_changed':
 				return __( 'Settings changed', 'estasoft-handover-passport' ) . ( '' !== (string) $row['note'] ? ': ' . (string) $row['note'] : '' );
 			case 'maintenance_note':

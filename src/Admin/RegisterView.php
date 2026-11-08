@@ -151,6 +151,7 @@ final class RegisterView {
 			echo '<td class="estasoft-hp-actions">';
 			if ( $can_edit ) {
 				$this->verifyButton( $record, $base );
+				$this->kindButtons( $kind, $record, $base );
 				echo ' <a href="' . esc_url( add_query_arg( array( 'view' => 'edit', 'kind' => $kind, 'id' => $record['id'] ), $base ) ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>';
 				if ( 'detected' !== $record['source'] ) {
 					echo ' <a class="estasoft-hp-danger" href="' . esc_url( add_query_arg( array( 'view' => 'delete', 'kind' => $kind, 'id' => $record['id'] ), $base ) ) . '">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</a>';
@@ -452,6 +453,9 @@ final class RegisterView {
 	 * @param array<int, string>   $people Person names by ID.
 	 */
 	private function cell( array $def, string $column, array $record, array $people ): string {
+		if ( 'last_check' === $column ) {
+			return self::checkText( (array) ( $record['fields']['last_check'] ?? array() ) );
+		}
 		$field = $def['fields'][ $column ] ?? array( 'type' => 'text' );
 		$value = $record['fields'][ $column ] ?? '';
 		switch ( (string) $field['type'] ) {
@@ -469,6 +473,48 @@ final class RegisterView {
 				return implode( ', ', array_map( static fn( $pid ): string => $people[ (int) $pid ] ?? '', (array) ( $record['owners'][ $column ] ?? array() ) ) );
 			default:
 				return (string) $value;
+		}
+	}
+
+	/**
+	 * The last result of an address check in words.
+	 *
+	 * @param array<string, mixed> $check Stored result.
+	 */
+	public static function checkText( array $check ): string {
+		if ( array() === $check ) {
+			return __( 'Not checked yet', 'estasoft-handover-passport' );
+		}
+		$when = Dates::displayDate( substr( (string) ( $check['at'] ?? '' ), 0, 10 ) );
+		if ( ! empty( $check['refused'] ) ) {
+			/* translators: %s: date. */
+			return sprintf( __( 'Not checked on %s: refused', 'estasoft-handover-passport' ), $when );
+		}
+		if ( ! empty( $check['ok'] ) ) {
+			/* translators: 1: HTTP status, 2: date. */
+			return sprintf( __( 'Answered %1$d on %2$s', 'estasoft-handover-passport' ), (int) ( $check['status'] ?? 0 ), $when );
+		}
+		/* translators: 1: reason, 2: date. */
+		return sprintf( __( 'Failed on %2$s: %1$s', 'estasoft-handover-passport' ), (string) ( $check['reason'] ?? '' ), $when );
+	}
+
+	/**
+	 * One-press buttons that belong to a kind: Confirm, Reviewed, Check now.
+	 *
+	 * @param string               $kind   Kind key.
+	 * @param array<string, mixed> $record Record.
+	 * @param string               $base   Screen URL.
+	 */
+	private function kindButtons( string $kind, array $record, string $base ): void {
+		$buttons = array(
+			Kinds::BACKUP => array( 'stamp', __( 'Confirm it ran', 'estasoft-handover-passport' ) ),
+			Kinds::ACCESS => array( 'stamp', __( 'Reviewed', 'estasoft-handover-passport' ) ),
+			Kinds::URL    => array( 'check', __( 'Check now', 'estasoft-handover-passport' ) ),
+		);
+		if ( isset( $buttons[ $kind ] ) ) {
+			echo ' <form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
+			$this->hidden( $buttons[ $kind ][0], 'item', (int) $record['id'], $base, $kind );
+			echo '<button type="submit" class="button-link">' . esc_html( $buttons[ $kind ][1] ) . '</button></form>';
 		}
 	}
 

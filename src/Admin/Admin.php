@@ -64,6 +64,7 @@ final class Admin {
 		( new HistoryScreen( $this->plugin ) )->register();
 		( new FindingsScreen( $this->plugin ) )->register();
 		( new SettingsScreen( $this->plugin ) )->register();
+		( new SafetyScreen( $this->plugin ) )->register();
 	}
 
 	/**

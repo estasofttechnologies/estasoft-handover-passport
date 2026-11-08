@@ -1,6 +1,6 @@
 <?php
 /**
- * Safety nets: Backups now; Runbooks and Critical URLs arrive with the safety-net milestone (ADM-1).
+ * Safety nets: backups, restore tests, runbooks and critical addresses (ADM-1).
  *
  * @package Estasoft\HandoverPassport
  */
@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Admin;
 
 use Estasoft\HandoverPassport\Domain\Kinds;
+use Estasoft\HandoverPassport\Security\Capabilities;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,6 +20,14 @@ defined( 'ABSPATH' ) || exit;
 final class SafetyScreen extends Screen {
 
 	public const SLUG = 'estasoft-passport-safety';
+
+	/**
+	 * Attach the form handlers of the tabs.
+	 */
+	public function register(): void {
+		( new RestoreTestView( $this->plugin ) )->register();
+		( new RunbookView( $this->plugin ) )->register();
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -39,7 +48,10 @@ final class SafetyScreen extends Screen {
 	 */
 	protected function tabs(): array {
 		return array(
-			'backups' => __( 'Backups', 'estasoft-handover-passport' ),
+			'backups'  => __( 'Backups', 'estasoft-handover-passport' ),
+			'tests'    => __( 'Restore tests', 'estasoft-handover-passport' ),
+			'runbooks' => __( 'Runbooks', 'estasoft-handover-passport' ),
+			'urls'     => __( 'Critical addresses', 'estasoft-handover-passport' ),
 		);
 	}
 
@@ -49,6 +61,37 @@ final class SafetyScreen extends Screen {
 	 * @param string $tab Tab key.
 	 */
 	protected function tab( string $tab ): void {
-		( new RegisterView( $this->plugin ) )->render( Kinds::BACKUP, self::SLUG, $this->keep( $tab ) );
+		switch ( $tab ) {
+			case 'tests':
+				( new RestoreTestView( $this->plugin ) )->render( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'tests' ), admin_url( 'admin.php' ) ) );
+				break;
+			case 'runbooks':
+				( new RunbookView( $this->plugin ) )->render();
+				break;
+			case 'urls':
+				$this->urls( $tab );
+				break;
+			default:
+				( new RegisterView( $this->plugin ) )->render( Kinds::BACKUP, self::SLUG, $this->keep( $tab ) );
+		}
+	}
+
+	/**
+	 * The addresses that must work after a restore, with a button that checks them all.
+	 *
+	 * @param string $tab Tab key.
+	 */
+	private function urls( string $tab ): void {
+		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Critical addresses', 'estasoft-handover-passport' ) . '</h2>';
+		echo '<p>' . esc_html__( 'The pages that must answer after a restore: the home page, the login, the checkout. Passport asks each one, from this server, when you press the button. It is not an uptime monitor and does not watch the site between visits.', 'estasoft-handover-passport' ) . '</p>';
+		if ( Capabilities::can( Capabilities::EDIT ) ) {
+			$register = new RegisterView( $this->plugin );
+			$base     = add_query_arg( array( 'page' => self::SLUG, 'tab' => $tab ), admin_url( 'admin.php' ) );
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+			$register->hidden( 'check_urls', 'item', 0, $base, Kinds::URL );
+			echo '<button type="submit" class="button">' . esc_html__( 'Check all now', 'estasoft-handover-passport' ) . '</button></form>';
+		}
+		echo '</div>';
+		( new RegisterView( $this->plugin ) )->render( Kinds::URL, self::SLUG, $this->keep( $tab ) );
 	}
 }

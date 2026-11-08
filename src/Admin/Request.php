@@ -93,4 +93,29 @@ final class Request {
 	public static function postedUrl( string $name ): string {
 		return isset( $_POST[ $name ] ) && is_scalar( $_POST[ $name ] ) ? esc_url_raw( wp_unslash( (string) $_POST[ $name ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked by the caller.
 	}
+
+	/**
+	 * Posted rows such as steps[0][text]. Every cell is returned as a raw string; the services validate them.
+	 * Call only after check_admin_referer().
+	 *
+	 * @param string $name Field name.
+	 * @return list<array<string, string>>
+	 */
+	public static function postedRows( string $name ): array {
+		$raw = isset( $_POST[ $name ] ) && is_array( $_POST[ $name ] ) ? wp_unslash( $_POST[ $name ] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce is checked by the caller; the services validate and sanitise every cell by type.
+		$out = array();
+		foreach ( $raw as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$clean = array();
+			foreach ( $row as $key => $value ) {
+				if ( is_scalar( $value ) ) {
+					$clean[ sanitize_key( (string) $key ) ] = (string) $value;
+				}
+			}
+			$out[] = $clean;
+		}
+		return array_slice( $out, 0, 200 );
+	}
 }

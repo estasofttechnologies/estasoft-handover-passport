@@ -283,3 +283,65 @@
 .estasoft-hp .estasoft-hp-readiness li {
 	margin: 4px 0;
 }
+
+/* Runbook editor and restore tests. */
+.estasoft-hp .estasoft-hp-rows {
+	margin: 16px 0;
+	padding: 8px 12px 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+.estasoft-hp .estasoft-hp-rows legend {
+	padding: 0 6px;
+	font-weight: 600;
+}
+.estasoft-hp .estasoft-hp-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	margin: 6px 0;
+}
+.estasoft-hp .estasoft-hp-step {
+	margin: 10px 0;
+	padding: 10px;
+	background: #f6f7f7;
+	border-radius: 4px;
+}
+.estasoft-hp .estasoft-hp-step__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	align-items: center;
+	margin-top: 6px;
+}
+.estasoft-hp .estasoft-hp-step__meta label {
+	display: inline-flex;
+	gap: 4px;
+	align-items: center;
+}
+.estasoft-hp .estasoft-hp-inline-form {
+	margin-top: 12px;
+}
+.estasoft-hp .estasoft-hp-badge--result-pass,
+.estasoft-hp .estasoft-hp-badge--runbook-published {
+	background: #edfaef;
+	border-color: #00a32a;
+	color: #0a5a1c;
+}
+.estasoft-hp .estasoft-hp-badge--result-partial,
+.estasoft-hp .estasoft-hp-badge--runbook-draft {
+	background: #fcf9e8;
+	border-color: #dba617;
+	color: #6e5700;
+}
+.estasoft-hp .estasoft-hp-badge--result-fail {
+	background: #fcf0f1;
+	border-color: #d63638;
+	color: #8a2424;
+}
+.estasoft-hp .estasoft-hp-badge--critical {
+	background: #f0f6fc;
+	border-color: #72aee6;
+	color: #1d4f7c;
+}

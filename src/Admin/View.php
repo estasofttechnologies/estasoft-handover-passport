@@ -47,7 +47,7 @@ final class View {
 		if ( '' === $key || ! isset( $map[ $key ] ) ) {
 			return;
 		}
-		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'check_refused' ), true ) ? 'notice-error' : 'notice-success';
+		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid' ), true ) ? 'notice-error' : 'notice-success';
 		echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible" role="status"><p>' . esc_html( $map[ $key ] ) . '</p></div>';
 	}
 
@@ -80,6 +80,26 @@ final class View {
 			'check_wait'       => __( 'That check ran a moment ago. Try again in a minute.', 'estasoft-handover-passport' ),
 			'check_refused'    => __( 'That address is not on this site, so it cannot be checked.', 'estasoft-handover-passport' ),
 			'check_done'       => __( 'Check finished.', 'estasoft-handover-passport' ),
+			'confirmed'        => __( 'Backup confirmed as of today.', 'estasoft-handover-passport' ),
+			'reviewed'         => __( 'Marked as reviewed today.', 'estasoft-handover-passport' ),
+			'url_ok'           => __( 'The address answered as expected.', 'estasoft-handover-passport' ),
+			'url_failed'       => __( 'The address did not answer as expected. The result is in the list.', 'estasoft-handover-passport' ),
+			'urls_done'        => __( 'Every address answered as expected.', 'estasoft-handover-passport' ),
+			'urls_failed'      => __( 'At least one address did not answer as expected. The results are in the list.', 'estasoft-handover-passport' ),
+			'urls_none'        => __( 'There are no addresses to check yet.', 'estasoft-handover-passport' ),
+			'dns_done'         => __( 'DNS read from this server and stored.', 'estasoft-handover-passport' ),
+			'dns_failed'       => __( 'This server could not read any DNS records for that domain. The last snapshot was kept.', 'estasoft-handover-passport' ),
+			'dns_invalid'      => __( 'That does not look like a domain name, so it was not looked up.', 'estasoft-handover-passport' ),
+			'ssl_done'         => __( 'Certificate read from this server and stored.', 'estasoft-handover-passport' ),
+			'ssl_failed'       => __( 'The certificate could not be read from this server. The last reading was kept.', 'estasoft-handover-passport' ),
+			'ssl_refused'      => __( 'Only this site\'s own host can be checked for a certificate.', 'estasoft-handover-passport' ),
+			'test_logged'      => __( 'Restore test logged.', 'estasoft-handover-passport' ),
+			'test_removed'     => __( 'Restore test removed.', 'estasoft-handover-passport' ),
+			'test_invalid'     => __( 'The restore test was not saved. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
+			'runbook_saved'    => __( 'Runbook saved.', 'estasoft-handover-passport' ),
+			'runbook_created'  => __( 'Draft created. Check every step against how this site is built.', 'estasoft-handover-passport' ),
+			'runbook_invalid'  => __( 'The runbook was not saved. Fix the problem shown in the form.', 'estasoft-handover-passport' ),
+			'rehearsed'        => __( 'Marked as rehearsed today.', 'estasoft-handover-passport' ),
 		);
 	}
 
