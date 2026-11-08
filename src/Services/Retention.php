@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Services;
 
 use Estasoft\HandoverPassport\Data\ChangeRepository;
+use Estasoft\HandoverPassport\Data\ExportRepository;
 use Estasoft\HandoverPassport\Data\FindingRepository;
 use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Data\LinkRepository;
@@ -17,6 +18,7 @@ use Estasoft\HandoverPassport\Data\PeopleRepository;
 use Estasoft\HandoverPassport\Data\ReminderRepository;
 use Estasoft\HandoverPassport\Settings\Settings;
 use Estasoft\HandoverPassport\Support\Clock;
+use Estasoft\HandoverPassport\Support\TempFiles;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,6 +37,7 @@ final class Retention {
 	 * @param ChangeRepository $changes  Change log.
 	 * @param FindingRepository $findings Findings.
 	 * @param ReminderRepository $reminders Sent reminders.
+	 * @param ExportRepository   $exports   Export log.
 	 */
 	public function __construct(
 		private Settings $settings,
@@ -43,7 +46,8 @@ final class Retention {
 		private LinkRepository $links,
 		private ChangeRepository $changes,
 		private FindingRepository $findings,
-		private ReminderRepository $reminders
+		private ReminderRepository $reminders,
+		private ExportRepository $exports
 	) {}
 
 	/**
@@ -69,6 +73,12 @@ final class Retention {
 
 		$reminder_months = max( 1, (int) $this->settings->get( 'retention.reminders_months', 12 ) );
 		$this->reminders->purgeBefore( $now->modify( sprintf( '-%d months', $reminder_months ) )->format( 'Y-m-d H:i:s' ) );
+
+		$export_months = max( 1, (int) $this->settings->get( 'retention.exports_months', 12 ) );
+		$this->exports->purgeBefore( $now->modify( sprintf( '-%d months', $export_months ) )->format( 'Y-m-d H:i:s' ) );
+
+		// Files and folders a failed export may have left in the private folder.
+		TempFiles::purge();
 
 		/**
 		 * Fires after the daily clean-up so later parts of the plugin can trim their own data.

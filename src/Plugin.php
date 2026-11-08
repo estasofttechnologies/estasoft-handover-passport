@@ -19,6 +19,7 @@ use Estasoft\HandoverPassport\Cli\RemindersCommand;
 use Estasoft\HandoverPassport\Cli\ScanCommand;
 use Estasoft\HandoverPassport\Cli\StatusCommand;
 use Estasoft\HandoverPassport\Data\ChangeRepository;
+use Estasoft\HandoverPassport\Data\ExportRepository;
 use Estasoft\HandoverPassport\Data\FindingRepository;
 use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Data\LinkRepository;
@@ -28,6 +29,7 @@ use Estasoft\HandoverPassport\Data\RunbookRepository;
 use Estasoft\HandoverPassport\Data\SnapshotRepository;
 use Estasoft\HandoverPassport\Data\ScanRepository;
 use Estasoft\HandoverPassport\Data\TestRepository;
+use Estasoft\HandoverPassport\Export\ExportService;
 use Estasoft\HandoverPassport\Findings\FindingService;
 use Estasoft\HandoverPassport\Handover\HandoverChecklist;
 use Estasoft\HandoverPassport\Handover\SnapshotService;
@@ -152,7 +154,7 @@ final class Plugin {
 	 * Cron callback for the daily clean-up.
 	 */
 	public function runRetention(): void {
-		( new Retention( $this->settings(), new ItemRepository(), new PeopleRepository(), new LinkRepository(), new ChangeRepository(), new FindingRepository(), new ReminderRepository() ) )->run();
+		( new Retention( $this->settings(), new ItemRepository(), new PeopleRepository(), new LinkRepository(), new ChangeRepository(), new FindingRepository(), new ReminderRepository(), new ExportRepository() ) )->run();
 	}
 
 	/**
@@ -282,6 +284,13 @@ final class Plugin {
 	 */
 	public function snapshots(): SnapshotService {
 		return $this->shared( 'snapshots', fn(): SnapshotService => new SnapshotService( $this, new SnapshotRepository() ) );
+	}
+
+	/**
+	 * Makes packs in every format and keeps the export log.
+	 */
+	public function exports(): ExportService {
+		return $this->shared( 'exports', fn(): ExportService => new ExportService( $this, new ExportRepository() ) );
 	}
 
 	/**
