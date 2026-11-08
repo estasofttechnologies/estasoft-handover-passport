@@ -17,7 +17,7 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 **What it does in this version**
 
 * Scans the site on a schedule and when the stack changes, and records WordPress, PHP, database, server, plugins, themes, scheduled tasks and administrators.
-* Keeps a change log of what changed and who changed it: plugin installs, updates, activations, theme switches, new administrators and address changes. Maintenance notes and incident reports (what happened, impact, cause, fix, time to restore, runbook used, follow-ups) sit beside it.
+* Keeps a change log of what changed and who changed it: plugin installs, updates, activations, theme switches, new administrators and address changes. The log can be downloaded as CSV. Maintenance notes and incident reports (what happened, impact, cause, fix, time to restore, runbook used, follow-ups) sit beside it.
 * Keeps registers for licences with renewal dates, domains, hosting, environments, services and backups, each with an owner and a review date.
 * Lists the people involved, their roles, the order of emergency contacts and who owns which asset, with a tracker for moving each asset to the client (status, date, who handles it, notes) that feeds the handover checklist.
 * Marks every value as Detected, Entered or Imported, with the time of its last change.

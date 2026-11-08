@@ -174,6 +174,29 @@ final class ExportService {
 	}
 
 	/**
+	 * Put a file that is not a pack, such as the change log as CSV, in the export log (EXP-9).
+	 *
+	 * @param string $profile Short key for what the file holds, for example change_log.
+	 * @param string $format  Format key.
+	 * @param string $bytes   The file.
+	 * @param int     $user_id Person who made it.
+	 */
+	public function logFile( string $profile, string $format, string $bytes, int $user_id ): void {
+		$this->log->insert(
+			array(
+				'exported_at' => Clock::sql(),
+				'user_id'     => $user_id,
+				'snapshot_id' => 0,
+				'profile'     => $profile,
+				'format'      => $format,
+				'size'        => strlen( $bytes ),
+				'hash'        => hash( 'sha256', $bytes ),
+				'emailed'     => 0,
+			)
+		);
+	}
+
+	/**
 	 * Export log entries of the last months, newest first (EXP-9).
 	 *
 	 * @param int $user_id Only this person's entries, or 0 for everyone's.

@@ -59,6 +59,8 @@ Commands that change the Passport need `--user` with someone who may edit it, so
 
 Runbooks are filled in from the Passport (a step that says `{registrar}` shows the registrar on record, or "not recorded" when there is none; Sensitive records never supply a value). **Passport > Safety nets > Runbooks** has a reading view for every version, a large-type print view, and drills: press *Start a drill* and tick each step as it is done. The time and the person are kept per step, a note can be added, and *Finish* records the result and the total time. A drill of a runbook that restores the site also lists an after-restore checklist (the critical addresses, then the checks only a person can make) and can be saved as a restore test. A drill never counts as a restore test unless you save it as one.
 
+**Passport > History > Change log** can be downloaded as a CSV file for the filter on screen (a kind of change, or everything since a snapshot). It needs the export capability, masks Sensitive records for people who may not see them, prefixes any cell a spreadsheet would read as a formula, refuses more than 10,000 entries rather than cutting the file, and is entered in the export log.
+
 The REST API lives under `estasoft-passport/v1`. Every route checks a capability, and Sensitive records and fields stay hidden from people without the Sensitive capability. See [docs/REST-API.md](docs/REST-API.md).
 
 ## Principles

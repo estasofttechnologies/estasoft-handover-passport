@@ -178,7 +178,7 @@ final class ExportView {
 			$format  = ExportService::PRINT === (string) $row['format'] ? __( 'Print view', 'estasoft-handover-passport' ) : ( $formats[ (string) $row['format'] ]['label'] ?? (string) $row['format'] );
 			echo '<tr><td>' . esc_html( Dates::display( (string) $row['exported_at'], true ) . ' UTC' ) . '</td>';
 			echo '<td>' . esc_html( false === $user ? '' : (string) $user->display_name ) . '</td>';
-			echo '<td>' . esc_html( null === $profile ? (string) $row['profile'] : $profile->label ) . '</td>';
+			echo '<td>' . esc_html( 'change_log' === (string) $row['profile'] ? __( 'Change log', 'estasoft-handover-passport' ) : ( null === $profile ? (string) $row['profile'] : $profile->label ) ) . '</td>';
 			echo '<td>' . esc_html( $format ) . '</td>';
 			$snapshot = (int) $row['snapshot_id'] > 0 ? $this->plugin->snapshots()->get( (int) $row['snapshot_id'] ) : null;
 			echo '<td>' . esc_html( (int) $row['snapshot_id'] > 0 ? ( null === $snapshot ? __( 'Deleted snapshot', 'estasoft-handover-passport' ) : (string) $snapshot['name'] ) : '' ) . '</td>';

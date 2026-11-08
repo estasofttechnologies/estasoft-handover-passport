@@ -48,7 +48,7 @@ final class View {
 		if ( '' === $key || ! isset( $map[ $key ] ) ) {
 			return;
 		}
-		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'scan_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid', 'renew_invalid', 'mail_failed', 'mail_invalid', 'mail_wait', 'checklist_invalid', 'snapshot_invalid', 'snapshot_mismatch', 'snapshot_confirm', 'snapshot_gone', 'ack_invalid', 'confirm_expired', 'export_refused', 'pack_copy_invalid', 'notes_invalid' ), true ) ? 'notice-error' : 'notice-success';
+		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'scan_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid', 'renew_invalid', 'mail_failed', 'mail_invalid', 'mail_wait', 'checklist_invalid', 'snapshot_invalid', 'snapshot_mismatch', 'snapshot_confirm', 'snapshot_gone', 'ack_invalid', 'confirm_expired', 'export_refused', 'pack_copy_invalid', 'notes_invalid', 'changes_csv_toolarge' ), true ) ? 'notice-error' : 'notice-success';
 		$text = $map[ $key ];
 		if ( '_wait' === substr( $key, -5 ) ) {
 			$seconds = min( 60, max( 1, Request::int( 'estasoft_hp_wait' ) ) );
@@ -90,6 +90,7 @@ final class View {
 	private static function messages(): array {
 		return array(
 			'scan_done'   => __( 'Scan finished.', 'estasoft-handover-passport' ),
+			'changes_csv_toolarge' => __( 'More entries match than one file can hold. Choose a kind of change or a snapshot to narrow the list, then download again.', 'estasoft-handover-passport' ),
 			'renewed'       => __( 'Renewed. The next date is saved and the reminders start again for it.', 'estasoft-handover-passport' ),
 			'renew_invalid' => __( 'The date was not accepted. Use a real date in the form YYYY-MM-DD that is later than the current one.', 'estasoft-handover-passport' ),
 			'mail_sent'     => __( 'The test email was sent. Check the inbox of that address.', 'estasoft-handover-passport' ),

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Admin;
 
 use Estasoft\HandoverPassport\Domain\Kinds;
+use Estasoft\HandoverPassport\Export\ExportResult;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Security\SecretFound;
 use Estasoft\HandoverPassport\Support\Clock;
@@ -24,6 +25,7 @@ final class HistoryScreen extends Screen {
 
 	public const SLUG        = 'estasoft-passport-history';
 	public const NOTE_ACTION = 'estasoft_hp_add_note';
+	public const CSV_ACTION  = 'estasoft_hp_changes_csv';
 	private const PER_PAGE   = 25;
 
 	/**
@@ -31,6 +33,70 @@ final class HistoryScreen extends Screen {
 	 */
 	public function register(): void {
 		add_action( 'admin_post_' . self::NOTE_ACTION, array( $this, 'handleNote' ) );
+		add_action( 'admin_post_' . self::CSV_ACTION, array( $this, 'downloadCsv' ) );
+	}
+
+	/**
+	 * The filters the change log is shown with, from the address: a kind of change and, optionally, a snapshot.
+	 *
+	 * @return array{filters: array<string, mixed>, kind: string, since: int}
+	 */
+	private function requestedFilters(): array {
+		$kind    = Request::key( 'kind' );
+		$filters = array();
+		$since   = 0;
+		if ( '' !== $kind && array_key_exists( $kind, ChangeText::filterKinds() ) ) {
+			$filters['kind'] = $kind;
+		} else {
+			$kind = '';
+		}
+		$since_id = Request::int( 'since_snapshot' );
+		foreach ( $this->plugin->snapshots()->all() as $snapshot ) {
+			if ( (int) $snapshot['id'] === $since_id ) {
+				$filters = $filters + $this->sinceFilter( $snapshot );
+				$since   = $since_id;
+				break;
+			}
+		}
+		return array( 'filters' => $filters, 'kind' => $kind, 'since' => $since );
+	}
+
+	/**
+	 * Send the change log, with the filters on screen, as a CSV file (CHG-6).
+	 */
+	public function downloadCsv(): void {
+		if ( ! Capabilities::can( Capabilities::EXPORT ) ) {
+			wp_die( esc_html__( 'You do not have permission to export.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
+		}
+		check_admin_referer( self::CSV_ACTION );
+		$asked = $this->requestedFilters();
+		$repo  = $this->plugin->changeLog()->repo();
+		$back  = add_query_arg( array_filter( array( 'page' => self::SLUG, 'tab' => 'changes', 'kind' => $asked['kind'], 'since_snapshot' => $asked['since'] ? (string) $asked['since'] : '' ) ), admin_url( 'admin.php' ) );
+		if ( $repo->countFor( $asked['filters'] ) > ChangeCsv::LIMIT ) {
+			wp_safe_redirect( add_query_arg( 'estasoft_hp_notice', 'changes_csv_toolarge', $back ) );
+			exit;
+		}
+		$rows  = $this->plugin->changeLog()->forViewer( $repo->search( $asked['filters'], ChangeCsv::LIMIT ), Capabilities::canSeeSensitive() );
+		$bytes = ChangeCsv::build( $rows );
+		$this->plugin->exports()->logFile( 'change_log', 'csv', $bytes, get_current_user_id() );
+		Download::send( new ExportResult( $bytes, 'change-log-' . Clock::today() . '.csv', 'text/csv; charset=utf-8', 'csv', 'change_log' ) );
+	}
+
+	/**
+	 * Address of the download for the filters that are on screen.
+	 *
+	 * @param string $kind     Kind filter, or an empty string.
+	 * @param int    $snapshot Snapshot filter, or 0.
+	 */
+	private function csvUrl( string $kind, int $snapshot ): string {
+		$args = array( 'action' => self::CSV_ACTION );
+		if ( '' !== $kind ) {
+			$args['kind'] = $kind;
+		}
+		if ( $snapshot > 0 ) {
+			$args['since_snapshot'] = (string) $snapshot;
+		}
+		return wp_nonce_url( add_query_arg( $args, admin_url( 'admin-post.php' ) ), self::CSV_ACTION );
 	}
 
 	/**
@@ -80,19 +146,16 @@ final class HistoryScreen extends Screen {
 	 * The change log with filters.
 	 */
 	private function changes(): void {
-		$kind      = Request::key( 'kind' );
 		$page_no   = max( 1, Request::int( 'paged' ) );
-		$filters   = array();
+		$asked     = $this->requestedFilters();
+		$filters   = $asked['filters'];
+		$kind      = $asked['kind'];
+		$since_id  = $asked['since'];
 		$snapshots = $this->plugin->snapshots()->all();
 		$since     = null;
-		if ( '' !== $kind && array_key_exists( $kind, ChangeText::filterKinds() ) ) {
-			$filters['kind'] = $kind;
-		}
-		$since_id = Request::int( 'since_snapshot' );
 		foreach ( $snapshots as $snapshot ) {
 			if ( (int) $snapshot['id'] === $since_id ) {
-				$since   = $snapshot;
-				$filters = $filters + $this->sinceFilter( $snapshot );
+				$since = $snapshot;
 				break;
 			}
 		}
@@ -119,6 +182,9 @@ final class HistoryScreen extends Screen {
 			echo '</select>';
 		}
 		echo ' <button type="submit" class="button">' . esc_html__( 'Filter', 'estasoft-handover-passport' ) . '</button></form>';
+		if ( Capabilities::can( Capabilities::EXPORT ) ) {
+			echo '<p><a class="button" href="' . esc_url( $this->csvUrl( $kind, $since_id ) ) . '">' . esc_html__( 'Download as CSV', 'estasoft-handover-passport' ) . '</a> <span class="description">' . esc_html__( 'The entries that match the filter above, opened in a spreadsheet.', 'estasoft-handover-passport' ) . '</span></p>';
+		}
 
 		if ( null !== $since ) {
 			echo '<p class="description">' . esc_html(
