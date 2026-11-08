@@ -1978,6 +1978,24 @@ body.estasoft-hp-screen {
 	margin-top: 8px;
 }
 
+.estasoft-hp .estasoft-hp-card > .estasoft-hp-form {
+	margin-top: 16px;
+	padding: 0;
+	background: none;
+	border: 0;
+	box-shadow: none;
+}
+
+.estasoft-hp .estasoft-hp-card > .estasoft-hp-form .estasoft-hp-field {
+	display: block;
+}
+
+.estasoft-hp .estasoft-hp-card > .estasoft-hp-form .estasoft-hp-field > label {
+	display: block;
+	padding-top: 0;
+	margin-bottom: 4px;
+}
+
 .estasoft-hp .estasoft-hp-step .estasoft-hp-form {
 	margin-top: 16px;
 	padding: 0;

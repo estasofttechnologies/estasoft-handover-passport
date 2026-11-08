@@ -248,7 +248,7 @@ final class RunbookView {
 		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Runbooks', 'estasoft-handover-passport' ) . '</h2>';
 		echo '<p>' . esc_html__( 'A runbook is a written set of steps someone can follow when something breaks, without having to ask the person who built the site.', 'estasoft-handover-passport' ) . '</p>';
 		if ( $can_edit ) {
-			echo '<p><a class="button button-primary" href="' . esc_url( add_query_arg( 'view', 'new', $base ) ) . '">' . esc_html__( 'New runbook', 'estasoft-handover-passport' ) . '</a></p>';
+			echo '<p><a class="btn pri" href="' . esc_url( add_query_arg( 'view', 'new', $base ) ) . '">' . Icons::svg( 'plus', 16 ) . esc_html__( 'New runbook', 'estasoft-handover-passport' ) . '</a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline-form">';
 			$this->hidden( 'from_template', 0 );
 			echo '<label for="estasoft-hp-template">' . esc_html__( 'Or start from a template', 'estasoft-handover-passport' ) . '</label> ';
@@ -256,50 +256,54 @@ final class RunbookView {
 			foreach ( RunbookService::templates() as $key => $template ) {
 				echo '<option value="' . esc_attr( (string) $key ) . '">' . esc_html( (string) $template['title'] ) . '</option>';
 			}
-			echo '</select> <button type="submit" class="button">' . esc_html__( 'Create a draft', 'estasoft-handover-passport' ) . '</button>';
+			echo '</select> <button type="submit" class="btn">' . esc_html__( 'Create a draft', 'estasoft-handover-passport' ) . '</button>';
 			echo '<p class="description">' . esc_html__( 'A template is a starting point written for a typical WordPress site. Check every step against how this site is built before you rely on it.', 'estasoft-handover-passport' ) . '</p></form>';
 		}
 		echo '</div>';
 
 		if ( array() === $runbooks ) {
-			echo '<p>' . esc_html__( 'No runbook has been written yet.', 'estasoft-handover-passport' ) . '</p>';
+			echo '<div class="empty"><p>' . esc_html__( 'No runbook has been written yet.', 'estasoft-handover-passport' ) . '</p></div>';
 			$this->deletedList( $service );
 			return;
 		}
 
 		$roles = RunbookService::roles();
-		echo '<p><a class="button" href="' . esc_url( self::printUrl( 0 ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Print every published runbook', 'estasoft-handover-passport' ) . '</a> <span class="description">' . esc_html__( 'One runbook to a page, in large type, to keep with the site\'s paper files.', 'estasoft-handover-passport' ) . '</span></p>';
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
+		echo '<div class="estasoft-hp-below">';
+		echo '<p><a class="btn" href="' . esc_url( self::printUrl( 0 ) ) . '" target="_blank" rel="noopener">' . Icons::svg( 'download', 16 ) . esc_html__( 'Print every published runbook', 'estasoft-handover-passport' ) . '</a> <span class="t2">' . esc_html__( 'One runbook to a page, in large type, to keep with the site\'s paper files.', 'estasoft-handover-passport' ) . '</span></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
+		View::bareCardStart();
+		echo '<div class="scr"><table class="tbl cards"><caption class="sr">' . esc_html__( 'Runbooks', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
 		foreach ( array( __( 'Runbook', 'estasoft-handover-passport' ), __( 'Status', 'estasoft-handover-passport' ), __( 'Owner', 'estasoft-handover-passport' ), __( 'Steps', 'estasoft-handover-passport' ), __( 'Time', 'estasoft-handover-passport' ), __( 'Last reviewed', 'estasoft-handover-passport' ), __( 'Last rehearsed', 'estasoft-handover-passport' ) ) as $heading ) {
 			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
 		}
-		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
+		echo '<th scope="col"><span class="sr">' . esc_html__( 'Actions', 'estasoft-handover-passport' ) . '</span></th></tr></thead><tbody>';
 		foreach ( $runbooks as $runbook ) {
 			$edit = add_query_arg( array( 'view' => 'edit', 'id' => (int) $runbook['id'] ), $base );
 			$read = add_query_arg( array( 'view' => 'read', 'id' => (int) $runbook['id'] ), $base );
-			echo '<tr><td><a href="' . esc_url( $read ) . '"><strong>' . esc_html( (string) $runbook['title'] ) . '</strong></a>';
+			echo '<tr><td class="t1" data-label="' . esc_attr__( 'Runbook', 'estasoft-handover-passport' ) . '"><a href="' . esc_url( $read ) . '"><b>' . esc_html( (string) $runbook['title'] ) . '</b></a>';
 			if ( ! empty( $runbook['critical'] ) ) {
 				echo ' ' . View::badge( 'critical', __( 'Critical', 'estasoft-handover-passport' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
 			}
-			echo '</td><td>' . View::badge( 'runbook-' . (string) $runbook['status'], 'published' === $runbook['status'] ? __( 'Published', 'estasoft-handover-passport' ) : __( 'Draft', 'estasoft-handover-passport' ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
-			echo '<td>' . esc_html( $roles[ (string) $runbook['owner_role'] ] ?? '' ) . '</td>';
-			echo '<td>' . esc_html( (string) count( (array) $runbook['steps'] ) ) . '</td>';
-			echo '<td>' . esc_html( (int) $runbook['estimated_minutes'] > 0 ? sprintf( /* translators: %d: minutes. */ _n( '%d minute', '%d minutes', (int) $runbook['estimated_minutes'], 'estasoft-handover-passport' ), (int) $runbook['estimated_minutes'] ) : '' ) . '</td>';
-			echo '<td>' . esc_html( $this->stampText( $runbook['last_reviewed'] ) ) . '</td>';
-			echo '<td>' . esc_html( $this->stampText( $runbook['last_rehearsed'] ) ) . '</td><td class="estasoft-hp-actions">';
-			echo '<a href="' . esc_url( $read ) . '">' . esc_html__( 'Open', 'estasoft-handover-passport' ) . '</a>';
+			echo '</td><td data-label="' . esc_attr__( 'Status', 'estasoft-handover-passport' ) . '">' . View::badge( 'runbook-' . (string) $runbook['status'], 'published' === $runbook['status'] ? __( 'Published', 'estasoft-handover-passport' ) : __( 'Draft', 'estasoft-handover-passport' ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- badge() escapes its parts.
+			echo '<td data-label="' . esc_attr__( 'Owner', 'estasoft-handover-passport' ) . '">' . esc_html( $roles[ (string) $runbook['owner_role'] ] ?? '' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Steps', 'estasoft-handover-passport' ) . '">' . esc_html( (string) count( (array) $runbook['steps'] ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Time', 'estasoft-handover-passport' ) . '">' . esc_html( (int) $runbook['estimated_minutes'] > 0 ? sprintf( /* translators: %d: minutes. */ _n( '%d minute', '%d minutes', (int) $runbook['estimated_minutes'], 'estasoft-handover-passport' ), (int) $runbook['estimated_minutes'] ) : '' ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Last reviewed', 'estasoft-handover-passport' ) . '">' . esc_html( $this->stampText( $runbook['last_reviewed'] ) ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Last rehearsed', 'estasoft-handover-passport' ) . '">' . esc_html( $this->stampText( $runbook['last_rehearsed'] ) ) . '</td><td class="act estasoft-hp-actions" data-label="' . esc_attr__( 'Actions', 'estasoft-handover-passport' ) . '">';
+			echo '<a class="btn sm" href="' . esc_url( $read ) . '">' . esc_html__( 'Open', 'estasoft-handover-passport' ) . '</a>';
 			if ( $can_edit ) {
-				echo ' · <a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>';
+				echo ' <a class="btn sm" href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>';
 			}
-			echo ' · <a href="' . esc_url( self::printUrl( (int) $runbook['id'] ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Print', 'estasoft-handover-passport' ) . '</a>';
+			echo ' <a class="btn sm" href="' . esc_url( self::printUrl( (int) $runbook['id'] ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Print', 'estasoft-handover-passport' ) . '</a>';
 			if ( $can_edit ) {
 				echo ' <form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-inline">';
 				$this->hidden( 'delete', (int) $runbook['id'] );
-				echo '<button type="submit" class="button-link estasoft-hp-danger">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</button></form>';
+				echo '<button type="submit" class="btn sm estasoft-hp-danger">' . esc_html__( 'Delete', 'estasoft-handover-passport' ) . '</button></form>';
 			}
 			echo '</td></tr>';
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		View::cardEnd();
+		echo '</div>';
 		( new DrillView( $this->plugin ) )->listing();
 		$this->deletedList( $service );
 	}
