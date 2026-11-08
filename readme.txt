@@ -23,13 +23,19 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 * Marks every value as Detected, Entered or Imported, with the time of its last change.
 * Lets you mark records Sensitive so only people with the right capability can see them.
 * Refuses to store passwords, keys and tokens in any field, so the Passport is safe to share.
-* Works with WP-CLI (`wp estasoft-passport scan`) and a REST API with capability checks on every route.
+* Checks the record against the site and lists findings in plain words, each stating a fact and a date. A finding never says "safe", "secure" or "compliant".
+* Keeps restore tests, runbooks (with twelve ready-made templates and a version history) and a list of critical addresses, so the day something breaks is not the first day anyone looks for the steps.
+* Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server".
+* Emails reminders before licence, domain, hosting and service dates, and can send a short weekly summary. Each reminder goes once per date and lead time.
+* Pauses reminders on a copy of the site, so a staging site does not send every reminder a second time.
+* Works with WP-CLI (`wp estasoft-passport scan`, `wp estasoft-passport reminders run --dry-run`) and a REST API with capability checks on every route.
 
 **Built for trust**
 
 * No account, no tracking, no ads, no upsell notices.
-* No request leaves your server. Scans read local data only.
-* Nothing is added to the front end of your site.
+* No account, no tracking and no data sent to ESTASOFT TECHNOLOGIES or any third party.
+* Scans read local data only. A DNS, certificate or address check runs only when you press its button, and it contacts only your own domain.
+* Nothing is added to the front end of your site, and nothing runs there.
 * Five capabilities control who can view, edit, export and configure. Administrators have them by default.
 
 == Installation ==
@@ -42,11 +48,23 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 
 = Does it send my data anywhere? =
 
-No. Scans and the change log stay on your server. The plugin makes no outside requests.
+No. Scans, the change log and the findings stay on your server. The plugin never contacts ESTASOFT TECHNOLOGIES or any third party. The only requests it makes are the checks you start yourself, and they go to your own domain.
 
 = Does it store passwords? =
 
 No. It refuses text that looks like a password, key or token, and tells you which field to fix. Write where a login lives (for example "the shared password manager, folder Clients"), not the login itself.
+
+= How do reminders work? =
+
+Once a day the plugin looks at the records that have a renewal or expiry date. At 60, 30, 14, 7 and 1 days before the date, and on the day, it sends one email to the addresses you list in Settings, Reminders, plus the account holder and payer of that record when they have an email address. You can change the days in Settings or for one record, and a record can have its reminders switched off. Pressing Renewed on a record and entering the next date starts the reminders again for the new date.
+
+= Reminders do not arrive. =
+
+Reminders go out through the email of your WordPress site, so they depend on it working. Open Settings, Reminders, and press Send test email. If a reminder cannot be sent, it is tried again the next day, up to three times, and the Overview says so.
+
+= I copied the site to a staging server. Will it send every reminder again? =
+
+No. When the same data turns up on a different address, the plugin pauses reminders, emailed copies and scheduled checks and asks whether the site moved or this is a copy. Choose "This is a copy" and the reminders stay off there.
 
 = What happens to my data if I delete the plugin? =
 
@@ -60,10 +78,12 @@ People with the `estasoft_hp_view` capability. Administrators have it by default
 
 The plugin stores a record of the site and the names and work email addresses of the people you enter. Nothing is sent to ESTASOFT TECHNOLOGIES or any third party.
 
+Reminder emails go to the addresses you list and to the account holder and payer you enter on a record. The email names the record and its date, never a password or key, and a record marked Sensitive is not named in the email. The log of sent reminders keeps the date, the record and the number of recipients, not their addresses.
+
 == Changelog ==
 
 = 1.0.0 =
-* First release: foundation, site scan, change log, capabilities, secret guard, REST and WP-CLI scan.
+* First release: foundation, site scan, change log, capabilities, secret guard, findings, restore tests, runbooks, address checks, email reminders, REST and WP-CLI.
 
 == Upgrade Notice ==
 
