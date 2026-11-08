@@ -1,0 +1,80 @@
+/* Estasoft Handover Passport: admin styles. Loaded on Passport screens only. */
+.estasoft-hp .estasoft-hp-lede {
+	margin: 0.5em 0 1.25em;
+	font-size: 14px;
+}
+
+.estasoft-hp .estasoft-hp-card {
+	max-width: 960px;
+	margin: 0 0 16px;
+	padding: 4px 20px 16px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.estasoft-hp .estasoft-hp-card h2 {
+	margin: 16px 0 10px;
+	font-size: 15px;
+}
+
+.estasoft-hp .estasoft-hp-muted {
+	color: #50575e;
+}
+
+.estasoft-hp .estasoft-hp-facts {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 10px 24px;
+	margin: 0;
+}
+
+.estasoft-hp .estasoft-hp-facts dt {
+	font-size: 12px;
+	color: #50575e;
+}
+
+.estasoft-hp .estasoft-hp-facts dd {
+	margin: 2px 0 0;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+/* Status is always shown in words; the border and fill only support it. */
+.estasoft-hp .estasoft-hp-badge {
+	display: inline-block;
+	padding: 1px 8px;
+	border: 1px solid #8c8f94;
+	border-radius: 10px;
+	background: #f6f7f7;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.7;
+}
+
+.estasoft-hp .estasoft-hp-badge--done,
+.estasoft-hp .estasoft-hp-badge--active {
+	border-color: #2e7d32;
+	background: #edf7ee;
+}
+
+.estasoft-hp .estasoft-hp-badge--failed {
+	border-color: #b32d2e;
+	background: #fcf0f1;
+}
+
+.estasoft-hp .estasoft-hp-badge--running,
+.estasoft-hp .estasoft-hp-badge--draft {
+	border-color: #996800;
+	background: #fcf9e8;
+}
+
+.estasoft-hp .estasoft-hp-card form {
+	margin-top: 10px;
+}
+
+@media (max-width: 782px) {
+	.estasoft-hp .estasoft-hp-card {
+		padding: 4px 14px 14px;
+	}
+}
