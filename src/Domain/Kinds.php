@@ -377,7 +377,7 @@ final class Kinds {
 				'due'       => null,
 				'ownership' => false,
 				'vis'       => array( 1, 1 ),
-				'columns'   => array( 'name', 'address', 'expected_status', 'last_status' ),
+				'columns'   => array( 'name', 'address', 'expected_status', 'last_check' ),
 				'fields'    => array(
 					'name'            => self::f( 'text', __( 'Name', 'estasoft-handover-passport' ), array( 'required' => true ) ),
 					'address'         => self::f( 'url', __( 'Address', 'estasoft-handover-passport' ), array( 'required' => true, 'help' => __( 'An anonymous page on this site.', 'estasoft-handover-passport' ) ) ),

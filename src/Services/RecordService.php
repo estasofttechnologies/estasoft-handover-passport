@@ -274,18 +274,22 @@ class RecordService {
 	}
 
 	/**
-	 * Save a system record (DNS snapshot, URL result, handover state) that has no form.
-	 * The secret guard still runs.
+	 * Save a system record (DNS snapshot, certificate check, handover state) that has no form.
+	 * The secret guard runs unless the values were measured by the plugin from public sources, such as DNS text
+	 * records, which can hold long keys and tokens that are not secrets.
 	 *
 	 * @param string               $kind    Kind key.
 	 * @param string               $subject Subject key.
 	 * @param string               $title   Title.
 	 * @param array<string, mixed> $data    Data map.
 	 * @param array<string, mixed> $columns Extra columns (status, due_date).
+	 * @param bool                 $measured Whether the data was measured, not typed by a person.
 	 * @return int Record ID.
 	 */
-	public function saveSystem( string $kind, string $subject, string $title, array $data, array $columns = array() ): int {
-		$this->guard->assertClean( $data, $title );
+	public function saveSystem( string $kind, string $subject, string $title, array $data, array $columns = array(), bool $measured = false ): int {
+		if ( ! $measured ) {
+			$this->guard->assertClean( $data, $title );
+		}
 		$existing = '' === $subject ? null : $this->items->bySubject( $kind, $subject );
 		$row      = array( 'title' => mb_substr( $title, 0, 255 ), 'subject_key' => mb_substr( $subject, 0, 191 ), 'data' => $data, 'updated_at' => Clock::sql() ) + $columns;
 		if ( null !== $existing ) {
@@ -368,6 +372,15 @@ class RecordService {
 				$columns[ (string) $field['column'] ] = (string) $value;
 			} else {
 				$data[ $key ] = $value;
+			}
+		}
+
+		// Keep what the plugin itself stored on the record, such as the last result of a check.
+		if ( null !== $existing ) {
+			foreach ( (array) $existing['fields'] as $key => $value ) {
+				if ( ! array_key_exists( $key, (array) $def['fields'] ) && ! array_key_exists( $key, $data ) ) {
+					$data[ $key ] = $value;
+				}
 			}
 		}
 
