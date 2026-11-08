@@ -134,38 +134,48 @@ final class PeopleScreen extends Screen {
 			}
 			$rows[] = array( $def, $record );
 		}
-		echo '<div class="estasoft-hp-register"><h2>' . esc_html__( 'Who owns what', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p class="description">' . esc_html__( 'Every asset should have a legal owner, someone who holds the account and someone who pays. Gaps are marked so they can be closed before a handover.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<h2 class="sr">' . esc_html__( 'Who owns what', 'estasoft-handover-passport' ) . '</h2>';
 		if ( array() === $rows ) {
-			echo '<div class="estasoft-hp-empty"><p>' . esc_html__( 'No assets recorded yet. Add licences, domains, hosting or services first, then set their owners here.', 'estasoft-handover-passport' ) . '</p></div></div>';
+			echo '<div class="empty"><p>' . esc_html__( 'No assets recorded yet. Add licences, domains, hosting or services first, then set their owners here.', 'estasoft-handover-passport' ) . '</p></div>';
 			return;
 		}
 		$transfer = Kinds::transferStates();
 		$counts   = array( 'open' => 0, 'closed' => 0 );
+		$gaps     = 0;
 		foreach ( $rows as [ , $record ] ) {
 			$status = (string) ( $record['fields']['transfer_status'] ?? '' );
 			if ( Kinds::transferNeeded( (string) $record['legal_owner'], $status ) ) {
 				Kinds::transferClosed( $status ) ? ++$counts['closed'] : ++$counts['open'];
 			}
+			if ( in_array( (string) $record['legal_owner'], array( '', 'unknown' ), true ) || array() === (array) ( $record['owners']['account_holder'] ?? array() ) || array() === (array) ( $record['owners']['payer'] ?? array() ) ) {
+				++$gaps;
+			}
 		}
-		$filter = 'open' === Request::key( 'transfer', '' ) ? 'open' : '';
-		$base   = add_query_arg( array( 'page' => self::SLUG, 'tab' => 'ownership' ), admin_url( 'admin.php' ) );
-		echo '<p class="estasoft-hp-transfer-summary">' . esc_html(
-			sprintf(
-				/* translators: 1: number of transfers still to do, 2: number finished. */
-				__( 'Transfers to the client: %1$d still to do, %2$d finished or not needed.', 'estasoft-handover-passport' ),
-				$counts['open'],
-				$counts['closed']
-			)
-		) . ' ';
-		if ( '' === $filter ) {
-			echo '<a href="' . esc_url( add_query_arg( 'transfer', 'open', $base ) ) . '">' . esc_html__( 'Show only transfers still to do', 'estasoft-handover-passport' ) . '</a>';
+		if ( $gaps > 0 ) {
+			$headline = sprintf(
+				/* translators: %d: number of assets with a gap. */
+				_n( '%d asset has a gap', '%d assets have gaps', $gaps, 'estasoft-handover-passport' ),
+				$gaps
+			);
+			echo '<div class="msg wn" role="status">' . Icons::svg( 'warning', 20 ) . '<div><b>' . esc_html( $headline ) . '</b><span class="t2">' . esc_html__( 'A legal owner, account holder or payer is not set. Gaps are marked below so they can be closed before a handover.', 'estasoft-handover-passport' ) . '</span></div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 		} else {
-			echo '<a href="' . esc_url( $base ) . '">' . esc_html__( 'Show every asset', 'estasoft-handover-passport' ) . '</a>';
+			echo '<div class="msg ok" role="status">' . Icons::svg( 'ok', 20 ) . '<div><b>' . esc_html__( 'Every asset has an owner', 'estasoft-handover-passport' ) . '</b><span class="t2">' . esc_html__( 'Each one has a legal owner, an account holder and someone who pays.', 'estasoft-handover-passport' ) . '</span></div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 		}
-		echo '</p>';
+		$filter  = 'open' === Request::key( 'transfer', '' ) ? 'open' : '';
+		$base    = add_query_arg( array( 'page' => self::SLUG, 'tab' => 'ownership' ), admin_url( 'admin.php' ) );
+		$link    = '' === $filter
+			? '<a class="btn sm" href="' . esc_url( add_query_arg( 'transfer', 'open', $base ) ) . '">' . esc_html__( 'Show only transfers still to do', 'estasoft-handover-passport' ) . '</a>'
+			: '<a class="btn sm" href="' . esc_url( $base ) . '">' . esc_html__( 'Show every asset', 'estasoft-handover-passport' ) . '</a>';
+		$summary = sprintf(
+			/* translators: 1: number of transfers still to do, 2: number finished. */
+			__( 'Transfers to the client: %1$d still to do, %2$d finished or not needed.', 'estasoft-handover-passport' ),
+			$counts['open'],
+			$counts['closed']
+		);
+		echo '<div class="msg in estasoft-hp-transfer-summary">' . Icons::svg( 'info', 20 ) . '<div>' . esc_html( $summary ) . '</div>' . $link . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() is fixed markup; $link is built from escaped parts.
 
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr>';
+		View::bareCardStart();
+		echo '<div class="scr"><table class="tbl cards"><caption class="sr">' . esc_html__( 'Who owns what', 'estasoft-handover-passport' ) . '</caption><thead><tr>';
 		foreach ( array( __( 'Asset', 'estasoft-handover-passport' ), __( 'Kind', 'estasoft-handover-passport' ), __( 'Legal owner', 'estasoft-handover-passport' ), __( 'Account holder', 'estasoft-handover-passport' ), __( 'Who pays', 'estasoft-handover-passport' ), __( 'Administrators', 'estasoft-handover-passport' ), __( 'Transfer to the client', 'estasoft-handover-passport' ) ) as $heading ) {
 			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
 		}
@@ -173,6 +183,7 @@ final class PeopleScreen extends Screen {
 		$links    = new FindingLinks( $this->plugin );
 		$can_edit = Capabilities::can( Capabilities::EDIT );
 		$shown    = 0;
+		$gap      = static fn( string $text ): string => '' === $text ? '<span class="estasoft-hp-gap">' . Icons::svg( 'warning', 14 ) . esc_html__( 'Not set', 'estasoft-handover-passport' ) . '</span>' : esc_html( $text );
 		foreach ( $rows as [ $def, $record ] ) {
 			$status = (string) ( $record['fields']['transfer_status'] ?? '' );
 			if ( 'open' === $filter && ( ! Kinds::transferNeeded( (string) $record['legal_owner'], $status ) || Kinds::transferClosed( $status ) ) ) {
@@ -183,17 +194,20 @@ final class PeopleScreen extends Screen {
 			$holder = $names( (array) ( $record['owners']['account_holder'] ?? array() ) );
 			$payer  = $names( (array) ( $record['owners']['payer'] ?? array() ) );
 			$admins = $names( (array) ( $record['owners']['administrators'] ?? array() ) );
-			$gap    = static fn( string $text ): string => '' === $text ? '<span class="estasoft-hp-gap">' . esc_html__( 'Not set', 'estasoft-handover-passport' ) . '</span>' : esc_html( $text );
 			$edit   = add_query_arg( array( 'view' => 'edit', 'kind' => (string) $record['kind'], 'id' => (int) $record['id'] ), add_query_arg( $links->tabFor( (string) $record['kind'] ), admin_url( 'admin.php' ) ) );
-			echo '<tr><td><strong>' . esc_html( (string) $record['title'] ) . '</strong>' . ( $can_edit ? ' <a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>' : '' ) . '</td><td>' . esc_html( (string) $def['label'] ) . '</td>';
-			echo '<td>' . ( '' === $owner || 'unknown' === $owner ? '<span class="estasoft-hp-gap">' . esc_html__( 'Unknown', 'estasoft-handover-passport' ) . '</span>' : esc_html( $owners[ $owner ] ?? $owner ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
-			echo '<td>' . $gap( $holder ) . '</td><td>' . $gap( $payer ) . '</td><td>' . $gap( $admins ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $gap() escapes.
-			echo '<td>' . $this->transferCell( $record, $status, $transfer ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- transferCell() escapes its parts.
+			echo '<tr><td class="t1" data-label="' . esc_attr__( 'Asset', 'estasoft-handover-passport' ) . '"><b>' . esc_html( (string) $record['title'] ) . '</b>' . ( $can_edit ? ' <a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'estasoft-handover-passport' ) . '</a>' : '' ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Parts are escaped.
+			echo '<td data-label="' . esc_attr__( 'Kind', 'estasoft-handover-passport' ) . '">' . esc_html( (string) $def['label'] ) . '</td>';
+			echo '<td data-label="' . esc_attr__( 'Legal owner', 'estasoft-handover-passport' ) . '">' . ( '' === $owner || 'unknown' === $owner ? '<span class="estasoft-hp-gap">' . Icons::svg( 'warning', 14 ) . esc_html__( 'Unknown', 'estasoft-handover-passport' ) . '</span>' : esc_html( $owners[ $owner ] ?? $owner ) ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
+			echo '<td data-label="' . esc_attr__( 'Account holder', 'estasoft-handover-passport' ) . '">' . $gap( $holder ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $gap() escapes.
+			echo '<td data-label="' . esc_attr__( 'Who pays', 'estasoft-handover-passport' ) . '">' . $gap( $payer ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $gap() escapes.
+			echo '<td data-label="' . esc_attr__( 'Administrators', 'estasoft-handover-passport' ) . '">' . $gap( $admins ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $gap() escapes.
+			echo '<td data-label="' . esc_attr__( 'Transfer to the client', 'estasoft-handover-passport' ) . '">' . $this->transferCell( $record, $status, $transfer ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- transferCell() escapes its parts.
 		}
 		if ( 0 === $shown ) {
 			echo '<tr><td colspan="7">' . esc_html__( 'No transfer is waiting. Every asset owned by someone other than the client is marked Done or Not needed.', 'estasoft-handover-passport' ) . '</td></tr>';
 		}
 		echo '</tbody></table></div>';
+		View::cardEnd( '<span class="rowx">' . Icons::svg( 'warning', 14 ) . esc_html__( 'Not set: needs a decision', 'estasoft-handover-passport' ) . '</span>' );
 	}
 
 	/**
@@ -236,15 +250,17 @@ final class PeopleScreen extends Screen {
 			return;
 		}
 		$see = Capabilities::canSeeSensitive();
-		echo '<div class="estasoft-hp-register"><h2>' . esc_html__( 'Administrators on this site', 'estasoft-handover-passport' ) . '</h2>';
-		echo '<p class="description">' . esc_html__( 'Found by the last scan. Compare this list with the access entries above and remove anyone who should no longer have access.', 'estasoft-handover-passport' ) . '</p>';
-		echo '<table class="widefat striped estasoft-hp-table"><thead><tr><th scope="col">' . esc_html__( 'Name', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Email', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Registered', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
+		echo '<div class="estasoft-hp-below">';
+		View::cardStart( __( 'Administrators on this site', 'estasoft-handover-passport' ), '', true );
+		echo '<p class="estasoft-hp-cardnote">' . esc_html__( 'Found by the last scan. Compare this list with the access entries above and remove anyone who should no longer have access.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<div class="scr"><table class="tbl cards"><caption class="sr">' . esc_html__( 'Administrators on this site', 'estasoft-handover-passport' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Name', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Email', 'estasoft-handover-passport' ) . '</th><th scope="col">' . esc_html__( 'Registered', 'estasoft-handover-passport' ) . '</th></tr></thead><tbody>';
 		foreach ( (array) ( $users['admins'] ?? array() ) as $admin ) {
-			echo '<tr><td>' . esc_html( (string) $admin['name'] ) . '</td><td>' . ( $see ? esc_html( (string) $admin['email'] ) : '<em>' . esc_html__( 'Sensitive, hidden', 'estasoft-handover-passport' ) . '</em>' ) . '</td><td>' . esc_html( Dates::displayDate( Dates::datePart( (string) $admin['registered'] ) ) ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
+			echo '<tr><td class="t1" data-label="' . esc_attr__( 'Name', 'estasoft-handover-passport' ) . '"><b>' . esc_html( (string) $admin['name'] ) . '</b></td><td data-label="' . esc_attr__( 'Email', 'estasoft-handover-passport' ) . '">' . ( $see ? esc_html( (string) $admin['email'] ) : '<em>' . esc_html__( 'Sensitive, hidden', 'estasoft-handover-passport' ) . '</em>' ) . '</td><td data-label="' . esc_attr__( 'Registered', 'estasoft-handover-passport' ) . '">' . esc_html( Dates::displayDate( Dates::datePart( (string) $admin['registered'] ) ) ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both branches escape.
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
+		View::cardEnd();
 		if ( ! empty( $users['has_admin_user'] ) ) {
-			echo '<p class="estasoft-hp-gap">' . esc_html__( 'A user named "admin" exists. This is a common target for guessing attacks; consider renaming it.', 'estasoft-handover-passport' ) . '</p>';
+			echo '<div class="msg wn" role="status">' . Icons::svg( 'warning', 20 ) . '<div><b>' . esc_html__( 'A user named "admin" exists', 'estasoft-handover-passport' ) . '</b><span class="t2">' . esc_html__( 'This is a common target for guessing attacks; consider renaming it.', 'estasoft-handover-passport' ) . '</span></div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icons::svg() returns fixed markup.
 		}
 		echo '</div>';
 	}

@@ -745,6 +745,33 @@ body.estasoft-hp-screen {
 	line-height: 20px;
 }
 
+.estasoft-hp .msg > div {
+	flex: 1;
+	min-width: 0;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.estasoft-hp .msg > div > b {
+	display: block;
+}
+
+.estasoft-hp .msg > div > .t2 {
+	display: block;
+	color: inherit;
+}
+
+.estasoft-hp .msg > .btn {
+	flex: none;
+	align-self: center;
+	margin-inline-start: auto;
+}
+
+.estasoft-hp .msg > svg {
+	flex: none;
+	margin-block-start: 0;
+}
+
 .estasoft-hp .notice.notice-success,
 .estasoft-hp .msg.ok {
 	color: var(--okt);
@@ -921,6 +948,22 @@ body.estasoft-hp-screen {
 
 .estasoft-hp .g > .card {
 	margin-top: 0;
+}
+
+.estasoft-hp .estasoft-hp-below {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.estasoft-hp .estasoft-hp-gap {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.estasoft-hp .estasoft-hp-gap svg {
+	flex: none;
 }
 
 .estasoft-hp .tb input[type="search"] {
