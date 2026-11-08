@@ -13,10 +13,13 @@ use Estasoft\HandoverPassport\Admin\Admin;
 use Estasoft\HandoverPassport\Admin\SiteHealth;
 use Estasoft\HandoverPassport\Changes\ChangeCapture;
 use Estasoft\HandoverPassport\Changes\ChangeLog;
+use Estasoft\HandoverPassport\Cli\ExportCommand;
 use Estasoft\HandoverPassport\Cli\FindingsCommand;
 use Estasoft\HandoverPassport\Cli\RecordCommand;
 use Estasoft\HandoverPassport\Cli\RemindersCommand;
+use Estasoft\HandoverPassport\Cli\RestoreTestCommand;
 use Estasoft\HandoverPassport\Cli\ScanCommand;
+use Estasoft\HandoverPassport\Cli\SnapshotCommand;
 use Estasoft\HandoverPassport\Cli\StatusCommand;
 use Estasoft\HandoverPassport\Data\ChangeRepository;
 use Estasoft\HandoverPassport\Data\ExportRepository;
@@ -127,6 +130,9 @@ final class Plugin {
 			\WP_CLI::add_command( 'estasoft-passport status', new StatusCommand( $this ) );
 			\WP_CLI::add_command( 'estasoft-passport findings', new FindingsCommand( $this ) );
 			\WP_CLI::add_command( 'estasoft-passport record', new RecordCommand( $this ) );
+			\WP_CLI::add_command( 'estasoft-passport snapshot', new SnapshotCommand( $this ) );
+			\WP_CLI::add_command( 'estasoft-passport export', new ExportCommand( $this ) );
+			\WP_CLI::add_command( 'estasoft-passport restore-test', new RestoreTestCommand( $this ) );
 		}
 	}
 

@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Cli;
 
 use Estasoft\HandoverPassport\Domain\ValidationError;
+use Estasoft\HandoverPassport\Export\ExportRefused;
+use Estasoft\HandoverPassport\Export\Render\RenderFailed;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Security\SecretFound;
 
@@ -31,6 +33,25 @@ final class Access {
 	}
 
 	/**
+	 * Stop unless a named user may make packs. Used when the command stores something, so the change log names a person.
+	 */
+	public static function requireExporter(): void {
+		if ( get_current_user_id() < 1 || ! Capabilities::can( Capabilities::EXPORT ) ) {
+			\WP_CLI::error( 'This stores a snapshot, so name a user who may export, for example --user=admin. The change log records that person.' );
+		}
+	}
+
+	/**
+	 * Stop when --user names someone who may not make packs. Without --user the command runs as a task, which is how a host
+	 * job calls it; such a run can never include Sensitive records.
+	 */
+	public static function allowExporter(): void {
+		if ( get_current_user_id() > 0 && ! Capabilities::can( Capabilities::EXPORT ) ) {
+			\WP_CLI::error( 'That user may not make packs. Name someone who holds the export capability, or leave out --user.' );
+		}
+	}
+
+	/**
 	 * Run a change and turn a refusal into a plain error. The submitted value is never repeated.
 	 *
 	 * @template T
@@ -43,6 +64,10 @@ final class Access {
 		} catch ( ValidationError $error ) {
 			\WP_CLI::error( $error->getMessage() );
 		} catch ( SecretFound $error ) {
+			\WP_CLI::error( $error->getMessage() );
+		} catch ( ExportRefused $error ) {
+			\WP_CLI::error( $error->getMessage() );
+		} catch ( RenderFailed $error ) {
 			\WP_CLI::error( $error->getMessage() );
 		}
 		return null;

@@ -39,9 +39,23 @@ wp estasoft-passport record verify 7 --user=admin
 wp estasoft-passport record renew 7 2027-03-01 --user=admin
 
 wp estasoft-passport reminders run --dry-run
+
+wp estasoft-passport snapshot create --name="Handover to Acme, May 2027" --pack=client --user=admin
+wp estasoft-passport snapshot list
+wp estasoft-passport snapshot verify 3                # exit 1 when the stored content no longer matches its hash
+wp estasoft-passport snapshot compare 3 live
+
+wp estasoft-passport export client --format=pdf --file=/home/me/client-pack.pdf
+wp estasoft-passport export technical --format=md > technical.md
+wp estasoft-passport export --snapshot=3 --format=html --file=/tmp/snapshot-3.html
+wp estasoft-passport export full --format=json --file=/private/full.json --include-sensitive --user=admin
+
+wp estasoft-passport restore-test add --result=pass --duration=42 --scope=both --place=staging --who="Nightly job" --user=ci
 ```
 
-Commands that change the Passport need `--user` with someone who may edit it, so the change log names that person. Reading needs no user, and without one nothing Sensitive is shown.
+Commands that change the Passport need `--user` with someone who may edit it, so the change log names that person; `snapshot create` needs someone who may export. Reading needs no user, and without one nothing Sensitive is shown.
+
+`export` never puts a Sensitive record in a file unless you add `--include-sensitive` and name a user who may see Sensitive records; the Full internal pack always needs both. `pdf` and `csv` are written to `--file`; the text formats print to standard output when `--file` is left out. A file is not replaced without `--force`, is written readable by its owner only, and you are warned if it lands inside the WordPress folder.
 
 The REST API lives under `estasoft-passport/v1`. Every route checks a capability, and Sensitive records and fields stay hidden from people without the Sensitive capability. See [docs/REST-API.md](docs/REST-API.md).
 
