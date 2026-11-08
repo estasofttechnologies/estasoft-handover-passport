@@ -98,4 +98,22 @@ final class ReminderMessageTest extends TestCase {
 		$this->assertStringContainsString( 'Test email', $message['subject'] );
 		$this->assertStringContainsString( 'https://acme.example', $message['body'] );
 	}
+
+	public function test_the_copy_email_says_it_is_not_encrypted_and_why_it_came(): void {
+		$base = array( 'site' => 'Acme Bakery', 'site_url' => 'https://acme.example', 'date' => '2026-11-08', 'page' => 'https://acme.example/wp-admin/admin.php?page=x' );
+		$snap = ReminderMessage::copy( $base + array( 'why' => 'snapshot' ) );
+		$this->assertStringContainsString( 'Emergency sheet, 2026-11-08', $snap['subject'] );
+		$this->assertStringContainsString( 'Acme Bakery', $snap['subject'] );
+		$this->assertStringContainsString( 'Email is not encrypted', $snap['body'] );
+		$this->assertStringContainsString( 'holds no record marked Sensitive', $snap['body'] );
+		$this->assertStringContainsString( 'a new snapshot of the Passport was made', $snap['body'] );
+		$this->assertStringContainsString( 'the monthly copy is on', ReminderMessage::copy( $base + array( 'why' => 'monthly' ) )['body'] );
+		$this->assertStringContainsString( 'someone pressed Send a copy now', ReminderMessage::copy( $base + array( 'why' => 'manual' ) )['body'] );
+		$this->assertStringContainsString( 'someone pressed Send a copy now', ReminderMessage::copy( $base + array( 'why' => 'anything else' ) )['body'], 'an unknown reason falls back to the neutral one' );
+	}
+
+	public function test_a_site_name_cannot_add_a_header_to_the_copy_email(): void {
+		$message = ReminderMessage::copy( array( 'site' => "Evil\r\nBcc: x@example.test", 'site_url' => 'https://a.example', 'date' => '2026-11-08', 'why' => 'manual', 'page' => 'https://a.example/' ) );
+		$this->assertSame( 0, preg_match( '/[\r\n]/', $message['subject'] ) );
+	}
 }

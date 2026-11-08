@@ -21,7 +21,7 @@ final class CheckLimiter {
 	/**
 	 * Take a turn: true when the subject may be checked now, false when it was checked within the last minute.
 	 *
-	 * @param string $kind    dns, ssl, url or mail.
+	 * @param string $kind    dns, ssl, url, mail or copy.
 	 * @param string $subject Domain, host or record ID.
 	 */
 	public static function take( string $kind, string $subject ): bool {
@@ -36,7 +36,7 @@ final class CheckLimiter {
 	/**
 	 * Seconds until the subject may be checked again (SEC-9), at least 1 while the wait lasts and 0 once it is over.
 	 *
-	 * @param string $kind    dns, ssl, url or mail.
+	 * @param string $kind    dns, ssl, url, mail or copy.
 	 * @param string $subject Domain, host, record ID or address.
 	 */
 	public static function secondsLeft( string $kind, string $subject ): int {

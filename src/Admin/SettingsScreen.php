@@ -9,7 +9,9 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Admin;
 
+use Estasoft\HandoverPassport\Checks\CheckLimiter;
 use Estasoft\HandoverPassport\Domain\LeadTimes;
+use Estasoft\HandoverPassport\Export\EmailedCopy;
 use Estasoft\HandoverPassport\Install\Schedule;
 use Estasoft\HandoverPassport\Security\Capabilities;
 use Estasoft\HandoverPassport\Support\Dates;
@@ -25,6 +27,7 @@ final class SettingsScreen extends Screen {
 	public const SLUG        = 'estasoft-passport-settings';
 	public const ACTION      = 'estasoft_hp_save_settings';
 	public const MAIL_ACTION = 'estasoft_hp_test_mail';
+	public const COPY_ACTION = 'estasoft_hp_send_copy';
 
 	/**
 	 * Attach the save handler.
@@ -32,6 +35,7 @@ final class SettingsScreen extends Screen {
 	public function register(): void {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handleSave' ) );
 		add_action( 'admin_post_' . self::MAIL_ACTION, array( $this, 'handleTestMail' ) );
+		add_action( 'admin_post_' . self::COPY_ACTION, array( $this, 'handleSendCopy' ) );
 	}
 
 	/**
@@ -134,6 +138,60 @@ final class SettingsScreen extends Screen {
 		if ( 'reminders' === $tab ) {
 			$this->deliveryPanel();
 		}
+		if ( 'privacy' === $tab ) {
+			$this->copyPanel();
+		}
+	}
+
+	/**
+	 * The Send a copy now button, a form of its own after the settings form (EXP-10).
+	 */
+	private function copyPanel(): void {
+		$copy = $this->plugin->emailedCopy();
+		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Send a copy now', 'estasoft-handover-passport' ) . '</h2>';
+		$state = $copy->state();
+		echo '<p>' . esc_html(
+			'' === $state['sent_at']
+				? __( 'No copy has been emailed yet.', 'estasoft-handover-passport' )
+				/* translators: %s: date and time of the last copy. */
+				: sprintf( __( 'The last copy was emailed on %s.', 'estasoft-handover-passport' ), Dates::display( $state['sent_at'], true ) )
+		) . '</p>';
+		$warning = $copy->warning();
+		if ( '' !== $warning ) {
+			echo '<p>' . esc_html( $warning ) . '</p>';
+		}
+		if ( $copy->active() && Capabilities::can( Capabilities::EXPORT ) ) {
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::COPY_ACTION ) . '">';
+			Form::nonce( self::COPY_ACTION );
+			echo '<p><button type="submit" class="button">' . esc_html__( 'Send a copy now', 'estasoft-handover-passport' ) . '</button></p></form>';
+		} else {
+			echo '<p class="description">' . esc_html__( 'Save the settings above with the emailed copy switched on and an address listed, and the button appears here.', 'estasoft-handover-passport' ) . '</p>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Email the Emergency sheet now.
+	 */
+	public function handleSendCopy(): void {
+		if ( ! Capabilities::can( Capabilities::CONFIGURE ) || ! Capabilities::can( Capabilities::EXPORT ) ) {
+			wp_die( esc_html__( 'You do not have permission to send a copy.', 'estasoft-handover-passport' ), '', array( 'response' => 403 ) );
+		}
+		check_admin_referer( self::COPY_ACTION );
+		$result = $this->plugin->emailedCopy()->send( 'manual' );
+		$notice = array(
+			'sent'     => 'copy_sent',
+			'wait'     => 'copy_wait',
+			'nobody'   => 'copy_nobody',
+			'disabled' => 'copy_nobody',
+			'paused'   => 'copy_paused',
+		)[ $result['state'] ] ?? 'copy_failed';
+		$args   = array( 'page' => self::SLUG, 'tab' => 'privacy', 'estasoft_hp_notice' => $notice );
+		if ( 'copy_wait' === $notice ) {
+			$args['estasoft_hp_wait'] = CheckLimiter::secondsLeft( 'copy', 'sheet' );
+		}
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/**
@@ -323,7 +381,7 @@ final class SettingsScreen extends Screen {
 			echo '<li>' . esc_html( $line ) . '</li>';
 		}
 		echo '</ul><p>' . esc_html__( 'Nothing is sent to ESTASOFT TECHNOLOGIES or to any other outside party. Scans read local data only.', 'estasoft-handover-passport' ) . '</p>';
-		echo '<p>' . esc_html__( 'Every record stays in this site\'s own database. Data leaves it only in a file someone downloads, or in a reminder or digest email you have switched on.', 'estasoft-handover-passport' ) . '</p>';
+		echo '<p>' . esc_html__( 'Every record stays in this site\'s own database. Data leaves it only in a file someone downloads, or in an email you have switched on: reminders, the weekly summary, the weekly address check or the emailed copy of the Emergency sheet.', 'estasoft-handover-passport' ) . '</p>';
 		echo '<p>' . wp_kses(
 			sprintf(
 				/* translators: 1: link to Export Personal Data, 2: link to Erase Personal Data. */
@@ -333,6 +391,15 @@ final class SettingsScreen extends Screen {
 			),
 			array( 'a' => array( 'href' => array() ) )
 		) . '</p></div>';
+
+		$copy = $this->plugin->emailedCopy()->config();
+		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Emailed copy of the Emergency sheet', 'estasoft-handover-passport' ) . '</legend>';
+		echo '<p class="description">' . esc_html__( 'Off by default. When on, the one-page Emergency sheet is emailed as a PDF to the addresses below, so a copy exists outside this site. Email is not encrypted. The sheet holds no record marked Sensitive and never a password, key or token. If an email cannot be sent, the Overview says so and Passport tries again once a day, up to three more times.', 'estasoft-handover-passport' ) . '</p>';
+		Form::checkbox( 'copy_enabled', __( 'Email the Emergency sheet', 'estasoft-handover-passport' ), $copy['enabled'] );
+		Form::row( 'copy_addresses', array( 'type' => 'lines', 'label' => __( 'Who receives it (one address per line, up to five)', 'estasoft-handover-passport' ), 'help' => __( 'Use an inbox that someone other than the site\'s own users can reach, such as the agency\'s shared mailbox.', 'estasoft-handover-passport' ) ), $copy['addresses'] );
+		Form::checkbox( 'copy_on_snapshot', __( 'Send one whenever a snapshot is made', 'estasoft-handover-passport' ), $copy['on_snapshot'] );
+		Form::checkbox( 'copy_monthly', __( 'Send one every month', 'estasoft-handover-passport' ), $copy['monthly'] );
+		echo '</fieldset>';
 
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'How long things are kept', 'estasoft-handover-passport' ) . '</legend>';
 		Form::row( 'ret_changes_months', array( 'type' => 'int', 'label' => __( 'Change log (months)', 'estasoft-handover-passport' ) ), $retention['changes_months'] ?? 24 );
@@ -402,6 +469,27 @@ final class SettingsScreen extends Screen {
 			Capabilities::applyGrants( $grants );
 			$changed[] = __( 'who can do what', 'estasoft-handover-passport' );
 		} elseif ( 'privacy' === $tab ) {
+			$copy_to = array();
+			foreach ( Str::split( '/\R/', Request::postedTextarea( 'copy_addresses' ) ) as $line ) {
+				$address = sanitize_email( $line );
+				if ( '' !== $address && is_email( $address ) ) {
+					$copy_to[ strtolower( $address ) ] = $address;
+				}
+			}
+			$copy_was_on = $this->plugin->emailedCopy()->config()['enabled'];
+			$settings->update(
+				array(
+					'emailed_copy' => array(
+						'enabled'     => '1' === Request::post( 'copy_enabled' ),
+						'addresses'   => array_values( array_slice( $copy_to, 0, EmailedCopy::MAX_ADDRESSES ) ),
+						'on_snapshot' => '1' === Request::post( 'copy_on_snapshot' ),
+						'monthly'     => '1' === Request::post( 'copy_monthly' ),
+					),
+				)
+			);
+			if ( ! $copy_was_on && '1' === Request::post( 'copy_enabled' ) ) {
+				$this->plugin->emailedCopy()->startMonth();
+			}
 			$settings->set( 'delete_on_uninstall', '1' === Request::post( 'delete_on_uninstall' ) );
 			$settings->update(
 				array(

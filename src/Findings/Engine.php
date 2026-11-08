@@ -9,7 +9,9 @@ declare(strict_types=1);
 
 namespace Estasoft\HandoverPassport\Findings;
 
+use Closure;
 use Estasoft\HandoverPassport\Data\FindingRepository;
+use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Support\Clock;
 use Throwable;
 
@@ -26,9 +28,28 @@ final class Engine {
 	/**
 	 * Constructor.
 	 *
-	 * @param FindingRepository $findings Findings table.
+	 * @param FindingRepository $findings  Stored findings.
+	 * @param Closure|null      $sensitive Takes a list of record IDs and returns the ones marked Sensitive; null reads the database.
 	 */
-	public function __construct( private FindingRepository $findings ) {}
+	public function __construct( private FindingRepository $findings, private ?Closure $sensitive = null ) {}
+
+	/**
+	 * A finding as the hooks get it: for a record marked Sensitive, the values that could name it are left out.
+	 *
+	 * @param array<string, mixed> $finding Finding as stored.
+	 * @return array<string, mixed>
+	 */
+	private function forHook( array $finding ): array {
+		if ( 'item' !== (string) ( $finding['subject_type'] ?? '' ) || (int) ( $finding['subject_id'] ?? 0 ) <= 0 ) {
+			return $finding;
+		}
+		$id     = (int) $finding['subject_id'];
+		$marked = null === $this->sensitive ? ( new ItemRepository() )->sensitiveIds( array( $id ) ) : ( $this->sensitive )( array( $id ) );
+		if ( in_array( $id, array_map( 'intval', (array) $marked ), true ) ) {
+			$finding['message_values'] = array();
+		}
+		return $finding;
+	}
 
 	/**
 	 * Run every rule once.
@@ -87,11 +108,11 @@ final class Engine {
 			$this->findings->update( (int) $row['id'], array( 'state' => FindingRepository::RESOLVED, 'resolved_at' => $now, 'snoozed_until' => null ) );
 			++$summary['resolved'];
 			/**
-			 * Fires when a finding stops being true.
+			 * Fires when a finding stops being true. For a finding about a record marked Sensitive, message_values is empty.
 			 *
 			 * @param array<string, mixed> $finding Finding as stored.
 			 */
-			do_action( 'estasoft_hp_finding_resolved', array_merge( $row, array( 'state' => FindingRepository::RESOLVED, 'resolved_at' => $now ) ) );
+			do_action( 'estasoft_hp_finding_resolved', $this->forHook( array_merge( $row, array( 'state' => FindingRepository::RESOLVED, 'resolved_at' => $now ) ) ) );
 		}
 
 		return $summary;
@@ -126,11 +147,11 @@ final class Engine {
 			$id  = $this->findings->insert( $new );
 			++$summary['opened'];
 			/**
-			 * Fires when a new finding appears.
+			 * Fires when a new finding appears. For a finding about a record marked Sensitive, message_values is empty.
 			 *
 			 * @param array<string, mixed> $finding Finding as stored.
 			 */
-			do_action( 'estasoft_hp_finding_opened', array_merge( $new, array( 'id' => $id ) ) );
+			do_action( 'estasoft_hp_finding_opened', $this->forHook( array_merge( $new, array( 'id' => $id ) ) ) );
 			return;
 		}
 

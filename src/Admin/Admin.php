@@ -78,7 +78,7 @@ final class Admin {
 	public function menu(): void {
 		$overview = new OverviewScreen( $this->plugin );
 
-		$this->screen_hooks[] = (string) add_menu_page(
+		$top                  = (string) add_menu_page(
 			__( 'Passport', 'estasoft-handover-passport' ),
 			__( 'Passport', 'estasoft-handover-passport' ),
 			Capabilities::VIEW,
@@ -87,7 +87,8 @@ final class Admin {
 			'dashicons-clipboard',
 			80
 		);
-		$this->screen_hooks[] = (string) add_submenu_page(
+		$this->screen_hooks[] = $top;
+		$sub                  = (string) add_submenu_page(
 			self::MENU_SLUG,
 			__( 'Overview', 'estasoft-handover-passport' ),
 			__( 'Overview', 'estasoft-handover-passport' ),
@@ -95,6 +96,8 @@ final class Admin {
 			self::MENU_SLUG,
 			array( $overview, 'render' )
 		);
+		$this->screen_hooks[] = $sub;
+		Help::attach( $sub, self::MENU_SLUG );
 
 		$this->screens = array(
 			new SetupScreen( $this->plugin ),
@@ -107,7 +110,7 @@ final class Admin {
 			new SettingsScreen( $this->plugin ),
 		);
 		foreach ( $this->screens as $screen ) {
-			$this->screen_hooks[] = (string) add_submenu_page(
+			$hook                 = (string) add_submenu_page(
 				self::MENU_SLUG,
 				$screen->title(),
 				$screen->title(),
@@ -115,6 +118,8 @@ final class Admin {
 				$screen->slug(),
 				array( $screen, 'render' )
 			);
+			$this->screen_hooks[] = $hook;
+			Help::attach( $hook, $screen->slug() );
 		}
 	}
 

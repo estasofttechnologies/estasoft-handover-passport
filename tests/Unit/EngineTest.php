@@ -230,4 +230,49 @@ final class EngineTest extends UnitTestCase {
 		$this->assertSame( 'R|person|3|', Candidate::row( 'person', 3, Level::INFO )->identity( 'R' ) );
 		$this->assertNotSame( Candidate::item( 5, Level::INFO )->identity( 'R' ), Candidate::item( 6, Level::INFO )->identity( 'R' ) );
 	}
+
+	public function test_a_hook_does_not_get_values_that_name_a_sensitive_record(): void {
+		$rule = new Rule(
+			'HP-TST-002',
+			'test',
+			Level::WORTH,
+			false,
+			'A rule about records',
+			array( 'page' => 'x', 'tab' => '' ),
+			static fn( Context $c ): array => array(
+				Candidate::row( 'item', 7, Level::WORTH, array( 'name' => 'Secret Plugin' ) ),
+				Candidate::row( 'item', 8, Level::WORTH, array( 'name' => 'Plain Plugin' ) ),
+			),
+			static fn( array $v ): string => 'Record ' . $v['name']
+		);
+		$GLOBALS['estasoft_hp_test_filters'] = array( 'estasoft_hp_rules' => array( static fn() => array( $rule ) ) );
+		$engine = new Engine( $this->repo, static fn( array $ids ): array => array_values( array_intersect( $ids, array( 7 ) ) ) );
+
+		Clock::freeze( '2026-11-08 10:00:00' );
+		$engine->run( new Context( '2026-11-08', '2026-11-08 10:00:00' ) );
+		$opened = array();
+		foreach ( $GLOBALS['estasoft_hp_test_actions'] as $action ) {
+			if ( 'estasoft_hp_finding_opened' === $action[0] ) {
+				$opened[ (int) $action[1][0]['subject_id'] ] = $action[1][0];
+			}
+		}
+		$this->assertCount( 2, $opened );
+		$this->assertSame( array(), $opened[7]['message_values'], 'Nothing that could name the Sensitive record' );
+		$this->assertSame( array( 'name' => 'Plain Plugin' ), $opened[8]['message_values'], 'An ordinary record keeps its values' );
+
+		// It stops being true: the resolved hook is redacted the same way.
+		$GLOBALS['estasoft_hp_test_actions'] = array();
+		$GLOBALS['estasoft_hp_test_filters'] = array( 'estasoft_hp_rules' => array( static fn() => array( new Rule( 'HP-TST-002', 'test', Level::WORTH, false, 'A rule about records', array( 'page' => 'x', 'tab' => '' ), static fn( Context $c ): array => array(), static fn( array $v ): string => '' ) ) ) );
+		Clock::freeze( '2026-11-09 10:00:00' );
+		$engine->run( new Context( '2026-11-09', '2026-11-09 10:00:00' ) );
+		$resolved = array();
+		foreach ( $GLOBALS['estasoft_hp_test_actions'] as $action ) {
+			if ( 'estasoft_hp_finding_resolved' === $action[0] ) {
+				$resolved[ (int) $action[1][0]['subject_id'] ] = $action[1][0];
+			}
+		}
+		$this->assertCount( 2, $resolved );
+		$this->assertSame( array(), $resolved[7]['message_values'] );
+		$this->assertSame( array( 'name' => 'Plain Plugin' ), $resolved[8]['message_values'] );
+	}
 }

@@ -78,17 +78,18 @@ final class ExportService {
 	 * @param string        $profile_key Profile key.
 	 * @param string        $format      Format key or "print".
 	 * @param ExportOptions $options     Rights and ticked Sensitive records.
+	 * @param bool          $emailed     Whether the file is sent by email, which the export log notes.
 	 * @throws ValidationError When the profile or format is not known.
 	 * @throws ExportRefused   When the person may not make this pack.
 	 * @throws \Estasoft\HandoverPassport\Security\SecretFound When a value looks like a secret.
 	 * @throws Render\RenderFailed When the file cannot be made.
 	 */
-	public function make( string $profile_key, string $format, ExportOptions $options ): ExportResult {
+	public function make( string $profile_key, string $format, ExportOptions $options, bool $emailed = false ): ExportResult {
 		$profile = $this->profile( $profile_key );
 		$this->assertFormat( $format );
 		$version = defined( 'ESTASOFT_HP_VERSION' ) ? (string) ESTASOFT_HP_VERSION : '';
 		$content = ( new ContentBuilder( $this->plugin->secretGuard(), $version ) )->build( $profile, ( new ExportDataLoader( $this->plugin ) )->load(), $options );
-		return $this->deliver( $content, hash( 'sha256', Json::canonical( $content ) ), $profile->label, $profile->key, 0, $format, $options );
+		return $this->deliver( $content, hash( 'sha256', Json::canonical( $content ) ), $profile->label, $profile->key, 0, $format, $options, $emailed );
 	}
 
 	/**
@@ -132,9 +133,10 @@ final class ExportService {
 	 * @param int                  $snapshot Snapshot ID or 0.
 	 * @param string               $format   Format key or "print".
 	 * @param ExportOptions        $options  Rights.
+	 * @param bool                 $emailed  Whether the file is sent by email.
 	 * @throws Render\RenderFailed When the file cannot be made.
 	 */
-	private function deliver( array $content, string $hash, string $label, string $profile, int $snapshot, string $format, ExportOptions $options ): ExportResult {
+	private function deliver( array $content, string $hash, string $label, string $profile, int $snapshot, string $format, ExportOptions $options, bool $emailed = false ): ExportResult {
 		$style = $this->style();
 		if ( self::PRINT === $format ) {
 			$renderer  = new HtmlRenderer( HtmlRenderer::MODE_PRINT );
@@ -158,7 +160,7 @@ final class ExportService {
 				'format'      => $format,
 				'size'        => $result->size(),
 				'hash'        => $result->hash(),
-				'emailed'     => 0,
+				'emailed'     => $emailed ? 1 : 0,
 			)
 		);
 		/**

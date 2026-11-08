@@ -240,10 +240,18 @@ class ReminderService {
 	 * @param array<int, string> $recipients Addresses.
 	 * @param string             $subject    Subject.
 	 * @param string             $body       Body.
+	 * @param array<int, string> $attachments Paths of files to attach.
 	 * @return int Messages accepted for delivery.
 	 */
-	public function notify( array $recipients, string $subject, string $body ): int {
-		return $this->mailEach( $this->cleanAddresses( $recipients ), $subject, $body );
+	public function notify( array $recipients, string $subject, string $body, array $attachments = array() ): int {
+		return $this->mailEach( $this->cleanAddresses( $recipients ), $subject, $body, $attachments );
+	}
+
+	/**
+	 * The short, address-free error the mailer gave on the last send, or an empty string.
+	 */
+	public function lastMailError(): string {
+		return $this->mail_error;
 	}
 
 	/**
@@ -376,9 +384,10 @@ class ReminderService {
 	 * @param array<int, string> $recipients Addresses.
 	 * @param string             $subject    Subject.
 	 * @param string             $body       Body.
+	 * @param array<int, string> $attachments Paths of files to attach.
 	 * @return int Messages accepted for delivery.
 	 */
-	private function mailEach( array $recipients, string $subject, string $body ): int {
+	private function mailEach( array $recipients, string $subject, string $body, array $attachments = array() ): int {
 		$this->mail_error = '';
 		$capture          = function ( $error ): void {
 			if ( is_wp_error( $error ) && '' === $this->mail_error ) {
@@ -388,7 +397,7 @@ class ReminderService {
 		add_action( 'wp_mail_failed', $capture );
 		$sent = 0;
 		foreach ( $recipients as $address ) {
-			if ( wp_mail( $address, $subject, $body, array( 'Content-Type: text/plain; charset=UTF-8' ) ) ) {
+			if ( wp_mail( $address, $subject, $body, array( 'Content-Type: text/plain; charset=UTF-8' ), $attachments ) ) {
 				++$sent;
 			}
 		}

@@ -33,6 +33,7 @@ use Estasoft\HandoverPassport\Data\RunbookRepository;
 use Estasoft\HandoverPassport\Data\SnapshotRepository;
 use Estasoft\HandoverPassport\Data\ScanRepository;
 use Estasoft\HandoverPassport\Data\TestRepository;
+use Estasoft\HandoverPassport\Export\EmailedCopy;
 use Estasoft\HandoverPassport\Export\ExportService;
 use Estasoft\HandoverPassport\Export\PackCopies;
 use Estasoft\HandoverPassport\Findings\FindingService;
@@ -119,6 +120,7 @@ final class Plugin {
 		add_action( Schedule::REMINDERS, array( $this, 'runReminders' ) );
 		add_action( Schedule::DIGEST, array( $this, 'runDigest' ) );
 		add_action( Schedule::URLS, array( $this, 'runWeeklyUrls' ) );
+		add_action( 'estasoft_hp_snapshot_created', array( $this, 'onSnapshotCreated' ) );
 		add_action( 'estasoft_hp_scan_completed', array( $this->copyGuard(), 'check' ), 5, 0 );
 		add_action( 'estasoft_hp_record_saved', array( $this, 'queueFindings' ), 20, 0 );
 		add_action( 'estasoft_hp_scan_completed', array( $this, 'queueFindings' ), 20, 0 );
@@ -179,6 +181,21 @@ final class Plugin {
 	public function runReminders(): void {
 		$this->reminders()->run();
 		$this->findings()->run();
+		$this->emailedCopy()->daily();
+	}
+
+	/**
+	 * A snapshot was made: email the Emergency sheet if copies are on.
+	 */
+	public function onSnapshotCreated(): void {
+		$this->emailedCopy()->onSnapshot();
+	}
+
+	/**
+	 * The optional emailed copy of the Emergency sheet.
+	 */
+	public function emailedCopy(): EmailedCopy {
+		return $this->shared( 'emailed_copy', fn(): EmailedCopy => new EmailedCopy( $this ) );
 	}
 
 	/**

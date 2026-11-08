@@ -254,4 +254,54 @@ final class ReminderMessage {
 			),
 		);
 	}
+
+	/**
+	 * The email that carries the Emergency sheet (EXP-10).
+	 *
+	 * @param array{site: string, site_url: string, date: string, why: string, page: string} $p Values; why is "snapshot", "monthly" or "manual".
+	 * @return array{subject: string, body: string}
+	 */
+	public static function copy( array $p ): array {
+		$subject = sprintf(
+			/* translators: 1: site name, 2: date. */
+			__( '[%1$s] Emergency sheet, %2$s', 'estasoft-handover-passport' ),
+			self::line( $p['site'] ),
+			self::line( $p['date'] )
+		);
+		$why = array(
+			'snapshot' => __( 'a new snapshot of the Passport was made', 'estasoft-handover-passport' ),
+			'monthly'  => __( 'the monthly copy is on', 'estasoft-handover-passport' ),
+			'manual'   => __( 'someone pressed Send a copy now', 'estasoft-handover-passport' ),
+		);
+
+		$lines   = array();
+		$lines[] = __( 'Hello,', 'estasoft-handover-passport' );
+		$lines[] = '';
+		$lines[] = sprintf(
+			/* translators: 1: site name, 2: site address, 3: date. */
+			__( 'Attached is the Emergency sheet of %1$s (%2$s) as it stood on %3$s: who to call, who holds the accounts, where the backups are and what to check first.', 'estasoft-handover-passport' ),
+			self::line( $p['site'] ),
+			self::line( $p['site_url'] ),
+			self::line( $p['date'] )
+		);
+		$lines[] = '';
+		$lines[] = __( 'Keep it where someone other than you can find it on a bad day, for example in the agency drive or the client\'s own records.', 'estasoft-handover-passport' );
+		$lines[] = '';
+		$lines[] = __( 'Email is not encrypted. The sheet holds no record marked Sensitive, and Passport never stores a password, key or token. Delete this message if it is no longer needed.', 'estasoft-handover-passport' );
+		$lines[] = '';
+		$lines[] = sprintf(
+			/* translators: %s: the reason, for example "a new snapshot of the Passport was made". */
+			__( 'You are getting this because %s.', 'estasoft-handover-passport' ),
+			$why[ $p['why'] ] ?? $why['manual']
+		);
+		$lines[] = sprintf(
+			/* translators: %s: address of a screen. */
+			__( 'The person who looks after the site can change who receives it: %s', 'estasoft-handover-passport' ),
+			self::line( $p['page'] )
+		);
+		$lines[] = '';
+		$lines[] = __( 'Estasoft Handover Passport', 'estasoft-handover-passport' );
+
+		return array( 'subject' => $subject, 'body' => implode( "\n", $lines ) );
+	}
 }

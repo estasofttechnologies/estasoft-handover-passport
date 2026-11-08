@@ -50,12 +50,16 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - A leaver checklist for each active person on the People tab (Offboard): the systems in the access register where they have access, the matching WordPress account, the assets they hold, pay for or administer, their roles and what to do in the Passport, as a page to read and print. It changes nothing, and Sensitive entries stay hidden from people without the Sensitive capability.
 - "Since the handover" on the Overview: how many records were added, removed or changed since the newest snapshot somebody acknowledged, with a link to the comparison. Records marked Sensitive and the findings and checklist worked out from the records are not counted.
 - An optional weekly check of the critical addresses (off by default, switched on in Settings, General): every Sunday morning this server asks each address once and sends one email to the reminder recipients if any fails. It skips addresses on another host, pauses on a copy of the site, keeps a Sensitive address's name out of the email and says plainly that it is not an uptime monitor. The Safety screen shows when it last ran.
+- A Help tab on every Passport screen with a plain description of the screen, one worked example and a note on where the data lives.
+- An optional emailed copy of the Emergency sheet (off by default, switched on in Settings, Privacy and data): the one-page sheet is emailed as a PDF to up to five addresses when a snapshot is made and once a month. The message says email is not encrypted; the sheet is made without Sensitive rights, so it holds no Sensitive record. A failure is shown on the Overview and tried again once a day, up to three more times. Send a copy now tests it. Nothing is sent from a copy of the site. The export log marks emailed files and automatic ones.
+- Hook documentation in `docs/HOOKS.md`: every action and filter with its arguments and an example.
 
 ### Fixed
+- The finding hooks (`estasoft_hp_finding_opened`, `estasoft_hp_finding_resolved`) no longer pass the values that name a record marked Sensitive.
 - The tables could not be created on MySQL and MariaDB: `sensitive` is a reserved word there. The column is now written with backticks in the schema and in every query, and a unit test refuses any column named with a reserved word without quotes.
 
 ### Changed
-- The monthly emailed-copy event is no longer scheduled: nothing used it. A leftover event from an earlier build is removed.
+- The monthly copy is sent by the daily run, once in each calendar month, instead of by an event of its own. A leftover event from an earlier build is removed.
 - Scanning is limited to once a minute from the Scan now button, WP-CLI and the REST API alike, and the notices for scans, checks and test emails say how many seconds are left.
 - `wp estasoft-passport status` leaves Sensitive records out of its counts unless `--user` holds the Sensitive capability.
 - The change log hides the names and values of Sensitive records from people without the capability, including entries written before the record was marked Sensitive.

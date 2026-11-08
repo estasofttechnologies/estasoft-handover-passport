@@ -26,6 +26,7 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 * Refuses to store passwords, keys and tokens in any field, so the Passport is safe to share.
 * Checks the record against the site and lists findings in plain words, each stating a fact and a date. A finding never says "safe", "secure" or "compliant".
 * Keeps restore tests, runbooks (with twelve ready-made templates, a version history and a large-type print view) and a list of critical addresses, so the day something breaks is not the first day anyone looks for the steps.
+* Can email the one-page Emergency sheet as a PDF to a few addresses you choose when a snapshot is made and once a month, so a copy exists outside the site. Off until you switch it on; the sheet never holds a Sensitive record.
 * Lets you rehearse a runbook as a drill: each step gets a Done button that keeps the time and the person, followed by an after-restore checklist built from your critical addresses. A drill of a restore runbook can be kept as a restore test.
 * Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server". An optional weekly check asks the critical addresses every Sunday and sends one email when one fails; it is off until you switch it on and it is not an uptime monitor.
 * Emails reminders before licence, domain, hosting and service dates, and can send a short weekly summary. Each reminder goes once per date and lead time.
@@ -96,6 +97,8 @@ The plugin stores a record of the site and the names and work email addresses of
 The plugin joins the WordPress tools under Tools > Export Personal Data and Tools > Erase Personal Data. For an email address, the export lists the person's entry in the directory, the records that name them, the handover acknowledgements that carry their name, their entry among the administrators found by the scan and the changes they made. The erase replaces the person with "Former contact" and keeps the row, so a role or a record that pointed at them still shows that someone held it. It cannot change saved snapshots, which are fixed by their checksum, or free text in records, so it tells you what remains and how to deal with it.
 
 Reminder emails go to the addresses you list and to the account holder and payer you enter on a record. The email names the record and its date, never a password or key, and a record marked Sensitive is not named in the email. The log of sent reminders keeps the date, the record and the number of recipients, not their addresses.
+
+The emailed copy of the Emergency sheet is off until you switch it on and list at least one address. It then emails the one-page sheet as a PDF to those addresses when a snapshot is made and once a month. Email is not encrypted, so the sheet is made without any record marked Sensitive and never holds a password, key or token. The export log notes each emailed file.
 
 == Changelog ==
 

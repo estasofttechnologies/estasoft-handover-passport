@@ -48,7 +48,7 @@ final class View {
 		if ( '' === $key || ! isset( $map[ $key ] ) ) {
 			return;
 		}
-		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'scan_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid', 'renew_invalid', 'mail_failed', 'mail_invalid', 'mail_wait', 'checklist_invalid', 'snapshot_invalid', 'snapshot_mismatch', 'snapshot_confirm', 'snapshot_gone', 'ack_invalid', 'confirm_expired', 'export_refused', 'pack_copy_invalid', 'notes_invalid', 'changes_csv_toolarge', 'setup_invalid' ), true ) ? 'notice-error' : 'notice-success';
+		$class = in_array( $key, array( 'scan_failed', 'denied', 'finding_reason', 'finding_secret', 'finding_gone', 'check_failed', 'check_wait', 'scan_wait', 'check_refused', 'url_failed', 'urls_failed', 'dns_failed', 'dns_invalid', 'ssl_failed', 'ssl_refused', 'test_invalid', 'runbook_invalid', 'renew_invalid', 'mail_failed', 'mail_invalid', 'mail_wait', 'copy_failed', 'copy_wait', 'copy_nobody', 'copy_paused', 'checklist_invalid', 'snapshot_invalid', 'snapshot_mismatch', 'snapshot_confirm', 'snapshot_gone', 'ack_invalid', 'confirm_expired', 'export_refused', 'pack_copy_invalid', 'notes_invalid', 'changes_csv_toolarge', 'setup_invalid' ), true ) ? 'notice-error' : 'notice-success';
 		$text  = $map[ $key ];
 		if ( '_wait' === substr( $key, -5 ) ) {
 			$seconds = min( 60, max( 1, Request::int( 'estasoft_hp_wait' ) ) );
@@ -97,6 +97,11 @@ final class View {
 			'mail_failed'          => __( 'The site could not send the test email. Reminders depend on working site email.', 'estasoft-handover-passport' ),
 			'mail_invalid'         => __( 'Enter a valid email address for the test.', 'estasoft-handover-passport' ),
 			'mail_wait'            => __( 'A test email was just sent to that address. Wait a little and try again.', 'estasoft-handover-passport' ),
+			'copy_sent'            => __( 'The Emergency sheet was emailed. Check the inbox of each address listed.', 'estasoft-handover-passport' ),
+			'copy_failed'          => __( 'The site could not send the Emergency sheet. Copies depend on working site email.', 'estasoft-handover-passport' ),
+			'copy_wait'            => __( 'A copy was just sent. Wait a little and try again.', 'estasoft-handover-passport' ),
+			'copy_nobody'          => __( 'Nothing was sent. Switch the emailed copy on and list at least one address first.', 'estasoft-handover-passport' ),
+			'copy_paused'          => __( 'Nothing was sent: this address is waiting for the question about a copy of the site to be answered.', 'estasoft-handover-passport' ),
 			'copy_moved'           => __( 'Saved. Passport now treats this address as the site\'s address, and reminders carry on.', 'estasoft-handover-passport' ),
 			'copy_marked'          => __( 'Saved. This site is marked as a copy, so reminders, emailed copies and scheduled checks stay off here.', 'estasoft-handover-passport' ),
 			'scan_busy'            => __( 'A scan is already running. Try again in a minute.', 'estasoft-handover-passport' ),

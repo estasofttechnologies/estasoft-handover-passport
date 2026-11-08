@@ -79,6 +79,7 @@ final class OverviewScreen {
 		$this->sinceHandover();
 		$this->dates();
 		$this->reminderStatus();
+		$this->copyStatus();
 		$this->freshness();
 		$this->safety();
 		$this->stack( $facts );
@@ -319,6 +320,21 @@ final class OverviewScreen {
 		}
 		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
 			echo '<p><a class="button" href="' . esc_url( add_query_arg( array( 'page' => SettingsScreen::SLUG, 'tab' => 'reminders' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Open reminder settings', 'estasoft-handover-passport' ) . '</a></p>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Says so when the emailed copy of the Emergency sheet could not be sent (EXP-10). Nothing is printed when all is well.
+	 */
+	private function copyStatus(): void {
+		$warning = $this->plugin->emailedCopy()->warning();
+		if ( '' === $warning ) {
+			return;
+		}
+		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Emailed copy', 'estasoft-handover-passport' ) . '</h2><p>' . esc_html( $warning ) . '</p>';
+		if ( Capabilities::can( Capabilities::CONFIGURE ) ) {
+			echo '<p><a class="button" href="' . esc_url( add_query_arg( array( 'page' => SettingsScreen::SLUG, 'tab' => 'privacy' ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Open the copy settings', 'estasoft-handover-passport' ) . '</a></p>';
 		}
 		echo '</div>';
 	}
