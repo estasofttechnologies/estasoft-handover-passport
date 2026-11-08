@@ -15,6 +15,7 @@ use Estasoft\HandoverPassport\Data\LinkRepository;
 use Estasoft\HandoverPassport\Domain\Fields;
 use Estasoft\HandoverPassport\Domain\Freshness;
 use Estasoft\HandoverPassport\Domain\Kinds;
+use Estasoft\HandoverPassport\Domain\LeadTimes;
 use Estasoft\HandoverPassport\Domain\Sensitivity;
 use Estasoft\HandoverPassport\Domain\ValidationError;
 use Estasoft\HandoverPassport\Security\SecretGuard;
@@ -167,6 +168,45 @@ class RecordService {
 		$this->items->update( $id, array( 'verified_at' => Clock::sql(), 'verified_by' => get_current_user_id() ) );
 		$this->log->add( 'record_verified', 'item', $id, (string) $row['title'], sensitive: (bool) $row['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], array(), $this->forHook( $this->hydrate( $row ) ) );
+	}
+
+	/**
+	 * Renewed: enter the next date, which starts a new reminder cycle (LIC-7, RMD-4).
+	 *
+	 * @param int    $id       Record ID.
+	 * @param string $new_date The next renewal or expiry date, Y-m-d, later than the current one.
+	 * @param string $channel  Origin for the log.
+	 * @return array<string, mixed> Hydrated record.
+	 * @throws ValidationError When the record has no date to renew or the new date is not acceptable.
+	 */
+	public function renew( int $id, string $new_date, string $channel = 'screen' ): array {
+		$row = $this->items->find( $id );
+		if ( null === $row || null !== $row['deleted_at'] ) {
+			throw new ValidationError( __( 'Record', 'estasoft-handover-passport' ), __( 'That record no longer exists.', 'estasoft-handover-passport' ) );
+		}
+		$def   = Kinds::get( (string) $row['kind'] );
+		$field = (string) ( $def['due'] ?? '' );
+		if ( '' === $field ) {
+			throw new ValidationError( __( 'Record', 'estasoft-handover-passport' ), __( 'This kind of record has no renewal date.', 'estasoft-handover-passport' ) );
+		}
+		$new_date = trim( $new_date );
+		if ( ! Dates::isDate( $new_date ) ) {
+			throw new ValidationError( __( 'New date', 'estasoft-handover-passport' ), __( 'Use a real date in the form YYYY-MM-DD.', 'estasoft-handover-passport' ) );
+		}
+		$data = is_array( $row['data'] ) ? $row['data'] : array();
+		$old  = (string) ( $data[ $field ] ?? '' );
+		if ( '' !== $old && $new_date <= $old ) {
+			throw new ValidationError( __( 'New date', 'estasoft-handover-passport' ), __( 'The new date must be later than the current one.', 'estasoft-handover-passport' ) );
+		}
+
+		$before          = $this->hydrate( $row );
+		$data[ $field ] = $new_date;
+		$this->items->update( $id, array( 'data' => $data, 'due_date' => $new_date, 'updated_at' => Clock::sql() ) );
+		$this->log->add( 'record_renewed', 'item', $id, (string) $row['title'], array( 'value' => $old ), array( 'value' => $new_date ), '', $channel, sensitive: (bool) $row['sensitive'] );
+
+		$after = $this->get( $id, true );
+		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], $this->forHook( $before ), $this->forHook( (array) $after ) );
+		return (array) $after;
 	}
 
 	/**
@@ -373,6 +413,15 @@ class RecordService {
 			} else {
 				$data[ $key ] = $value;
 			}
+		}
+
+		// A record with a date can have its own reminder days; empty uses the Settings list, "off" sends none (RMD-1).
+		if ( ! empty( $def['due'] ) && array_key_exists( 'reminder_days', $input ) ) {
+			$setting = LeadTimes::recordSetting( is_scalar( $input['reminder_days'] ) ? (string) $input['reminder_days'] : '' );
+			if ( null === $setting ) {
+				throw new ValidationError( __( 'Remind me', 'estasoft-handover-passport' ), __( 'Use whole numbers of days separated by commas, for example 30, 7, 0. Write off to send no reminders for this record.', 'estasoft-handover-passport' ) );
+			}
+			$data['reminder_days'] = $setting;
 		}
 
 		// Keep what the plugin itself stored on the record, such as the last result of a check.

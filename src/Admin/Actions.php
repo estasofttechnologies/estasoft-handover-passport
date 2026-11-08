@@ -66,7 +66,7 @@ final class Actions {
 		$kind   = sanitize_key( Request::post( 'kind' ) );
 		$return = $this->returnUrl();
 
-		if ( ! in_array( $op, array( 'save', 'delete', 'undelete', 'verify', 'move', 'stamp', 'check', 'check_ssl', 'check_urls' ), true ) || ! in_array( $target, array( 'item', 'person', 'role' ), true ) ) {
+		if ( ! in_array( $op, array( 'save', 'delete', 'undelete', 'verify', 'move', 'stamp', 'renew', 'check', 'check_ssl', 'check_urls' ), true ) || ! in_array( $target, array( 'item', 'person', 'role' ), true ) ) {
 			wp_safe_redirect( $return );
 			exit;
 		}
@@ -128,6 +128,13 @@ final class Actions {
 				}
 				$records->update( $id, array( $field => Clock::today() ) );
 				return Kinds::BACKUP === $record['kind'] ? 'confirmed' : 'reviewed';
+			case 'renew':
+				try {
+					$records->renew( $id, Request::post( 'renew_date' ) );
+				} catch ( ValidationError $e ) {
+					return 'renew_invalid'; // A fixed message: the form it came from has no other fields to fill again.
+				}
+				return 'renewed';
 			case 'check':
 			case 'check_ssl':
 			case 'check_urls':
@@ -287,6 +294,9 @@ final class Actions {
 			$input[ $flag ] = '1' === Request::post( $flag ) ? '1' : '0';
 		}
 		$input['review_days'] = Request::post( 'review_days' );
+		if ( ! empty( ( Kinds::get( $kind ) ?? array() )['due'] ) ) {
+			$input['reminder_days'] = Request::post( 'reminder_days' );
+		}
 		return $input;
 	}
 
@@ -339,6 +349,7 @@ final class Actions {
 			'vis_emergency' => Request::post( 'vis_emergency' ),
 			'sensitive'     => Request::post( 'sensitive' ),
 			'review_days'   => Request::post( 'review_days' ),
+			'reminder_days' => Request::post( 'reminder_days' ),
 		);
 		$scope  = 'item' === $target ? 'item:' . $kind . ':' . $id : 'person:' . $id;
 		FormState::put( $this->plugin->secretGuard(), $scope, $input, array( '' !== $key ? $key : '_form' => $message ) );
@@ -364,7 +375,7 @@ final class Actions {
 				return (string) $key;
 			}
 		}
-		return '';
+		return __( 'Remind me', 'estasoft-handover-passport' ) === $label ? 'reminder_days' : '';
 	}
 
 	/**

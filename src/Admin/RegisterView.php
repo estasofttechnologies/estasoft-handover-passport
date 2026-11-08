@@ -240,6 +240,8 @@ final class RegisterView {
 			echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html__( 'The record was not saved. Fix the fields below and try again.', 'estasoft-handover-passport' ) . '</p></div>';
 		}
 
+		$this->renewPanel( $def, $record, $base, $kind, $id );
+
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		$this->hidden( 'save', 'item', $id, $base, $kind );
 
@@ -265,6 +267,26 @@ final class RegisterView {
 		Form::checkbox( 'sensitive', __( 'Sensitive record', 'estasoft-handover-passport' ), $this->flag( $input, $record, 'sensitive', 0 ), __( 'People without the Sensitive capability see "Sensitive record, hidden". Sensitive records stay out of packs.', 'estasoft-handover-passport' ) );
 		echo '</fieldset>';
 
+		if ( ! empty( $def['due'] ) ) {
+			echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Reminders', 'estasoft-handover-passport' ) . '</legend>';
+			Form::row(
+				'reminder_days',
+				array(
+					'type'  => 'text',
+					'label' => __( 'Remind me', 'estasoft-handover-passport' ),
+					'max'   => 60,
+					'help'  => sprintf(
+						/* translators: %s: list of days from Settings, for example "60, 30, 14, 7, 1, 0". */
+						__( 'Days before the date, separated by commas. Leave empty to use the list from Settings (%s). Write off to send no reminders for this record.', 'estasoft-handover-passport' ),
+						implode( ', ', $this->plugin->reminders()->leadTimes() )
+					),
+				),
+				$input['reminder_days'] ?? ( null !== $record ? (string) ( $record['fields']['reminder_days'] ?? '' ) : '' ),
+				$errors['reminder_days'] ?? ''
+			);
+			echo '</fieldset>';
+		}
+
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Review', 'estasoft-handover-passport' ) . '</legend>';
 		Form::row(
 			'review_days',
@@ -275,6 +297,36 @@ final class RegisterView {
 
 		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'estasoft-handover-passport' ) . '</button> <a class="button" href="' . esc_url( $base ) . '">' . esc_html__( 'Cancel', 'estasoft-handover-passport' ) . '</a></p>';
 		echo '</form></div>';
+	}
+
+	/**
+	 * The Renewed panel: enter the next date and the reminders start again for it (LIC-7).
+	 *
+	 * @param array<string, mixed>      $def    Schema.
+	 * @param array<string, mixed>|null $record Record, or null on a new one.
+	 * @param string                    $base   Screen URL.
+	 * @param string                    $kind   Kind key.
+	 * @param int                       $id     Record ID.
+	 */
+	private function renewPanel( array $def, ?array $record, string $base, string $kind, int $id ): void {
+		if ( null === $record || empty( $def['due'] ) ) {
+			return;
+		}
+		$current = (string) ( $record['fields'][ (string) $def['due'] ] ?? '' );
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="estasoft-hp-renew">';
+		$this->hidden( 'renew', 'item', $id, $base, $kind );
+		echo '<h3>' . esc_html__( 'Renewed?', 'estasoft-handover-passport' ) . '</h3>';
+		echo '<p class="description">' . esc_html(
+			'' === $current
+				? __( 'Enter the next date. Reminders start again for it.', 'estasoft-handover-passport' )
+				: sprintf(
+					/* translators: %s: the current date. */
+					__( 'The current date is %s. Enter the next one. Reminders start again for it and History records the renewal.', 'estasoft-handover-passport' ),
+					Dates::displayDate( $current )
+				)
+		) . '</p>';
+		Form::row( 'renew_date', array( 'type' => 'date', 'label' => __( 'Next date', 'estasoft-handover-passport' ) ), '' );
+		echo '<p><button type="submit" class="button">' . esc_html__( 'Renewed', 'estasoft-handover-passport' ) . '</button></p></form>';
 	}
 
 	/**
