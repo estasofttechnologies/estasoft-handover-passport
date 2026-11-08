@@ -167,6 +167,64 @@ final class ReminderMessage {
 	}
 
 	/**
+	 * The email after the weekly address check found a problem (URL-5).
+	 *
+	 * @param array{site: string, site_url: string, failed: array<int, array{name: string, address: string, expected: int, status: int, reason: string}>, hidden: int, checked: int, page: string} $p Values.
+	 * @return array{subject: string, body: string}
+	 */
+	public static function urls( array $p ): array {
+		$count   = count( $p['failed'] ) + (int) $p['hidden'];
+		$subject = sprintf(
+			/* translators: 1: site name, 2: number of addresses. */
+			_n( '[%1$s] %2$d address did not answer as expected', '[%1$s] %2$d addresses did not answer as expected', $count, 'estasoft-handover-passport' ),
+			self::line( $p['site'] ),
+			$count
+		);
+
+		$lines   = array();
+		$lines[] = __( 'Hello,', 'estasoft-handover-passport' );
+		$lines[] = '';
+		$lines[] = sprintf(
+			/* translators: 1: site name, 2: site address, 3: number of addresses checked. */
+			_n( 'The weekly check of %1$s (%2$s) looked at %3$d address.', 'The weekly check of %1$s (%2$s) looked at %3$d addresses.', (int) $p['checked'], 'estasoft-handover-passport' ),
+			self::line( $p['site'] ),
+			self::line( $p['site_url'] ),
+			(int) $p['checked']
+		);
+		$lines[] = __( 'These did not answer as expected:', 'estasoft-handover-passport' );
+		foreach ( $p['failed'] as $row ) {
+			$lines[] = '';
+			$lines[] = '  ' . self::line( $row['name'] ) . ' - ' . self::line( $row['address'] );
+			$lines[] = '  ' . ( '' !== $row['reason'] ? self::line( $row['reason'] ) : sprintf(
+				/* translators: 1: status found, 2: status expected. */
+				__( 'It answered %1$d and %2$d was expected.', 'estasoft-handover-passport' ),
+				(int) $row['status'],
+				(int) $row['expected']
+			) );
+		}
+		if ( (int) $p['hidden'] > 0 ) {
+			$lines[] = '';
+			$lines[] = sprintf(
+				/* translators: %d: number of addresses. */
+				_n( '  And %d address marked Sensitive, which is not named in email.', '  And %d addresses marked Sensitive, which are not named in email.', (int) $p['hidden'], 'estasoft-handover-passport' ),
+				(int) $p['hidden']
+			);
+		}
+		$lines[] = '';
+		$lines[] = sprintf(
+			/* translators: %s: address of a screen. */
+			__( 'See the list: %s', 'estasoft-handover-passport' ),
+			self::line( $p['page'] )
+		);
+		$lines[] = '';
+		$lines[] = __( 'This is a look once a week, from the server of the site. It is not an uptime monitor and cannot tell you when the site goes down. The person who looks after the site can switch it off in Handover Passport, Settings, General.', 'estasoft-handover-passport' );
+		$lines[] = '';
+		$lines[] = __( 'Estasoft Handover Passport', 'estasoft-handover-passport' );
+
+		return array( 'subject' => $subject, 'body' => implode( "\n", $lines ) );
+	}
+
+	/**
 	 * The test email (RMD-5).
 	 *
 	 * @param array{site: string, site_url: string} $p Values.

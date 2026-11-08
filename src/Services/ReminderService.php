@@ -234,6 +234,19 @@ class ReminderService {
 	}
 
 	/**
+	 * Send one plain-text message to each address on its own. For messages other than reminders, such as the result of
+	 * the weekly address check; the caller chooses the recipients.
+	 *
+	 * @param array<int, string> $recipients Addresses.
+	 * @param string             $subject    Subject.
+	 * @param string             $body       Body.
+	 * @return int Messages accepted for delivery.
+	 */
+	public function notify( array $recipients, string $subject, string $body ): int {
+		return $this->mailEach( $this->cleanAddresses( $recipients ), $subject, $body );
+	}
+
+	/**
 	 * Whether reminders are switched on in Settings.
 	 */
 	public function enabled(): bool {

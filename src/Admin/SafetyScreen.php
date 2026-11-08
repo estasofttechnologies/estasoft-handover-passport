@@ -11,6 +11,7 @@ namespace Estasoft\HandoverPassport\Admin;
 
 use Estasoft\HandoverPassport\Domain\Kinds;
 use Estasoft\HandoverPassport\Security\Capabilities;
+use Estasoft\HandoverPassport\Support\Dates;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -86,6 +87,20 @@ final class SafetyScreen extends Screen {
 	private function urls( string $tab ): void {
 		echo '<div class="estasoft-hp-card"><h2>' . esc_html__( 'Critical addresses', 'estasoft-handover-passport' ) . '</h2>';
 		echo '<p>' . esc_html__( 'The pages that must answer after a restore: the home page, the login, the checkout. Passport asks each one, from this server, when you press the button. It is not an uptime monitor and does not watch the site between visits.', 'estasoft-handover-passport' ) . '</p>';
+		$weekly = $this->plugin->weeklyUrls();
+		if ( $weekly->enabled() ) {
+			$last = $weekly->last();
+			echo '<p>' . esc_html__( 'The weekly check is on: every Sunday morning the addresses are asked again, and one email goes to the reminder recipients if any fails.', 'estasoft-handover-passport' ) . ' ' . esc_html(
+				'' === $last['at']
+					? __( 'It has not run yet.', 'estasoft-handover-passport' )
+					: sprintf(
+						/* translators: 1: date, 2: number of addresses that failed. */
+						_n( 'Last run: %1$s, %2$d address failed.', 'Last run: %1$s, %2$d addresses failed.', $last['failed'], 'estasoft-handover-passport' ),
+						Dates::display( $last['at'], true ),
+						$last['failed']
+					)
+			) . '</p>';
+		}
 		if ( Capabilities::can( Capabilities::EDIT ) ) {
 			$register = new RegisterView( $this->plugin );
 			$base     = add_query_arg( array( 'page' => self::SLUG, 'tab' => $tab ), admin_url( 'admin.php' ) );

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-08T15:14:23+00:00\n"
+"POT-Creation-Date: 2026-11-08T15:28:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: estasoft-handover-passport\n"
@@ -22,7 +22,8 @@ msgstr ""
 #: src/Privacy/PersonalData.php:91
 #: src/Reminders/ReminderMessage.php:93
 #: src/Reminders/ReminderMessage.php:164
-#: src/Reminders/ReminderMessage.php:194
+#: src/Reminders/ReminderMessage.php:222
+#: src/Reminders/ReminderMessage.php:252
 msgid "Estasoft Handover Passport"
 msgstr ""
 
@@ -752,7 +753,7 @@ msgstr ""
 
 #: src/Admin/Admin.php:206
 #: src/Admin/SettingsScreen.php:178
-#: src/Admin/SettingsScreen.php:348
+#: src/Admin/SettingsScreen.php:352
 msgid "You do not have permission to change settings."
 msgstr ""
 
@@ -2392,7 +2393,7 @@ msgid "Snapshots"
 msgstr ""
 
 #: src/Admin/HandoverScreen.php:52
-#: src/Admin/SettingsScreen.php:304
+#: src/Admin/SettingsScreen.php:308
 msgid "Export"
 msgstr ""
 
@@ -3004,7 +3005,7 @@ msgstr ""
 #: src/Admin/OverviewScreen.php:316
 #: src/Admin/RegisterView.php:280
 #: src/Admin/SettingsScreen.php:65
-#: src/Admin/SettingsScreen.php:247
+#: src/Admin/SettingsScreen.php:251
 msgid "Reminders"
 msgstr ""
 
@@ -3025,7 +3026,7 @@ msgid "Verified means someone confirmed the record is still right within its rev
 msgstr ""
 
 #: src/Admin/OverviewScreen.php:355
-#: src/Admin/SafetyScreen.php:45
+#: src/Admin/SafetyScreen.php:46
 msgid "Safety nets"
 msgstr ""
 
@@ -3042,7 +3043,7 @@ msgstr ""
 #: src/Admin/OverviewScreen.php:359
 #: src/Admin/RunbookView.php:103
 #: src/Admin/RunbookView.php:248
-#: src/Admin/SafetyScreen.php:55
+#: src/Admin/SafetyScreen.php:56
 #: src/Admin/SettingsScreen.php:107
 #: src/Export/Profiles.php:46
 msgid "Runbooks"
@@ -3205,7 +3206,7 @@ msgstr ""
 #: src/Admin/RegisterView.php:162
 #: src/Admin/RunbookView.php:292
 #: src/Admin/RunbookView.php:362
-#: src/Admin/SettingsScreen.php:303
+#: src/Admin/SettingsScreen.php:307
 msgid "Edit"
 msgstr ""
 
@@ -3370,7 +3371,7 @@ msgid "May appear in the Client pack and the Emergency sheet"
 msgstr ""
 
 #: src/Admin/PeopleView.php:206
-#: src/Admin/SettingsScreen.php:263
+#: src/Admin/SettingsScreen.php:267
 #: src/Admin/SnapshotView.php:153
 #: src/Domain/Kinds.php:233
 #: src/Privacy/PersonalData.php:415
@@ -3710,7 +3711,7 @@ msgid "Tick each line when you have looked at it yourself. Write what you saw be
 msgstr ""
 
 #: src/Admin/RestoreTestView.php:56
-#: src/Admin/SafetyScreen.php:54
+#: src/Admin/SafetyScreen.php:55
 #: src/Export/Profiles.php:47
 msgid "Restore tests"
 msgstr ""
@@ -4222,7 +4223,7 @@ msgstr ""
 msgid "Never"
 msgstr ""
 
-#: src/Admin/SafetyScreen.php:53
+#: src/Admin/SafetyScreen.php:54
 #: src/Admin/SettingsScreen.php:104
 #: src/Domain/Kinds.php:346
 #: src/Domain/Kinds.php:564
@@ -4230,17 +4231,33 @@ msgstr ""
 msgid "Backups"
 msgstr ""
 
-#: src/Admin/SafetyScreen.php:56
-#: src/Admin/SafetyScreen.php:87
+#: src/Admin/SafetyScreen.php:57
+#: src/Admin/SafetyScreen.php:88
 #: src/Export/Profiles.php:42
 msgid "Critical addresses"
 msgstr ""
 
-#: src/Admin/SafetyScreen.php:88
+#: src/Admin/SafetyScreen.php:89
 msgid "The pages that must answer after a restore: the home page, the login, the checkout. Passport asks each one, from this server, when you press the button. It is not an uptime monitor and does not watch the site between visits."
 msgstr ""
 
-#: src/Admin/SafetyScreen.php:94
+#: src/Admin/SafetyScreen.php:93
+msgid "The weekly check is on: every Sunday morning the addresses are asked again, and one email goes to the reminder recipients if any fails."
+msgstr ""
+
+#: src/Admin/SafetyScreen.php:95
+msgid "It has not run yet."
+msgstr ""
+
+#. translators: 1: date, 2: number of addresses that failed.
+#: src/Admin/SafetyScreen.php:98
+#, php-format
+msgid "Last run: %1$s, %2$d address failed."
+msgid_plural "Last run: %1$s, %2$d addresses failed."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/SafetyScreen.php:109
 msgid "Check all now"
 msgstr ""
 
@@ -4275,7 +4292,7 @@ msgid "Left out unless you tick them. You will be asked to confirm before they a
 msgstr ""
 
 #: src/Admin/SettingsScreen.php:48
-#: src/Admin/SettingsScreen.php:438
+#: src/Admin/SettingsScreen.php:443
 msgid "Settings"
 msgstr ""
 
@@ -4437,166 +4454,178 @@ msgid "Access entries should be reviewed every (days)"
 msgstr ""
 
 #: src/Admin/SettingsScreen.php:215
-msgid "Where notices appear"
+msgid "Weekly address check"
 msgstr ""
 
 #: src/Admin/SettingsScreen.php:216
+msgid "Check the critical addresses every Sunday and send one email when one fails"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:216
+msgid "This server asks each address in the Critical addresses list once a week. It is not an uptime monitor: it cannot tell you when the site goes down. Off by default. The email goes to the reminder recipients."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:219
+msgid "Where notices appear"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:220
 msgid "Findings and dates show on the Passport screens. Passport never puts a banner on every admin page."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:217
+#: src/Admin/SettingsScreen.php:221
 msgid "Also show a short summary on the WordPress Dashboard"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:217
+#: src/Admin/SettingsScreen.php:221
 msgid "The next five dates and the number of findings that need fixing, for people who may view the Passport. Off by default."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:227
+#: src/Admin/SettingsScreen.php:231
 msgid "These numbers decide when a finding opens. Changing them re-checks the rules straight away. Individual rules can be switched off from the Findings screen."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:228
+#: src/Admin/SettingsScreen.php:232
 msgid "When a finding opens"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:234
+#: src/Admin/SettingsScreen.php:238
 msgid "Recovery targets"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:235
+#: src/Admin/SettingsScreen.php:239
 msgid "Leave blank if nobody has agreed a target. Restore tests are compared with these numbers when they are set."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:236
+#: src/Admin/SettingsScreen.php:240
 msgid "Most data that may be lost (hours)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:237
+#: src/Admin/SettingsScreen.php:241
 msgid "Longest the site may be down (hours)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:248
+#: src/Admin/SettingsScreen.php:252
 msgid "Send reminder e-mails"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:248
+#: src/Admin/SettingsScreen.php:252
 msgid "One e-mail per date at each lead time below. Nothing is sent once the date is renewed or the record is removed."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:249
+#: src/Admin/SettingsScreen.php:253
 msgid "Lead times (days before the date, comma separated)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:250
+#: src/Admin/SettingsScreen.php:254
 msgid "Who receives them (one address per line)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:250
+#: src/Admin/SettingsScreen.php:254
 msgid "The account holder and payer on each record are added automatically when they have an address. With nobody listed and no holder or payer address, reminders go to the site administration email."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:251
+#: src/Admin/SettingsScreen.php:255
 msgid "Also send a weekly summary on Mondays at 08:00"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:251
+#: src/Admin/SettingsScreen.php:255
 msgid "A short list of what needs attention. Off by default."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:262
+#: src/Admin/SettingsScreen.php:266
 msgid "Administrators always have all five capabilities. Tick what other roles may do. No new role is created."
 msgstr ""
 
 #. translators: 1: role name, 2: capability name.
-#: src/Admin/SettingsScreen.php:279
+#: src/Admin/SettingsScreen.php:283
 #, php-format
 msgid "%1$s: %2$s"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:301
+#: src/Admin/SettingsScreen.php:305
 msgid "View"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:302
+#: src/Admin/SettingsScreen.php:306
 msgid "View Sensitive"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:305
+#: src/Admin/SettingsScreen.php:309
 msgid "Configure"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:317
+#: src/Admin/SettingsScreen.php:321
 msgid "Personal data held"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:321
+#: src/Admin/SettingsScreen.php:325
 msgid "Nothing is sent to ESTASOFT TECHNOLOGIES or to any other outside party. Scans read local data only."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:322
+#: src/Admin/SettingsScreen.php:326
 msgid "Every record stays in this site's own database. Data leaves it only in a file someone downloads, or in a reminder or digest email you have switched on."
 msgstr ""
 
 #. translators: 1: link to Export Personal Data, 2: link to Erase Personal Data.
-#: src/Admin/SettingsScreen.php:326
+#: src/Admin/SettingsScreen.php:330
 #, php-format
 msgid "To answer a request from a person, use %1$s or %2$s. Passport takes part in both: the export lists what is held about an email address, and the erase replaces the person with \"Former contact\" and keeps their place in the roles."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:327
+#: src/Admin/SettingsScreen.php:331
 msgid "Export Personal Data"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:328
+#: src/Admin/SettingsScreen.php:332
 msgid "Erase Personal Data"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:333
+#: src/Admin/SettingsScreen.php:337
 msgid "How long things are kept"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:334
+#: src/Admin/SettingsScreen.php:338
 msgid "Change log (months)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:335
+#: src/Admin/SettingsScreen.php:339
 msgid "Deleted records are kept for (days)"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:335
+#: src/Admin/SettingsScreen.php:339
 msgid "After this they are removed for good."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:338
+#: src/Admin/SettingsScreen.php:342
 msgid "When the plugin is deleted"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:339
+#: src/Admin/SettingsScreen.php:343
 msgid "Delete everything when the plugin is deleted"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:339
+#: src/Admin/SettingsScreen.php:343
 msgid "Off by default. When off, deleting the plugin keeps the records, so a client record is never lost by accident."
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:367
+#: src/Admin/SettingsScreen.php:371
 msgid "finding thresholds"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:385
+#: src/Admin/SettingsScreen.php:389
 msgid "reminders"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:399
+#: src/Admin/SettingsScreen.php:403
 msgid "who can do what"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:410
+#: src/Admin/SettingsScreen.php:414
 msgid "privacy and data"
 msgstr ""
 
-#: src/Admin/SettingsScreen.php:432
+#: src/Admin/SettingsScreen.php:437
 msgid "review intervals and scan"
 msgstr ""
 
@@ -8164,6 +8193,7 @@ msgstr ""
 #: src/Reminders/ReminderMessage.php:70
 #: src/Reminders/ReminderMessage.php:112
 #: src/Reminders/ReminderMessage.php:185
+#: src/Reminders/ReminderMessage.php:243
 msgid "Hello,"
 msgstr ""
 
@@ -8247,14 +8277,58 @@ msgstr[1] ""
 msgid "The person who looks after the site can switch this summary off in Handover Passport, Settings, Reminders."
 msgstr ""
 
-#. translators: %s: site name.
+#. translators: 1: site name, 2: number of addresses.
 #: src/Reminders/ReminderMessage.php:179
+#, php-format
+msgid "[%1$s] %2$d address did not answer as expected"
+msgid_plural "[%1$s] %2$d addresses did not answer as expected"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: site name, 2: site address, 3: number of addresses checked.
+#: src/Reminders/ReminderMessage.php:189
+#, php-format
+msgid "The weekly check of %1$s (%2$s) looked at %3$d address."
+msgid_plural "The weekly check of %1$s (%2$s) looked at %3$d addresses."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Reminders/ReminderMessage.php:194
+msgid "These did not answer as expected:"
+msgstr ""
+
+#. translators: 1: status found, 2: status expected.
+#: src/Reminders/ReminderMessage.php:200
+#, php-format
+msgid "It answered %1$d and %2$d was expected."
+msgstr ""
+
+#. translators: %d: number of addresses.
+#: src/Reminders/ReminderMessage.php:209
+#, php-format
+msgid "  And %d address marked Sensitive, which is not named in email."
+msgid_plural "  And %d addresses marked Sensitive, which are not named in email."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: address of a screen.
+#: src/Reminders/ReminderMessage.php:216
+#, php-format
+msgid "See the list: %s"
+msgstr ""
+
+#: src/Reminders/ReminderMessage.php:220
+msgid "This is a look once a week, from the server of the site. It is not an uptime monitor and cannot tell you when the site goes down. The person who looks after the site can switch it off in Handover Passport, Settings, General."
+msgstr ""
+
+#. translators: %s: site name.
+#: src/Reminders/ReminderMessage.php:237
 #, php-format
 msgid "[%s] Test email from the Handover Passport"
 msgstr ""
 
 #. translators: 1: site name, 2: site address.
-#: src/Reminders/ReminderMessage.php:189
+#: src/Reminders/ReminderMessage.php:247
 #, php-format
 msgid "This test email was sent from the Handover Passport of %1$s (%2$s). If you can read it, reminders from this site can reach this address."
 msgstr ""

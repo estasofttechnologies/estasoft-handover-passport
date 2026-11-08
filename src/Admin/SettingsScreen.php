@@ -212,6 +212,10 @@ final class SettingsScreen extends Screen {
 		Form::row( 'access_review_days', array( 'type' => 'int', 'label' => __( 'Access entries should be reviewed every (days)', 'estasoft-handover-passport' ) ), $settings->get( 'access_review_days', 90 ) );
 		echo '</fieldset>';
 
+		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Weekly address check', 'estasoft-handover-passport' ) . '</legend>';
+		Form::checkbox( 'url_check_weekly', __( 'Check the critical addresses every Sunday and send one email when one fails', 'estasoft-handover-passport' ), (bool) $settings->get( 'url_check_weekly', false ), __( 'This server asks each address in the Critical addresses list once a week. It is not an uptime monitor: it cannot tell you when the site goes down. Off by default. The email goes to the reminder recipients.', 'estasoft-handover-passport' ) );
+		echo '</fieldset>';
+
 		echo '<fieldset class="estasoft-hp-fieldset"><legend>' . esc_html__( 'Where notices appear', 'estasoft-handover-passport' ) . '</legend>';
 		echo '<p class="description">' . esc_html__( 'Findings and dates show on the Passport screens. Passport never puts a banner on every admin page.', 'estasoft-handover-passport' ) . '</p>';
 		Form::checkbox( 'dashboard_widget', __( 'Also show a short summary on the WordPress Dashboard', 'estasoft-handover-passport' ), (bool) $settings->get( 'dashboard_widget', false ), __( 'The next five dates and the number of findings that need fixing, for people who may view the Passport. Off by default.', 'estasoft-handover-passport' ) );
@@ -427,6 +431,7 @@ final class SettingsScreen extends Screen {
 					'backup_confirm'     => $int( 'backup_confirm', 1, 365, 30 ),
 					'access_review_days' => $int( 'access_review_days', 1, 3650, 90 ),
 					'dashboard_widget'   => '1' === Request::post( 'dashboard_widget' ),
+					'url_check_weekly'   => '1' === Request::post( 'url_check_weekly' ),
 				)
 			);
 			$changed[] = __( 'review intervals and scan', 'estasoft-handover-passport' );

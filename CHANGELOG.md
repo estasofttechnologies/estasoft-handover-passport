@@ -49,11 +49,13 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - An optional summary on the WordPress Dashboard (off by default, switched on in Settings, General): the next five dates and the number of findings that need fixing, for people who may view the Passport. Records marked Sensitive stay out of it for people without the Sensitive capability.
 - A leaver checklist for each active person on the People tab (Offboard): the systems in the access register where they have access, the matching WordPress account, the assets they hold, pay for or administer, their roles and what to do in the Passport, as a page to read and print. It changes nothing, and Sensitive entries stay hidden from people without the Sensitive capability.
 - "Since the handover" on the Overview: how many records were added, removed or changed since the newest snapshot somebody acknowledged, with a link to the comparison. Records marked Sensitive and the findings and checklist worked out from the records are not counted.
+- An optional weekly check of the critical addresses (off by default, switched on in Settings, General): every Sunday morning this server asks each address once and sends one email to the reminder recipients if any fails. It skips addresses on another host, pauses on a copy of the site, keeps a Sensitive address's name out of the email and says plainly that it is not an uptime monitor. The Safety screen shows when it last ran.
 
 ### Fixed
 - The tables could not be created on MySQL and MariaDB: `sensitive` is a reserved word there. The column is now written with backticks in the schema and in every query, and a unit test refuses any column named with a reserved word without quotes.
 
 ### Changed
+- The monthly emailed-copy event is no longer scheduled: nothing used it. A leftover event from an earlier build is removed.
 - Scanning is limited to once a minute from the Scan now button, WP-CLI and the REST API alike, and the notices for scans, checks and test emails say how many seconds are left.
 - `wp estasoft-passport status` leaves Sensitive records out of its counts unless `--user` holds the Sensitive capability.
 - The change log hides the names and values of Sensitive records from people without the capability, including entries written before the record was marked Sensitive.

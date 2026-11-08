@@ -15,7 +15,7 @@ use DateTimeZone;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Daily scan, reminders, retention, plus the weekly digest and URL check.
+ * Daily scan, reminders and retention, plus the weekly summary and address check.
  */
 final class Schedule {
 
@@ -24,7 +24,6 @@ final class Schedule {
 	public const RETENTION  = 'estasoft_hp_daily_retention';
 	public const DIGEST     = 'estasoft_hp_weekly_digest';
 	public const URLS       = 'estasoft_hp_weekly_urls';
-	public const COPIES     = 'estasoft_hp_monthly_copy';
 	public const EVENT_SCAN = 'estasoft_hp_event_scan';
 
 	/**
@@ -39,7 +38,6 @@ final class Schedule {
 			self::REMINDERS => array( '07:00', 'daily' ),
 			self::DIGEST    => array( 'monday 08:00', 'weekly' ),
 			self::URLS      => array( 'sunday 05:00', 'weekly' ),
-			self::COPIES    => array( '06:00', 'daily' ),
 		);
 	}
 
@@ -62,6 +60,7 @@ final class Schedule {
 			wp_clear_scheduled_hook( $hook );
 		}
 		wp_clear_scheduled_hook( self::EVENT_SCAN );
+		wp_clear_scheduled_hook( 'estasoft_hp_monthly_copy' );
 	}
 
 	/**

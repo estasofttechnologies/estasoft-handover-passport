@@ -27,7 +27,7 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 * Checks the record against the site and lists findings in plain words, each stating a fact and a date. A finding never says "safe", "secure" or "compliant".
 * Keeps restore tests, runbooks (with twelve ready-made templates, a version history and a large-type print view) and a list of critical addresses, so the day something breaks is not the first day anyone looks for the steps.
 * Lets you rehearse a runbook as a drill: each step gets a Done button that keeps the time and the person, followed by an after-restore checklist built from your critical addresses. A drill of a restore runbook can be kept as a restore test.
-* Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server".
+* Checks DNS, a certificate or a critical address when you press a button, and says "as seen from this server". An optional weekly check asks the critical addresses every Sunday and sends one email when one fails; it is off until you switch it on and it is not an uptime monitor.
 * Emails reminders before licence, domain, hosting and service dates, and can send a short weekly summary. Each reminder goes once per date and lead time.
 * Gives each person a leaver checklist: every system they can reach, their WordPress account, the assets they hold and the roles they fill, ready to print when someone stops working on the site.
 * Pauses reminders on a copy of the site, so a staging site does not send every reminder a second time.
@@ -37,7 +37,7 @@ Estasoft Handover Passport keeps one living record of a WordPress site, so a cli
 **Built for trust**
 
 * No account, no tracking, no ads and no upsell notices. Nothing is sent to ESTASOFT TECHNOLOGIES or any third party.
-* Scans read local data only. A DNS, certificate or address check runs only when you press its button, and it contacts only your own domain.
+* Scans read local data only. A DNS, certificate or address check runs only when you press its button (or weekly, if you switch the weekly address check on), and it contacts only your own domain.
 * Nothing is added to the front end of your site, and nothing runs there.
 * Five capabilities control who can view, edit, export and configure. Administrators have them by default.
 

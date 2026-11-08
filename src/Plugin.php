@@ -13,6 +13,7 @@ use Estasoft\HandoverPassport\Admin\Admin;
 use Estasoft\HandoverPassport\Admin\SiteHealth;
 use Estasoft\HandoverPassport\Changes\ChangeCapture;
 use Estasoft\HandoverPassport\Changes\ChangeLog;
+use Estasoft\HandoverPassport\Checks\WeeklyUrlCheck;
 use Estasoft\HandoverPassport\Cli\ExportCommand;
 use Estasoft\HandoverPassport\Cli\FindingsCommand;
 use Estasoft\HandoverPassport\Cli\RecordCommand;
@@ -117,6 +118,7 @@ final class Plugin {
 		add_action( Schedule::RETENTION, array( $this, 'runRetention' ) );
 		add_action( Schedule::REMINDERS, array( $this, 'runReminders' ) );
 		add_action( Schedule::DIGEST, array( $this, 'runDigest' ) );
+		add_action( Schedule::URLS, array( $this, 'runWeeklyUrls' ) );
 		add_action( 'estasoft_hp_scan_completed', array( $this->copyGuard(), 'check' ), 5, 0 );
 		add_action( 'estasoft_hp_record_saved', array( $this, 'queueFindings' ), 20, 0 );
 		add_action( 'estasoft_hp_scan_completed', array( $this, 'queueFindings' ), 20, 0 );
@@ -184,6 +186,20 @@ final class Plugin {
 	 */
 	public function runDigest(): void {
 		$this->reminders()->digest();
+	}
+
+	/**
+	 * Cron callback for the weekly address check.
+	 */
+	public function runWeeklyUrls(): void {
+		$this->weeklyUrls()->run();
+	}
+
+	/**
+	 * The optional weekly address check.
+	 */
+	public function weeklyUrls(): WeeklyUrlCheck {
+		return $this->shared( 'weekly_urls', fn(): WeeklyUrlCheck => new WeeklyUrlCheck( $this ) );
 	}
 
 	/**
