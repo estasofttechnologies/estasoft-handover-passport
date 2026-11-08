@@ -117,6 +117,15 @@ Reminder emails go to the addresses you list and to the account holder and payer
 
 The emailed copy of the Emergency sheet is off until you switch it on and list at least one address. It then emails the one-page sheet as a PDF to those addresses when a snapshot is made and once a month. Email is not encrypted, so the sheet is made without any record marked Sensitive and never holds a password, key or token. The export log notes each emailed file.
 
+== Screenshots ==
+
+1. The Overview: findings in plain words, how ready the site is for a handover, the dates in the next 90 days and how current the records are. The data shown is made up.
+2. The licence register, with renewal dates, status and a Verified badge for each record.
+3. People and roles, with the order in which emergency contacts are called.
+4. Findings. Each one states a fact and a date, and clears by itself when the fact stops being true.
+5. Runbooks: written steps for the day something breaks, started from a template.
+6. The handover checklist, filled in by the Passport from what it knows.
+
 == Changelog ==
 
 = 1.0.0 =

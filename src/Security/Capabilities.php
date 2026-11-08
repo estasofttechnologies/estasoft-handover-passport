@@ -23,6 +23,16 @@ final class Capabilities {
 	public const CONFIGURE      = 'estasoft_hp_configure';
 
 	/**
+	 * The five capability names. Unlike all() this does no translation, so it is safe to call before WordPress has
+	 * loaded translations, for example while a site is set up at plugins_loaded.
+	 *
+	 * @return array<int, string>
+	 */
+	public static function keys(): array {
+		return array( self::VIEW, self::VIEW_SENSITIVE, self::EDIT, self::EXPORT, self::CONFIGURE );
+	}
+
+	/**
 	 * Every capability with a plain description.
 	 *
 	 * @return array<string, string>
@@ -45,7 +55,7 @@ final class Capabilities {
 		if ( null === $role ) {
 			return;
 		}
-		foreach ( array_keys( self::all() ) as $cap ) {
+		foreach ( self::keys() as $cap ) {
 			$role->add_cap( $cap );
 		}
 	}
@@ -56,7 +66,7 @@ final class Capabilities {
 	 * @param array<string, array<int, string>> $grants Capabilities by role slug.
 	 */
 	public static function applyGrants( array $grants ): void {
-		$known = array_keys( self::all() );
+		$known = self::keys();
 		foreach ( wp_roles()->role_objects as $slug => $role ) {
 			if ( 'administrator' === $slug ) {
 				continue;
@@ -78,7 +88,7 @@ final class Capabilities {
 	 */
 	public static function removeAll(): void {
 		foreach ( wp_roles()->role_objects as $role ) {
-			foreach ( array_keys( self::all() ) as $cap ) {
+			foreach ( self::keys() as $cap ) {
 				$role->remove_cap( $cap );
 			}
 		}

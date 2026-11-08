@@ -542,7 +542,7 @@ final class SettingsScreen extends Screen {
 				if ( 'administrator' === $role || ! in_array( $role, $roles, true ) ) {
 					continue;
 				}
-				$grants[ $role ] = array_values( array_intersect( array_keys( Capabilities::all() ), array_map( 'sanitize_key', array_map( 'strval', array_filter( (array) $caps, 'is_scalar' ) ) ) ) );
+				$grants[ $role ] = array_values( array_intersect( Capabilities::keys(), array_map( 'sanitize_key', array_map( 'strval', array_filter( (array) $caps, 'is_scalar' ) ) ) ) );
 			}
 			$settings->set( 'capability_grants', $grants );
 			Capabilities::applyGrants( $grants );

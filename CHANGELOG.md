@@ -59,6 +59,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Check data in Settings, Privacy and data: looks for links that point at a person or a record that no longer exists and for records of a kind this version does not know (what a failed import, a manual database edit or a downgrade can leave). Nothing is changed until the box is ticked and the button pressed; the check then looks again, removes only what is still wrong, ignores a ticked row that is fine, and History records the counts without naming any record.
 
 ### Fixed
+- On WordPress 6.7 and later, the first-time setup of a site that was not set up by activation (a network site, or a plugin copied in place) printed a "translation loaded too early" notice while debugging was on. The setup no longer asks for translated text.
+- A status badge such as "Not done" no longer breaks onto two lines.
 - "What changed since this snapshot" could start at the wrong entry when a leftover log entry of an earlier snapshot with the same number existed. The snapshot's own entry now counts only when it was written within a minute of the snapshot; otherwise its time is used.
 - The finding hooks (`estasoft_hp_finding_opened`, `estasoft_hp_finding_resolved`) no longer pass the values that name a record marked Sensitive.
 - The tables could not be created on MySQL and MariaDB: `sensitive` is a reserved word there. The column is now written with backticks in the schema and in every query, and a unit test refuses any column named with a reserved word without quotes.

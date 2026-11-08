@@ -43,6 +43,7 @@
 /* Status is always shown in words; the border and fill only support it. */
 .estasoft-hp .estasoft-hp-badge {
 	display: inline-block;
+	white-space: nowrap;
 	padding: 1px 8px;
 	border: 1px solid #8c8f94;
 	border-radius: 10px;
