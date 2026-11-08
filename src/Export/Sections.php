@@ -742,7 +742,8 @@ final class Sections {
 	}
 
 	/**
-	 * A group of items that share fields.
+	 * A group of items that share fields. An item holds a value only for a field the group shows, so a value that the
+	 * page leaves out is not in the JSON or in a snapshot either.
 	 *
 	 * @param string                     $key    Group key.
 	 * @param string                     $title  Title.
@@ -751,6 +752,10 @@ final class Sections {
 	 * @return array<string, mixed>
 	 */
 	private function group( string $key, string $title, array $fields, array $items ): array {
+		$keys = array_flip( array_map( static fn( array $f ): string => (string) $f['key'], $fields ) );
+		foreach ( $items as $i => $item ) {
+			$items[ $i ]['values'] = array_intersect_key( (array) $item['values'], $keys );
+		}
 		return array( 'key' => $key, 'title' => $title, 'fields' => $fields, 'items' => $items );
 	}
 

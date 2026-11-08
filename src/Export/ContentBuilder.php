@@ -115,6 +115,10 @@ final class ContentBuilder {
 					}
 					$kept[] = $item;
 				}
+				$defined = array_flip( array_map( static fn( $f ): string => (string) ( $f['key'] ?? '' ), (array) ( $group['fields'] ?? array() ) ) );
+				foreach ( $kept as $n => $item ) {
+					$kept[ $n ]['values'] = array_intersect_key( (array) ( $item['values'] ?? array() ), $defined );
+				}
 				$group['items']  = $kept;
 				$group['fields'] = $this->fieldsStillUsed( (array) ( $group['fields'] ?? array() ), $kept );
 				if ( array() !== $kept ) {
