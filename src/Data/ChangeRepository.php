@@ -25,7 +25,7 @@ class ChangeRepository extends Repository {
 	}
 
 	protected function columns(): array {
-		return array( 'changed_at', 'kind', 'subject_type', 'subject_id', 'subject_label', 'before_data', 'after_data', 'actor_id', 'actor_label', 'source', 'batch_id', 'note' );
+		return array( 'changed_at', 'kind', 'subject_type', 'subject_id', 'subject_label', 'before_data', 'after_data', 'actor_id', 'actor_label', 'source', 'batch_id', 'note', 'sensitive' );
 	}
 
 	/**

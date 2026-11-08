@@ -160,7 +160,7 @@ final class Plugin {
 	 * Change log.
 	 */
 	public function changeLog(): ChangeLog {
-		return $this->shared( 'change_log', static fn(): ChangeLog => new ChangeLog( new ChangeRepository() ) );
+		return $this->shared( 'change_log', static fn(): ChangeLog => new ChangeLog( new ChangeRepository(), new ItemRepository() ) );
 	}
 
 	/**

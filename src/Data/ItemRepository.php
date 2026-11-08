@@ -92,6 +92,22 @@ class ItemRepository extends Repository {
 	}
 
 	/**
+	 * IDs among the given ones that are marked Sensitive, deleted or not.
+	 *
+	 * @param list<int> $ids Record IDs.
+	 * @return list<int>
+	 */
+	public function sensitiveIds( array $ids ): array {
+		$ids = array_values( array_unique( array_filter( array_map( 'intval', $ids ) ) ) );
+		if ( array() === $ids ) {
+			return array();
+		}
+		$marks = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$sql   = $this->db()->prepare( "SELECT id FROM {$this->table()} WHERE sensitive = 1 AND id IN ({$marks})", ...$ids ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Fixed table name; one placeholder per ID.
+		return array_map( 'intval', (array) $this->db()->get_col( $sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared above.
+	}
+
+	/**
 	 * Records deleted but not yet purged (for Undo).
 	 *
 	 * @return list<array<string, mixed>>

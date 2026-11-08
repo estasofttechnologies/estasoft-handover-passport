@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Estasoft\HandoverPassport\Changes;
 
 use Estasoft\HandoverPassport\Data\ChangeRepository;
+use Estasoft\HandoverPassport\Data\ItemRepository;
 use Estasoft\HandoverPassport\Support\Clock;
 
 defined( 'ABSPATH' ) || exit;
@@ -31,9 +32,10 @@ class ChangeLog {
 	/**
 	 * Constructor.
 	 *
-	 * @param ChangeRepository $repo Change repository.
+	 * @param ChangeRepository    $repo  Change repository.
+	 * @param ItemRepository|null $items Records, used to hide entries about Sensitive records.
 	 */
-	public function __construct( private ChangeRepository $repo ) {}
+	public function __construct( private ChangeRepository $repo, private ?ItemRepository $items = null ) {}
 
 	/**
 	 * Group the entries written inside a callback under one batch ID.
@@ -64,8 +66,9 @@ class ChangeLog {
 	 * @param string               $source        "wordpress", "scan", "cli", "rest", "import".
 	 * @param string|null          $actor_label   Override the acting person label.
 	 * @param int|null             $actor_id      Override the acting user ID.
+	 * @param bool                 $sensitive     Whether the subject is a Sensitive record, so the entry can be masked for others.
 	 */
-	public function add( string $kind, string $subject_type, int $subject_id, string $label, array $before = array(), array $after = array(), string $note = '', string $source = 'wordpress', ?string $actor_label = null, ?int $actor_id = null ): int {
+	public function add( string $kind, string $subject_type, int $subject_id, string $label, array $before = array(), array $after = array(), string $note = '', string $source = 'wordpress', ?string $actor_label = null, ?int $actor_id = null, bool $sensitive = false ): int {
 		$user = wp_get_current_user();
 		if ( null === $actor_id ) {
 			$actor_id = (int) $user->ID;
@@ -87,8 +90,41 @@ class ChangeLog {
 				'source'        => $source,
 				'batch_id'      => $this->batch,
 				'note'          => $note,
+				'sensitive'     => (int) $sensitive,
 			)
 		);
+	}
+
+	/**
+	 * Entries as a person may see them: an entry about a Sensitive record keeps its time, kind and author but loses the
+	 * record's name, its values and its note, unless the viewer may see Sensitive records (AS-11).
+	 *
+	 * @param list<array<string, mixed>> $rows     Entries.
+	 * @param bool                       $can_view Whether the viewer holds the view-sensitive capability.
+	 * @return list<array<string, mixed>>
+	 */
+	public function forViewer( array $rows, bool $can_view ): array {
+		if ( $can_view ) {
+			return $rows;
+		}
+		$ids = array();
+		foreach ( $rows as $row ) {
+			if ( 'item' === (string) $row['subject_type'] && (int) $row['subject_id'] > 0 && empty( $row['sensitive'] ) ) {
+				$ids[] = (int) $row['subject_id'];
+			}
+		}
+		// An entry is masked when it was written about a Sensitive record, or when the record is Sensitive now.
+		$now = null === $this->items ? array() : array_flip( $this->items->sensitiveIds( $ids ) );
+		foreach ( $rows as $index => $row ) {
+			$masked = ! empty( $row['sensitive'] ) || ( 'item' === (string) $row['subject_type'] && isset( $now[ (int) $row['subject_id'] ] ) );
+			if ( $masked ) {
+				$rows[ $index ]['subject_label'] = __( 'A Sensitive record', 'estasoft-handover-passport' );
+				$rows[ $index ]['before_data']   = array();
+				$rows[ $index ]['after_data']    = array();
+				$rows[ $index ]['note']          = '';
+			}
+		}
+		return $rows;
 	}
 
 	/**

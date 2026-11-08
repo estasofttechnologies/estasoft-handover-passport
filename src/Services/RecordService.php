@@ -88,7 +88,7 @@ class RecordService {
 		$this->saveLinks( $id, $n['links'] );
 
 		$record = $this->get( $id, true );
-		$this->log->add( 'record_added', 'item', $id, (string) $record['title'], array(), $this->logFields( $kind, (array) $record['fields'] ), '', $channel );
+		$this->log->add( 'record_added', 'item', $id, (string) $record['title'], array(), $this->logFields( $kind, (array) $record['fields'] ), '', $channel, sensitive: (bool) $record['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, $kind, array(), $this->forHook( $record ) );
 		return $record;
 	}
@@ -115,7 +115,7 @@ class RecordService {
 		$this->saveLinks( $id, $n['links'] );
 
 		$after = $this->get( $id, true );
-		$this->log->add( 'record_edited', 'item', $id, (string) $after['title'], $this->diff( (string) $row['kind'], (array) $before['fields'], (array) $after['fields'], true ), $this->diff( (string) $row['kind'], (array) $before['fields'], (array) $after['fields'], false ), '', $channel );
+		$this->log->add( 'record_edited', 'item', $id, (string) $after['title'], $this->diff( (string) $row['kind'], (array) $before['fields'], (array) $after['fields'], true ), $this->diff( (string) $row['kind'], (array) $before['fields'], (array) $after['fields'], false ), '', $channel, sensitive: (bool) $before['sensitive'] || (bool) $after['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], $this->forHook( $before ), $this->forHook( $after ) );
 		return $after;
 	}
@@ -135,7 +135,7 @@ class RecordService {
 			throw new ValidationError( __( 'Record', 'estasoft-handover-passport' ), __( 'A detected item cannot be deleted. Hide it with a reason instead.', 'estasoft-handover-passport' ) );
 		}
 		$this->items->softDelete( $id );
-		$this->log->add( 'record_deleted', 'item', $id, (string) $row['title'] );
+		$this->log->add( 'record_deleted', 'item', $id, (string) $row['title'], sensitive: (bool) $row['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], $this->forHook( $this->hydrate( $row ) ), array() );
 	}
 
@@ -150,7 +150,7 @@ class RecordService {
 			return;
 		}
 		$this->items->restore( $id );
-		$this->log->add( 'record_restored', 'item', $id, (string) $row['title'] );
+		$this->log->add( 'record_restored', 'item', $id, (string) $row['title'], sensitive: (bool) $row['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], array(), $this->forHook( $this->hydrate( $row ) ) );
 	}
 
@@ -165,7 +165,7 @@ class RecordService {
 			return;
 		}
 		$this->items->update( $id, array( 'verified_at' => Clock::sql(), 'verified_by' => get_current_user_id() ) );
-		$this->log->add( 'record_verified', 'item', $id, (string) $row['title'] );
+		$this->log->add( 'record_verified', 'item', $id, (string) $row['title'], sensitive: (bool) $row['sensitive'] );
 		do_action( 'estasoft_hp_record_saved', $id, (string) $row['kind'], array(), $this->forHook( $this->hydrate( $row ) ) );
 	}
 

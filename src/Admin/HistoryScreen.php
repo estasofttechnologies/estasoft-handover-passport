@@ -81,7 +81,7 @@ final class HistoryScreen extends Screen {
 		}
 		$repo  = $this->plugin->changeLog()->repo();
 		$total = $repo->countFor( $filters );
-		$rows  = $repo->search( $filters, self::PER_PAGE, ( $page_no - 1 ) * self::PER_PAGE );
+		$rows  = $this->plugin->changeLog()->forViewer( $repo->search( $filters, self::PER_PAGE, ( $page_no - 1 ) * self::PER_PAGE ), Capabilities::canSeeSensitive() );
 		$base  = add_query_arg( array( 'page' => self::SLUG, 'tab' => 'changes' ), admin_url( 'admin.php' ) );
 
 		echo '<form method="get" action="' . esc_url( admin_url( 'admin.php' ) ) . '" class="estasoft-hp-filterbar">';

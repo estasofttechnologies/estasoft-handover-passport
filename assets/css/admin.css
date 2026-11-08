@@ -369,3 +369,15 @@
 	border-color: #8c8f94;
 	color: #50575e;
 }
+
+.estasoft-hp .estasoft-hp-urgent {
+	margin: 8px 0;
+	padding-left: 0;
+	list-style: none;
+}
+.estasoft-hp .estasoft-hp-urgent li {
+	margin: 8px 0;
+}
+.estasoft-hp .estasoft-hp-summary-counts a {
+	text-decoration: none;
+}
