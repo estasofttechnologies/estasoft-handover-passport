@@ -42,12 +42,12 @@ final class View {
 	 * Show the result of the last action once, announced to screen readers (ADM-4).
 	 */
 	public static function flash(): void {
-		$key = isset( $_GET['estasoft_hp_notice'] ) ? sanitize_key( wp_unslash( (string) $_GET['estasoft_hp_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display only; the value picks a fixed message.
+		$key = Request::key( 'estasoft_hp_notice' ); // The value only picks a fixed message.
 		$map = self::messages();
 		if ( '' === $key || ! isset( $map[ $key ] ) ) {
 			return;
 		}
-		$class = 0 === strpos( $key, 'error' ) || 'scan_failed' === $key ? 'notice-error' : 'notice-success';
+		$class = in_array( $key, array( 'scan_failed', 'denied' ), true ) ? 'notice-error' : 'notice-success';
 		echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible" role="status"><p>' . esc_html( $map[ $key ] ) . '</p></div>';
 	}
 
@@ -62,6 +62,11 @@ final class View {
 			'scan_busy'   => __( 'A scan is already running. Try again in a minute.', 'estasoft-handover-passport' ),
 			'scan_failed' => __( 'The scan could not finish. Nothing was changed.', 'estasoft-handover-passport' ),
 			'saved'       => __( 'Saved.', 'estasoft-handover-passport' ),
+			'deleted'     => __( 'Deleted. You can undo this for 30 days.', 'estasoft-handover-passport' ),
+			'restored'    => __( 'Restored.', 'estasoft-handover-passport' ),
+			'verified'    => __( 'Marked as verified today.', 'estasoft-handover-passport' ),
+			'denied'      => __( 'You do not have permission to change that record.', 'estasoft-handover-passport' ),
+			'note_added'  => __( 'Note added to the history.', 'estasoft-handover-passport' ),
 		);
 	}
 
